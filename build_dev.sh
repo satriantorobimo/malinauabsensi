@@ -1,0 +1,1 @@
+flutter build apk --release lib/main_dev.dart --flavor dev

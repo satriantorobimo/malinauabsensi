@@ -1,0 +1,4 @@
+#Mon Aug 12 13:42:01 WIB 2024
+base.0=/home/rcky/Documents/fltr/malinau_absensi/build/app/intermediates/dex/devRelease/mergeDexDevRelease/classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
