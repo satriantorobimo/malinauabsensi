@@ -30,6 +30,81 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
     super.initState();
   }
 
+  Future<void> _hapusDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Image.asset(
+                    'assets/imgs/delete.png',
+                    height: 100,
+                    width: 100,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Yakin ingin menghapus data ini?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.26,
+                        height: 41,
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: primaryColor)),
+                        child: const Center(
+                            child: Text('Kembali',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: primaryColor,
+                                    fontWeight: FontWeight.w600))),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.26,
+                        height: 41,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                            child: Text('Hapus',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600))),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -409,6 +484,26 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                     style: TextStyle(
                                         fontSize: 15,
                                         color: Colors.white,
+                                        fontWeight: FontWeight.w600))),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          onTap: () {
+                            _hapusDialog(context);
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 45,
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: primaryColor)),
+                            child: const Center(
+                                child: Text('Hapus',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        color: primaryColor,
                                         fontWeight: FontWeight.w600))),
                           ),
                         ),

@@ -1,48 +1,49 @@
-import 'package:camera/camera.dart';
+import 'dart:async';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
-import 'package:malinau_absensi/components/overlay_camera.dart';
-import 'package:malinau_absensi/util/string_router_util.dart';
-import 'package:permission_handler/permission_handler.dart';
 
-class FaceScanScreen extends StatefulWidget {
-  const FaceScanScreen({super.key});
+class QrScanScreen extends StatefulWidget {
+  const QrScanScreen({super.key});
 
   @override
-  State<FaceScanScreen> createState() => _FaceScanScreenState();
+  State<QrScanScreen> createState() => _QrScanScreenState();
 }
 
-class _FaceScanScreenState extends State<FaceScanScreen> {
-  CameraController? _controller;
-  Future<void>? _initializeControllerFuture;
+class _QrScanScreenState extends State<QrScanScreen> {
+  late Timer _timer;
+  int _start = 30;
+
+  void startTimer() {
+    const oneSec = Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
   @override
   void initState() {
+    startTimer();
     super.initState();
-    _initializeCamera();
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _timer.cancel();
     super.dispose();
-  }
-
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-    final frontCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.front,
-      orElse: () => cameras.first,
-    );
-    _controller = CameraController(
-      frontCamera,
-      ResolutionPreset.medium,
-    );
-    _initializeControllerFuture = _controller!.initialize();
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
@@ -190,24 +191,24 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                     size: 24,
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(top: 4.0),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
                   child: Column(
                     children: [
-                      Text('Face ID Scan',
+                      const Text('Masa berlaku',
                           style: TextStyle(
                               fontSize: 20,
                               color: Color(0xFF202020),
-                              fontWeight: FontWeight.w600)),
-                      SizedBox(height: 8),
+                              fontWeight: FontWeight.w500)),
+                      const SizedBox(height: 8),
                       SizedBox(
                         width: 245,
-                        child: Text('Mohon scan muka anda untuk absen masuk',
+                        child: Text('00:$_start',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
+                            style: const TextStyle(
+                                fontSize: 28,
+                                color: Color(0xFFFF4242),
+                                fontWeight: FontWeight.w600)),
                       ),
                     ],
                   ),
@@ -216,107 +217,24 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
               ],
             ),
           ),
-          Padding(
-              padding:
-                  const EdgeInsets.only(top: 32.0, left: 32.0, right: 32.0),
-              child: Image.asset('assets/imgs/foto-thumbnail.png')
-
-              // Container(
-              //   width: 351,
-              //   height: 261,
-              //   decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(20),
-              //   ),
-              //   child: Stack(
-              //     children: [
-              //       SizedBox(
-              //         width: 351,
-              //         height: 261,
-              //         child: FutureBuilder<void>(
-              //           future: _initializeControllerFuture,
-              //           builder: (context, snapshot) {
-              //             if (snapshot.connectionState == ConnectionState.done) {
-              //               return LayoutBuilder(
-              //                 builder: (context, constraints) {
-              //                   final aspectRatio =
-              //                       _controller!.value.aspectRatio;
-              //                   final containerRatio =
-              //                       constraints.maxWidth / constraints.maxHeight;
-
-              //                   double width, height;
-              //                   if (containerRatio > aspectRatio) {
-              //                     width = constraints.maxWidth;
-              //                     height = width / aspectRatio;
-              //                   } else {
-              //                     height = constraints.maxHeight;
-              //                     width = height * aspectRatio;
-              //                   }
-
-              //                   return Center(
-              //                     child: ClipRect(
-              //                       child: SizedBox(
-              //                         width: constraints.maxWidth,
-              //                         height: constraints.maxHeight,
-              //                         child: FittedBox(
-              //                           fit: BoxFit.cover,
-              //                           child: SizedBox(
-              //                             width: width,
-              //                             height: height,
-              //                             child: Transform(
-              //                               alignment: Alignment.center,
-              //                               transform: Matrix4.rotationY(3.14159),
-              //                               child: CameraPreview(_controller!),
-              //                             ),
-              //                           ),
-              //                         ),
-              //                       ),
-              //                     ),
-              //                   );
-              //                 },
-              //               );
-              //             } else {
-              //               return const Center(
-              //                   child: CircularProgressIndicator());
-              //             }
-              //           },
-              //         ),
-              //       ),
-              //       FaceOverlay()
-              //     ],
-              //   ),
-              // ),
-              ),
-          Padding(
-            padding: const EdgeInsets.only(top: 32.0, left: 32.0, right: 32.0),
-            child: InkWell(
-              onTap: () {
-                Navigator.pushNamed(
-                    context, StringRouterUtil.successScanScreenRoute);
-              },
-              child: Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: BorderRadius.circular(8),
+          const Padding(
+              padding: EdgeInsets.only(top: 32.0, left: 32, right: 32),
+              child: SizedBox(
+                height: 343,
+                width: 343,
+                child: Icon(
+                  Icons.qr_code,
+                  size: 343,
                 ),
-                child: const Center(
-                    child: Text('Ambil Foto',
-                        style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600))),
-              ),
-            ),
-          ),
+              )),
           const Padding(
             padding: EdgeInsets.only(top: 32.0, left: 32),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Cara penggunaan Face ID Scan',
-                      textAlign: TextAlign.left,
                       style: TextStyle(
                           fontSize: 16,
                           color: Colors.black,
@@ -325,7 +243,7 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                     height: 8,
                   ),
                   Text(
-                      '1. Posisikan kamera ke muka anda.\n2. Tekan tombol “Ambil Foto”\n3. dan selamat beraktifitas',
+                      '1. Posisikan QR-code ke alat scan\n2. Tunggu sampai alat scan mengvalidasi QR-code\n3. dan selamat beraktifitas',
                       textAlign: TextAlign.left,
                       style: TextStyle(
                           fontSize: 14,

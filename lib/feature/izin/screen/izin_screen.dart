@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -159,52 +160,22 @@ class _IzinScreenState extends State<IzinScreen> {
               padding: const EdgeInsets.only(bottom: 8.0, top: 12.0),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.12,
+                height: MediaQuery.of(context).size.height * 0.07,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Daftar Izin',
-                        style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        InkWell(
-                          onTap: () {},
-                          child: Container(
-                            height: 45,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: primaryColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Center(
-                                child: Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/sort.svg',
-                                  colorFilter: const ColorFilter.mode(
-                                      Colors.white, BlendMode.srcIn),
-                                  height: 20,
-                                  width: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text('Permohonan izin',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600)),
-                              ],
-                            )),
-                          ),
-                        ),
+                        const Text('Daftar Izin',
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500)),
                         InkWell(
                           onTap: () {
-                            Navigator.pushNamed(context, 'tambah-izin-route');
+                            Navigator.pushNamed(context,
+                                StringRouterUtil.tambahIzinScreenRoute);
                           },
                           child: Container(
                             height: 45,
@@ -234,7 +205,74 @@ class _IzinScreenState extends State<IzinScreen> {
                           ),
                         ),
                       ],
-                    )
+                    ),
+                    // const SizedBox(height: 16),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     InkWell(
+                    //       onTap: () {},
+                    //       child: Container(
+                    //         height: 45,
+                    //         padding: const EdgeInsets.all(12),
+                    //         decoration: BoxDecoration(
+                    //           color: primaryColor,
+                    //           borderRadius: BorderRadius.circular(8),
+                    //         ),
+                    //         child: Center(
+                    //             child: Row(
+                    //           children: [
+                    //             SvgPicture.asset(
+                    //               'assets/icons/sort.svg',
+                    //               colorFilter: const ColorFilter.mode(
+                    //                   Colors.white, BlendMode.srcIn),
+                    //               height: 20,
+                    //               width: 20,
+                    //             ),
+                    //             const SizedBox(width: 8),
+                    //             const Text('Permohonan izin',
+                    //                 style: TextStyle(
+                    //                     fontSize: 15,
+                    //                     color: Colors.white,
+                    //                     fontWeight: FontWeight.w600)),
+                    //           ],
+                    //         )),
+                    //       ),
+                    //     ),
+                    //     InkWell(
+                    //       onTap: () {
+                    //         Navigator.pushNamed(context,
+                    //             StringRouterUtil.tambahIzinScreenRoute);
+                    //       },
+                    //       child: Container(
+                    //         height: 45,
+                    //         padding: const EdgeInsets.all(12),
+                    //         decoration: BoxDecoration(
+                    //           color: primaryColor,
+                    //           borderRadius: BorderRadius.circular(8),
+                    //         ),
+                    //         child: Center(
+                    //             child: Row(
+                    //           children: [
+                    //             SvgPicture.asset(
+                    //               'assets/icons/plus.svg',
+                    //               colorFilter: const ColorFilter.mode(
+                    //                   Colors.white, BlendMode.srcIn),
+                    //               height: 20,
+                    //               width: 20,
+                    //             ),
+                    //             const SizedBox(width: 8),
+                    //             const Text('Tambah',
+                    //                 style: TextStyle(
+                    //                     fontSize: 15,
+                    //                     color: Colors.white,
+                    //                     fontWeight: FontWeight.w600)),
+                    //           ],
+                    //         )),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // )
                   ],
                 ),
               ),
@@ -305,7 +343,8 @@ class _IzinScreenState extends State<IzinScreen> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pushNamed(context, 'izin-detail-route');
+                      Navigator.pushNamed(
+                          context, StringRouterUtil.izinDetailScreenRoute);
                     },
                     child: Container(
                       height: 50,

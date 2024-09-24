@@ -46,10 +46,10 @@ class _TabScreenState extends State<TabScreen> {
         },
         backgroundColor: primaryColor,
         child: SvgPicture.asset(
-          'assets/icons/home.svg',
+          'assets/icons/absen.svg',
           colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-          height: 24,
-          width: 24,
+          height: 32,
+          width: 32,
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

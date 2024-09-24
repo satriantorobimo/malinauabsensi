@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class AktifitasScreen extends StatefulWidget {
   const AktifitasScreen({super.key});
@@ -234,7 +235,8 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pushNamed(context, 'aktifitas-detail-route');
+                      Navigator.pushNamed(
+                          context, StringRouterUtil.aktifitasDetailScreenRoute);
                     },
                     child: Container(
                       height: 50,

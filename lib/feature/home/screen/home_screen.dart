@@ -313,8 +313,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   fontWeight: FontWeight.w500)),
                           InkWell(
                             onTap: () {
-                              Navigator.pushNamed(
-                                  context, StringRouterUtil.absenScreenRoute);
+                              Navigator.pushNamed(context,
+                                  StringRouterUtil.absenKeluarScreenRoute);
                             },
                             child: Container(
                               width: 115,
@@ -324,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Center(
-                                  child: Text('Absen Masuk',
+                                  child: Text('Absen Keluar',
                                       style: TextStyle(
                                           fontSize: 15,
                                           color: Colors.white,
@@ -538,7 +538,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, index) {
                     return InkWell(
                       onTap: () {
-                        Navigator.pushNamed(context, 'absen-detail-route');
+                        Navigator.pushNamed(
+                            context, StringRouterUtil.absenDetailScreenRoute);
                       },
                       child: Container(
                         height: 50,

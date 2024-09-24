@@ -6,14 +6,14 @@ import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class AbsesnsiScreen extends StatefulWidget {
-  const AbsesnsiScreen({super.key});
+class AbsesnsiKeluarScreen extends StatefulWidget {
+  const AbsesnsiKeluarScreen({super.key});
 
   @override
-  State<AbsesnsiScreen> createState() => _AbsesnsiScreenState();
+  State<AbsesnsiKeluarScreen> createState() => _AbsesnsiKeluarScreenState();
 }
 
-class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
+class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
   final List<String> items = [
     'Setting',
     'Logout',
@@ -249,7 +249,8 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                         const SizedBox(height: 24),
                         const SizedBox(
                           width: 245,
-                          child: Text('Pilih salah satu cara untuk absen masuk',
+                          child: Text(
+                              'Pilih salah satu cara untuk absen keluar',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 16,
@@ -278,7 +279,10 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                             height: 65,
                             decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [primaryColor, Color(0xFF1F1E2C)],
+                                  colors: [
+                                    Color(0xFF1F1E2C),
+                                    Color(0xFF913F5D)
+                                  ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
@@ -327,7 +331,10 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                             height: 65,
                             decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [primaryColor, Color(0xFF1F1E2C)],
+                                  colors: [
+                                    Color(0xFF1F1E2C),
+                                    Color(0xFF913F5D)
+                                  ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
@@ -377,7 +384,10 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                             height: 65,
                             decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [primaryColor, Color(0xFF1F1E2C)],
+                                  colors: [
+                                    Color(0xFF1F1E2C),
+                                    Color(0xFF913F5D)
+                                  ],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
@@ -420,7 +430,7 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 40.0),
+              padding: const EdgeInsets.only(top: 24.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -491,7 +501,69 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                   )
                 ],
               ),
-            )
+            ),
+            Padding(
+                padding: const EdgeInsets.only(top: 24.0, left: 32, right: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Keterangan aktifitas hari ini',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Material(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: const BorderSide(
+                                width: 1.0, color: Color(0xFF9E9E9E))),
+                        child: TextFormField(
+                          onChanged: (value) {
+                            setState(() {});
+                          },
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.all(16),
+                              hintStyle: TextStyle(
+                                  color: Colors.grey.withOpacity(0.5),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide.none,
+                              )),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: () {
+                        Navigator.pushNamedAndRemoveUntil(context,
+                            StringRouterUtil.tabScreenRoute, (route) => false);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Center(
+                            child: Text('Simpan',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600))),
+                      ),
+                    ),
+                  ],
+                ))
           ],
         ),
       ),
