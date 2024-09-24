@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -105,53 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                    isNik ? Container() : const SizedBox(height: 16),
-                    isNik
-                        ? Container()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Kata sandi',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black),
-                              ),
-                              const SizedBox(height: 8),
-                              Material(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    side: const BorderSide(
-                                        width: 1.0, color: Color(0xFF9E9E9E))),
-                                child: TextFormField(
-                                  // controller: _emailController,
-                                  keyboardType: TextInputType.text,
-                                  obscureText: true,
-                                  decoration: InputDecoration(
-                                      hintText: 'Masukan kata sandi',
-                                      isDense: true,
-                                      contentPadding: const EdgeInsets.all(16),
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey.withOpacity(0.5),
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide.none,
-                                      )),
-                                ),
-                              ),
-                            ],
-                          ),
                     isNik
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'NIK',
+                                'NIP',
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
@@ -167,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // controller: _emailController,
                                   keyboardType: TextInputType.text,
                                   decoration: InputDecoration(
-                                      hintText: 'Masukan NIK anda',
+                                      hintText: 'Masukan NIP anda',
                                       isDense: true,
                                       contentPadding: const EdgeInsets.all(16),
                                       hintStyle: TextStyle(
@@ -185,6 +145,45 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           )
                         : Container(),
+                    const SizedBox(height: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Kata sandi',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black),
+                        ),
+                        const SizedBox(height: 8),
+                        Material(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(
+                                  width: 1.0, color: Color(0xFF9E9E9E))),
+                          child: TextFormField(
+                            // controller: _emailController,
+                            keyboardType: TextInputType.text,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                                hintText: 'Masukan kata sandi',
+                                isDense: true,
+                                contentPadding: const EdgeInsets.all(16),
+                                hintStyle: TextStyle(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500),
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide.none,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () {
@@ -206,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 32),
                     InkWell(
                       onTap: () {
-                        Navigator.pushNamedAndRemoveUntil(
-                            context, 'tab-route', (route) => false);
+                        Navigator.pushNamedAndRemoveUntil(context,
+                            StringRouterUtil.tabScreenRoute, (route) => false);
                       },
                       child: Container(
                         width: double.infinity,

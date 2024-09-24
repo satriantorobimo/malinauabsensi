@@ -104,7 +104,7 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
               children: <Widget>[
                 SvgPicture.asset(
                   item.iconData,
-                  color: color,
+                  colorFilter: ColorFilter.mode(color, BlendMode.dstIn),
                   width: 24,
                   height: 24,
                 ),

@@ -95,10 +95,22 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
                               color: primaryColor,
                             ),
                             isExpanded: true,
-                            dropdownWidth: 160,
-                            dropdownDecoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              color: Colors.white,
+                            buttonStyleData: ButtonStyleData(
+                              height: 40,
+                              width: 160,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.white,
+                              ),
+                            ),
+                            dropdownStyleData: DropdownStyleData(
+                              maxHeight: 200,
+                              width: 200,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.white,
+                              ),
+                              offset: const Offset(-140, -30),
                             ),
                             items: items
                                 .map((String item) => DropdownMenuItem<String>(
@@ -113,7 +125,6 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
                                       ),
                                     ))
                                 .toList(),
-                            offset: const Offset(-140, -30),
                             onChanged: (value) {},
                           ),
                         ),

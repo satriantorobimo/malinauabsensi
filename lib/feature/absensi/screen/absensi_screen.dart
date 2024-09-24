@@ -2,6 +2,10 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
+import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:malinau_absensi/util/string_util.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AbsesnsiScreen extends StatefulWidget {
   const AbsesnsiScreen({super.key});
@@ -94,25 +98,48 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                               color: primaryColor,
                             ),
                             isExpanded: true,
-                            dropdownWidth: 160,
-                            dropdownDecoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              color: Colors.white,
+                            buttonStyleData: ButtonStyleData(
+                              // This is necessary for the ink response to match our customButton radius.
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
                             ),
-                            items: items
-                                .map((String item) => DropdownMenuItem<String>(
-                                      value: item,
-                                      child: Center(
-                                        child: Text(
-                                          item,
-                                          style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                    ))
-                                .toList(),
-                            offset: const Offset(-140, -30),
+                            dropdownStyleData: DropdownStyleData(
+                              width: 160,
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.white,
+                              ),
+                              offset: const Offset(40, -30),
+                            ),
+                            menuItemStyleData: MenuItemStyleData(
+                              customHeights: [
+                                ...List<double>.filled(
+                                    MenuItems.firstItems.length, 48),
+                                8,
+                                ...List<double>.filled(
+                                    MenuItems.secondItems.length, 48),
+                              ],
+                              padding:
+                                  const EdgeInsets.only(left: 16, right: 16),
+                            ),
+                            items: [
+                              ...MenuItems.firstItems.map(
+                                (item) => DropdownMenuItem<MenuItem>(
+                                  value: item,
+                                  child: MenuItems.buildItem(item),
+                                ),
+                              ),
+                              const DropdownMenuItem<Divider>(
+                                  enabled: false, child: Divider()),
+                              ...MenuItems.secondItems.map(
+                                (item) => DropdownMenuItem<MenuItem>(
+                                  value: item,
+                                  child: MenuItems.buildItem(item),
+                                ),
+                              ),
+                            ],
                             onChanged: (value) {},
                           ),
                         ),
@@ -169,7 +196,20 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                         ),
                         const SizedBox(height: 24),
                         InkWell(
-                          onTap: () {},
+                          onTap: () async {
+                            bool isCameraGranted =
+                                await Permission.camera.request().isGranted;
+
+                            if (!isCameraGranted) {
+                              isCameraGranted =
+                                  await Permission.camera.request() ==
+                                      PermissionStatus.granted;
+                            }
+                            if (context.mounted) {
+                              Navigator.pushNamed(context,
+                                  StringRouterUtil.faceScanScreenRoute);
+                            }
+                          },
                           child: Container(
                             padding: const EdgeInsets.all(12.0),
                             width: 245,

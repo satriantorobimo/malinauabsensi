@@ -13,7 +13,5 @@ Future main() async {
   ));
 
   AppConfig(flavor: Flavor.DEV, values: FlavorValues(baseUrl: '', userId: ''));
-  runZonedGuarded(() {
-    runApp(const MyApp());
-  }, (Object error, StackTrace stack) {});
+  runApp(const MyApp());
 }
