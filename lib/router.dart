@@ -7,6 +7,8 @@ import 'package:malinau_absensi/feature/face_scan/screen/face_scan_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/success_scan_screen.dart';
 import 'package:malinau_absensi/feature/izin_detail/screen/izin_detail_screen.dart';
 import 'package:malinau_absensi/feature/login/screen/login_screen.dart';
+import 'package:malinau_absensi/feature/permohonan_aktifitas_detail/screen/permohonan_aktifitas_detail_screen.dart';
+import 'package:malinau_absensi/feature/permohonan_izin_detail/screen/permohonan_izin_detail.dart';
 import 'package:malinau_absensi/feature/qr_scan/screen/qr_scan_screen.dart';
 import 'package:malinau_absensi/feature/splash/splash_screen.dart';
 import 'package:malinau_absensi/feature/tab/screen/tab_screen.dart';
@@ -96,6 +98,21 @@ class Routers {
       case StringRouterUtil.izinDetailScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const IzinDetailScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.permohonanIzinDetailScreenRoute:
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => const PermohonanIzinDetailScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.permohonanAktifitasDetailScreenRoute:
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) =>
+                const PermohonanAktifitasDetailScreen(),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

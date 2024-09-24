@@ -321,58 +321,58 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        InkWell(
-                          onTap: () {
-                            _fingerPrintDialog(context);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12.0),
-                            width: 245,
-                            height: 65,
-                            decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF1F1E2C),
-                                    Color(0xFF913F5D)
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    blurRadius: 3,
-                                    offset:
-                                        const Offset(-6, 4), // Shadow position
-                                  ),
-                                ],
-                                borderRadius: BorderRadius.circular(8),
-                                border:
-                                    Border.all(color: const Color(0xFFC2C2C2))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 50,
-                                  child: SvgPicture.asset(
-                                    'assets/icons/finger-print.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 41,
-                                    width: 40,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text('Fingerprint',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
+                        // InkWell(
+                        //   onTap: () {
+                        //     _fingerPrintDialog(context);
+                        //   },
+                        //   child: Container(
+                        //     padding: const EdgeInsets.all(12.0),
+                        //     width: 245,
+                        //     height: 65,
+                        //     decoration: BoxDecoration(
+                        //         gradient: const LinearGradient(
+                        //           colors: [
+                        //             Color(0xFF1F1E2C),
+                        //             Color(0xFF913F5D)
+                        //           ],
+                        //           begin: Alignment.topCenter,
+                        //           end: Alignment.bottomCenter,
+                        //         ),
+                        //         boxShadow: [
+                        //           BoxShadow(
+                        //             color: Colors.grey.withOpacity(0.1),
+                        //             blurRadius: 3,
+                        //             offset:
+                        //                 const Offset(-6, 4), // Shadow position
+                        //           ),
+                        //         ],
+                        //         borderRadius: BorderRadius.circular(8),
+                        //         border:
+                        //             Border.all(color: const Color(0xFFC2C2C2))),
+                        //     child: Row(
+                        //       mainAxisAlignment: MainAxisAlignment.center,
+                        //       children: [
+                        //         SizedBox(
+                        //           width: 50,
+                        //           child: SvgPicture.asset(
+                        //             'assets/icons/finger-print.svg',
+                        //             colorFilter: const ColorFilter.mode(
+                        //                 Colors.white, BlendMode.srcIn),
+                        //             height: 41,
+                        //             width: 40,
+                        //           ),
+                        //         ),
+                        //         const SizedBox(width: 8),
+                        //         const Text('Fingerprint',
+                        //             style: TextStyle(
+                        //                 fontSize: 20,
+                        //                 color: Colors.white,
+                        //                 fontWeight: FontWeight.w500)),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 24),
                         InkWell(
                           onTap: () {
                             Navigator.pushNamed(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +12,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isNik = false;
+  final TextEditingController _nipCtrl = TextEditingController();
+  final TextEditingController _emailCtrl = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -86,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     side: const BorderSide(
                                         width: 1.0, color: Color(0xFF9E9E9E))),
                                 child: TextFormField(
-                                  // controller: _emailController,
+                                  controller: _emailCtrl,
                                   keyboardType: TextInputType.text,
                                   decoration: InputDecoration(
                                       hintText: 'Masukan email anda',
@@ -124,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     side: const BorderSide(
                                         width: 1.0, color: Color(0xFF9E9E9E))),
                                 child: TextFormField(
-                                  // controller: _emailController,
+                                  controller: _nipCtrl,
                                   keyboardType: TextInputType.text,
                                   decoration: InputDecoration(
                                       hintText: 'Masukan NIP anda',
@@ -204,7 +208,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 32),
                     InkWell(
-                      onTap: () {
+                      onTap: () async {
+                        final SharedPreferences prefs =
+                            await SharedPreferences.getInstance();
+                        if (isNik) {
+                          if (_nipCtrl.text.isEmpty || _nipCtrl.text == '') {
+                            prefs.setString('user', 'staff');
+                          } else {
+                            prefs.setString('user', 'kadiv');
+                          }
+                        } else {
+                          if (_emailCtrl.text.isEmpty ||
+                              _emailCtrl.text == '') {
+                            prefs.setString('user', 'staff');
+                          } else {
+                            prefs.setString('user', 'kadiv');
+                          }
+                        }
+
+                        if (!context.mounted) return;
                         Navigator.pushNamedAndRemoveUntil(context,
                             StringRouterUtil.tabScreenRoute, (route) => false);
                       },

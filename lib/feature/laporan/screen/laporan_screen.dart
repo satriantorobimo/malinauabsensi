@@ -264,7 +264,7 @@ class _LaporanScreenState extends State<LaporanScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Center(
-                                  child: Text('Masuk',
+                                  child: Text('Cari',
                                       style: TextStyle(
                                           fontSize: 15,
                                           color: Colors.white,

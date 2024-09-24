@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AktifitasScreen extends StatefulWidget {
   const AktifitasScreen({super.key});
@@ -26,6 +27,24 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
   ];
 
   int selectedFilter = 0;
+  bool isLoading = true;
+  String? userType;
+  bool isDataAktifitas = true;
+
+  @override
+  void initState() {
+    getUserType();
+    super.initState();
+  }
+
+  Future<void> getUserType() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String type = prefs.getString('user')!;
+    userType = type;
+    isLoading = false;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -157,16 +176,62 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 16.0, top: 12.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.03,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const Text('Daftar Aktifitas',
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500)),
+              padding: const EdgeInsets.only(
+                  bottom: 16.0, top: 12.0, left: 16, right: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.03,
+                    child: Text(
+                        !isDataAktifitas
+                            ? 'Permohonan Aktiftas'
+                            : 'Data Aktiftas',
+                        style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      if (isDataAktifitas) {
+                        isDataAktifitas = false;
+                      } else {
+                        isDataAktifitas = true;
+                      }
+                      setState(() {});
+                    },
+                    child: Container(
+                      height: 45,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                          child: Row(
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/sort.svg',
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn),
+                            height: 20,
+                            width: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                              isDataAktifitas
+                                  ? 'Permohonan Aktiftas'
+                                  : 'Data Aktiftas',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      )),
+                    ),
+                  ),
+                ],
               ),
             ),
             Padding(
@@ -228,658 +293,801 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                 ),
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 40),
-                shrinkWrap: true,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pushNamed(
-                          context, StringRouterUtil.aktifitasDetailScreenRoute);
-                    },
-                    child: Container(
-                      height: 50,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 3,
-                              offset: const Offset(-6, 4), // Shadow position
-                            ),
-                          ],
-                          border: Border.all(
-                              color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: yellowColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('01',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.23,
-                            child: const Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Aktifitas',
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF797979),
-                                        fontWeight: FontWeight.w400)),
-                                Text('lorem itsum lorem istum lorm itsum',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Jumlah',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('10',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 8),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Jumlah Waktu',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('300',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 8),
-                          const Padding(
-                            padding: EdgeInsets.only(right: 16.0),
-                            child: SizedBox(
-                              width: 60,
-                              child: Text('Pending',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: yellowColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 35,
-                          decoration: const BoxDecoration(
-                            color: greenColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(6),
-                              bottomLeft: Radius.circular(6),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text('02',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.23,
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('lorem itsum lorem istum lorm itsum',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('10',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah Waktu',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('300',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Text('Approved',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: greenColor,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 35,
-                          decoration: const BoxDecoration(
-                            color: redColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(6),
-                              bottomLeft: Radius.circular(6),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text('03',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.23,
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('lorem itsum lorem istum lorm itsum',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('10',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah Waktu',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('300',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Text('Not Approved',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: redColor,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 35,
-                          decoration: const BoxDecoration(
-                            color: yellowColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(6),
-                              bottomLeft: Radius.circular(6),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text('04',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.23,
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('lorem itsum lorem istum lorm itsum',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('10',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah Waktu',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('300',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Text('Pending',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: yellowColor,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 35,
-                          decoration: const BoxDecoration(
-                            color: greenColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(6),
-                              bottomLeft: Radius.circular(6),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text('05',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.23,
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('lorem itsum lorem istum lorm itsum',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('10',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah Waktu',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('300',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Text('Approved',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: greenColor,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 35,
-                          decoration: const BoxDecoration(
-                            color: redColor,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(6),
-                              bottomLeft: Radius.circular(6),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text('06',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.23,
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('lorem itsum lorem istum lorm itsum',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('10',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Jumlah Waktu',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            Text('300',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const Padding(
-                          padding: EdgeInsets.only(right: 16.0),
-                          child: SizedBox(
-                            width: 60,
-                            child: Text('Not Approved',
-                                style: TextStyle(
-                                    fontSize: 13,
-                                    color: redColor,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            )
+            userType == 'staff' ? aktifitasStaff() : aktifitasKadiv()
           ],
         ),
+      ),
+    );
+  }
+
+  Widget aktifitasStaff() {
+    return Expanded(
+      child: ListView(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 40),
+        shrinkWrap: true,
+        children: [
+          InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                  context, StringRouterUtil.aktifitasDetailScreenRoute);
+            },
+            child: Container(
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 3,
+                      offset: const Offset(-6, 4), // Shadow position
+                    ),
+                  ],
+                  border: Border.all(
+                      color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 35,
+                    decoration: const BoxDecoration(
+                      color: yellowColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(6),
+                        bottomLeft: Radius.circular(6),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text('01',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.23,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Aktifitas',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF797979),
+                                fontWeight: FontWeight.w400)),
+                        Text('lorem itsum lorem istum lorm itsum',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Jumlah',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('10',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Jumlah Waktu',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('300',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  const Padding(
+                    padding: EdgeInsets.only(right: 16.0),
+                    child: SizedBox(
+                      width: 60,
+                      child: Text('Pending',
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: yellowColor,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 50,
+            width: double.infinity,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: const Offset(-6, 4), // Shadow position
+                  ),
+                ],
+                border: Border.all(
+                    color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 35,
+                  decoration: const BoxDecoration(
+                    color: greenColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      bottomLeft: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('02',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aktifitas',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('lorem itsum lorem istum lorm itsum',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('10',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah Waktu',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('300',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 60,
+                    child: Text('Approved',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: greenColor,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 50,
+            width: double.infinity,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: const Offset(-6, 4), // Shadow position
+                  ),
+                ],
+                border: Border.all(
+                    color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 35,
+                  decoration: const BoxDecoration(
+                    color: redColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      bottomLeft: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('03',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aktifitas',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('lorem itsum lorem istum lorm itsum',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('10',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah Waktu',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('300',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 60,
+                    child: Text('Not Approved',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: redColor,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 50,
+            width: double.infinity,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: const Offset(-6, 4), // Shadow position
+                  ),
+                ],
+                border: Border.all(
+                    color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 35,
+                  decoration: const BoxDecoration(
+                    color: yellowColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      bottomLeft: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('04',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aktifitas',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('lorem itsum lorem istum lorm itsum',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('10',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah Waktu',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('300',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 60,
+                    child: Text('Pending',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: yellowColor,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 50,
+            width: double.infinity,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: const Offset(-6, 4), // Shadow position
+                  ),
+                ],
+                border: Border.all(
+                    color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 35,
+                  decoration: const BoxDecoration(
+                    color: greenColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      bottomLeft: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('05',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aktifitas',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('lorem itsum lorem istum lorm itsum',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('10',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah Waktu',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('300',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 60,
+                    child: Text('Approved',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: greenColor,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            height: 50,
+            width: double.infinity,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 3,
+                    offset: const Offset(-6, 4), // Shadow position
+                  ),
+                ],
+                border: Border.all(
+                    color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 35,
+                  decoration: const BoxDecoration(
+                    color: redColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(6),
+                      bottomLeft: Radius.circular(6),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text('06',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.23,
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aktifitas',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text('lorem itsum lorem istum lorm itsum',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('10',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Jumlah Waktu',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF797979),
+                            fontWeight: FontWeight.w400)),
+                    Text('300',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(width: 8),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16.0),
+                  child: SizedBox(
+                    width: 60,
+                    child: Text('Not Approved',
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: redColor,
+                            fontWeight: FontWeight.w500)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+  Widget aktifitasKadiv() {
+    return Expanded(
+      child: ListView.separated(
+        itemCount: 9,
+        separatorBuilder: (context, index) {
+          return const SizedBox(height: 10);
+        },
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 40),
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          return InkWell(
+            onTap: () {
+              Navigator.pushNamed(
+                  context,
+                  isDataAktifitas
+                      ? StringRouterUtil.aktifitasDetailScreenRoute
+                      : StringRouterUtil.permohonanAktifitasDetailScreenRoute);
+            },
+            child: Container(
+              height: 50,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 3,
+                      offset: const Offset(-6, 4), // Shadow position
+                    ),
+                  ],
+                  border: Border.all(
+                      color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    width: 35,
+                    decoration: BoxDecoration(
+                      color: !isDataAktifitas ? yellowColor : greenColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(6),
+                        bottomLeft: Radius.circular(6),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text('0${index + 1}',
+                          style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.28,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Aktifitas',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF797979),
+                                fontWeight: FontWeight.w400)),
+                        Text('lorem itsum lorem istum lorm itsum',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w500)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(isDataAktifitas ? 'Jumlah Waktu' : 'Jumlah Staff',
+                          style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF797979),
+                              fontWeight: FontWeight.w400)),
+                      Text(isDataAktifitas ? '300' : '20',
+                          style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 60,
+                          child: Text(!isDataAktifitas ? 'Pending' : 'Approved',
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: !isDataAktifitas
+                                      ? yellowColor
+                                      : greenColor,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        const SizedBox(width: 18),
+                        InkWell(
+                          onTap: () {},
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/icons/edit.svg',
+                                colorFilter: const ColorFilter.mode(
+                                    Colors.white, BlendMode.srcIn),
+                                height: 16,
+                                width: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
