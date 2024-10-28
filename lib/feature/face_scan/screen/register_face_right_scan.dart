@@ -1,35 +1,35 @@
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:camera_camera/camera_camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
-import 'package:malinau_absensi/feature/absensi/bloc/in_bloc/bloc.dart';
-import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
-import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
-import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
-import 'package:malinau_absensi/util/general_util.dart';
-import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/google_ml_kit.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
-import '../../absensi/bloc/out_bloc/bloc.dart';
+class RegisterFaceRightScan extends StatefulWidget {
+  final CameraDescription camera;
 
-class FaceScanScreen extends StatefulWidget {
-  final ArgumentAbsenModel argumentAbsenModel;
-
-  const FaceScanScreen({super.key, required this.argumentAbsenModel});
+  const RegisterFaceRightScan({super.key, required this.camera});
 
   @override
-  State<FaceScanScreen> createState() => _FaceScanScreenState();
+  State<RegisterFaceRightScan> createState() => _RegisterFaceRightScanState();
 }
 
-class _FaceScanScreenState extends State<FaceScanScreen> {
+class _RegisterFaceRightScanState extends State<RegisterFaceRightScan> {
   CameraController? _controller;
-  InBloc inBloc = InBloc(absenRepo: AbsenRepo());
-  OutBloc outBloc = OutBloc(absenRepo: AbsenRepo());
-  bool isLoading = false;
+  XFile? image;
+  bool isBusy = false;
+  FaceDetector faceDetector =
+      GoogleMlKit.vision.faceDetector(FaceDetectorOptions(
+    enableContours: true,
+    enableClassification: true,
+    enableTracking: true,
+    enableLandmarks: true,
+  ));
+
   @override
   void initState() {
     super.initState();
@@ -65,168 +65,82 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
     return SafeArea(
         child: Scaffold(
             backgroundColor: Colors.white,
-            bottomNavigationBar: SizedBox(
+            bottomNavigationBar: Container(
                 height: MediaQuery.of(context).size.height * 0.35,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
                 child: Column(
                   children: [
-                    MultiBlocListener(
-                      listeners: [
-                        BlocListener(
-                            bloc: inBloc,
-                            listener: (_, InState state) async {
-                              if (state is InLoading) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                              }
-                              if (state is InLoaded) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    StringRouterUtil.successScanScreenRoute,
-                                    arguments: true,
-                                    (route) => false);
-                              }
-                              if (state is InError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                              if (state is InException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                            }),
-                        BlocListener(
-                            bloc: outBloc,
-                            listener: (_, OutState state) async {
-                              if (state is OutLoading) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                              }
-                              if (state is OutLoaded) {
-                                setState(() {
-                                  isLoading = false;
-                                });
-
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    StringRouterUtil.successScanScreenRoute,
-                                    arguments: false,
-                                    (route) => false);
-                              }
-                              if (state is OutError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                              if (state is OutException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                            }),
-                      ],
-                      child: isLoading
-                          ? const Center(
-                              child: SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 32.0, left: 32.0, right: 32.0),
-                              child: InkWell(
-                                onTap: () async {
-                                  final String? userid =
-                                      await SharedPrefUtil.getSharedString(
-                                          'userid');
-                                  if (widget.argumentAbsenModel.isIn) {
-                                    final Map mapData = {};
-                                    mapData['user_id'] = userid;
-                                    mapData['time_stamp'] =
-                                        DateTime.now().millisecondsSinceEpoch;
-                                    final json = jsonEncode(mapData);
-
-                                    String cvrt =
-                                        base64Encode(utf8.encode(json));
-                                    inBloc.add(InAttempt(
-                                        absenRequestModel: AbsenRequestModel(
-                                            qrContent: cvrt,
-                                            requestType: 'in')));
-                                  } else {
-                                    final Map mapData = {};
-                                    mapData['user_id'] = userid;
-                                    mapData['time_stamp'] =
-                                        DateTime.now().millisecondsSinceEpoch;
-                                    final json = jsonEncode(mapData);
-
-                                    String cvrt =
-                                        base64Encode(utf8.encode(json));
-                                    outBloc.add(OutAttempt(
-                                        absenRequestModel: AbsenRequestModel(
-                                            qrContent: cvrt,
-                                            requestType: 'out')));
-                                  }
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Center(
-                                      child: Text('Scan',
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600))),
-                                ),
-                              ),
-                            ),
-                    ),
                     const Padding(
-                      padding: EdgeInsets.only(top: 32.0, left: 32),
+                      padding: EdgeInsets.only(top: 32.0),
                       child: Align(
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.center,
                         child: Column(
                           children: [
-                            Text('Cara penggunaan Face ID Scan',
+                            Text('Hadapkan muka ke kanan',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
-                            SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                                '1. Posisikan kamera ke muka anda.\n2. Tekan tombol “Scan”\n3. dan selamat beraktifitas',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF000000),
-                                    fontWeight: FontWeight.w400)),
                           ],
                         ),
                       ),
-                    )
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 32.0, left: 32.0, right: 32.0),
+                      child: InkWell(
+                        onTap: () async {
+                          // if (_controller!.value.isInitialized) {
+                          //   _controller!.setFlashMode(FlashMode.off);
+                          //   image = await _controller!.takePicture();
+                          //   setState(() {
+                          //     // showLoaderDialog(context);
+                          //     final inputImage =
+                          //         InputImage.fromFilePath(image!.path);
+                          //     Platform.isAndroid
+                          //         ? processImage(inputImage)
+                          //         : Navigator.pushNamed(context,
+                          //             StringRouterUtil.successScanScreenRoute);
+                          //   });
+                          // }
+                          setState(() {
+                            _controller!.pausePreview();
+                          });
+                          await Navigator.pushNamed(
+                                  context,
+                                  StringRouterUtil
+                                      .faceRegisterLeftScanScreenRoute,
+                                  arguments: widget.camera)
+                              .then((value) {
+                            setState(() {
+                              _controller!.resumePreview();
+                            });
+                          });
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Center(
+                              child: Text('Ambil Foto',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600))),
+                        ),
+                      ),
+                    ),
                   ],
                 )),
             body: Stack(
@@ -394,24 +308,22 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                   size: 24,
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4.0),
+                              const Padding(
+                                padding: EdgeInsets.only(top: 4.0, right: 16),
                                 child: Column(
                                   children: [
-                                    const Text('Face ID Scan',
+                                    Text('Registrasi Muka',
                                         style: TextStyle(
                                             fontSize: 20,
                                             color: Color(0xFF202020),
                                             fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8),
                                     SizedBox(
                                       width: 245,
                                       child: Text(
-                                          widget.argumentAbsenModel.isIn
-                                              ? 'Mohon scan muka anda untuk absen masuk'
-                                              : 'Mohon scan muka anda untuk absen pulang',
+                                          'Mohon ikuti perintah dibawah untuk menyelesaikan registrasi muka',
                                           textAlign: TextAlign.center,
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                               fontSize: 16,
                                               color: Colors.black,
                                               fontWeight: FontWeight.w500)),
@@ -429,6 +341,43 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                 ),
               ],
             )));
+  }
+
+  Future<void> processImage(InputImage inputImage) async {
+    if (isBusy) return;
+    isBusy = true;
+    final faces = await faceDetector.processImage(inputImage);
+    isBusy = false;
+
+    if (mounted) {
+      setState(() {
+        Navigator.of(context).pop(true);
+        if (faces.isNotEmpty) {
+          Navigator.pushNamed(context, StringRouterUtil.successScanScreenRoute);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.face_retouching_natural_outlined,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Ups, pastikan wajah Anda terlihat jelas dengan cahaya yang cukup!",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              ],
+            ),
+            backgroundColor: Colors.redAccent,
+            shape: StadiumBorder(),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      });
+    }
   }
 }
 

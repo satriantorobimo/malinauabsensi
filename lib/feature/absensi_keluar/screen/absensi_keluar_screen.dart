@@ -1,8 +1,13 @@
+import 'dart:io';
+
+import 'package:camera_camera/camera_camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -18,6 +23,11 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
     'Setting',
     'Logout',
   ];
+  bool isInternet = false;
+
+  String date = '';
+  String time = '';
+
   Future<void> _fingerPrintDialog(BuildContext context) async {
     return showDialog(
         context: context,
@@ -74,6 +84,58 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
             ),
           );
         });
+  }
+
+  Future<bool?> checkInternet() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        return true;
+      }
+    } on SocketException catch (_) {
+      return false;
+    }
+
+    return null;
+  }
+
+  Future<String?> checkDate() async {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('EEEE,d MMMM yyyy').format(now);
+
+    return formattedDate;
+  }
+
+  Future<String?> checkTime() async {
+    DateTime now = DateTime.now();
+
+    String formattedTime = DateFormat('hh:mm a').format(now);
+
+    return formattedTime;
+  }
+
+  @override
+  void initState() {
+    checkInternet().then((value) {
+      setState(() {
+        isInternet = value!;
+      });
+    });
+    checkDate().then(
+      (value) {
+        setState(() {
+          date = value!;
+        });
+      },
+    );
+    checkTime().then(
+      (value) {
+        setState(() {
+          time = value!;
+        });
+      },
+    );
+    super.initState();
   }
 
   @override
@@ -226,26 +288,17 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Column(
                       children: [
-                        const Text('Monday, 8 November 2022',
-                            style: TextStyle(
+                        Text(date,
+                            style: const TextStyle(
                                 fontSize: 14,
                                 color: Color(0xFF797979),
                                 fontWeight: FontWeight.w500)),
                         const SizedBox(height: 8),
-                        const Row(
-                          children: [
-                            Text('08:00',
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600)),
-                            Text('pm',
-                                style: TextStyle(
-                                    fontSize: 28,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400)),
-                          ],
-                        ),
+                        Text(time,
+                            style: const TextStyle(
+                                fontSize: 28,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w600)),
                         const SizedBox(height: 24),
                         const SizedBox(
                           width: 245,
@@ -269,8 +322,15 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
                                       PermissionStatus.granted;
                             }
                             if (context.mounted) {
-                              Navigator.pushNamed(context,
-                                  StringRouterUtil.faceScanScreenRoute);
+                              WidgetsFlutterBinding.ensureInitialized();
+                              final cameras = await availableCameras();
+                              final firstCamera = cameras.first;
+                              if (context.mounted) {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.faceScanScreenRoute,
+                                    arguments: ArgumentAbsenModel(
+                                        camera: firstCamera, isIn: false));
+                              }
                             }
                           },
                           child: Container(
@@ -373,55 +433,57 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
                         //   ),
                         // ),
                         // const SizedBox(height: 24),
-                        InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(
-                                context, StringRouterUtil.qrScanScreenRoute);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(12.0),
-                            width: 245,
-                            height: 65,
-                            decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF1F1E2C),
-                                    Color(0xFF913F5D)
-                                  ],
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.1),
-                                    blurRadius: 3,
-                                    offset:
-                                        const Offset(-6, 4), // Shadow position
+                        isInternet
+                            ? Container()
+                            : InkWell(
+                                onTap: () {
+                                  Navigator.pushNamed(context,
+                                      StringRouterUtil.qrScanScreenRoute);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(12.0),
+                                  width: 245,
+                                  height: 65,
+                                  decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF1F1E2C),
+                                          Color(0xFF913F5D)
+                                        ],
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.1),
+                                          blurRadius: 3,
+                                          offset: const Offset(
+                                              -6, 4), // Shadow position
+                                        ),
+                                      ],
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: const Color(0xFFC2C2C2))),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/qr-scan.svg',
+                                        colorFilter: const ColorFilter.mode(
+                                            Colors.white, BlendMode.srcIn),
+                                        height: 41,
+                                        width: 40,
+                                      ),
+                                      const SizedBox(width: 24),
+                                      const Text('QR-Code',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500)),
+                                    ],
                                   ),
-                                ],
-                                borderRadius: BorderRadius.circular(8),
-                                border:
-                                    Border.all(color: const Color(0xFFC2C2C2))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/qr-scan.svg',
-                                  colorFilter: const ColorFilter.mode(
-                                      Colors.white, BlendMode.srcIn),
-                                  height: 41,
-                                  width: 40,
                                 ),
-                                const SizedBox(width: 24),
-                                const Text('QR-Code',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ),
-                        ),
+                              ),
                       ],
                     ),
                   ),

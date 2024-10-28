@@ -12,6 +12,9 @@ Future main() async {
     // statusBarBrightness: Brightness.light,
   ));
 
-  AppConfig(flavor: Flavor.DEV, values: FlavorValues(baseUrl: '', userId: ''));
+  AppConfig(
+      flavor: Flavor.DEV,
+      values:
+          FlavorValues(baseUrl: 'https://api-dev.anydev.online/', userId: ''));
   runApp(const MyApp());
 }

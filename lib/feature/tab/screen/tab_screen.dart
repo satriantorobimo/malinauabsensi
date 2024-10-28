@@ -58,7 +58,7 @@ class _TabScreenState extends State<TabScreen> {
         color: Colors.grey,
         selectedColor: primaryColor,
         onTabSelected: (index) {
-          bottomBarProvider.setPage(index);
+          bottomBarProvider.setPage(0);
           bottomBarProvider.setTab(0);
         },
         items: [

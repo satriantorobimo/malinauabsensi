@@ -28,7 +28,7 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
 
   int selectedFilter = 0;
   bool isLoading = true;
-  String? userType;
+  String userType = '';
   bool isDataAktifitas = true;
 
   @override
@@ -50,252 +50,257 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 3,
-                      offset: const Offset(-6, 4), // Shadow position
-                    ),
-                  ],
-                  border: Border(
-                    bottom: BorderSide(
-                        width: 1, color: Colors.grey.withOpacity(0.1)),
-                  ),
-                ),
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.10,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.asset('assets/imgs/logo.png', width: 40),
-                    Row(
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 40,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
+        body: userType == ''
+            ? Container()
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 3,
+                            offset: const Offset(-6, 4), // Shadow position
                           ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.person_2_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
+                        ],
+                        border: Border(
+                          bottom: BorderSide(
+                              width: 1, color: Colors.grey.withOpacity(0.1)),
                         ),
-                        const SizedBox(width: 8),
-                        const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Hi, John',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(height: 2),
-                            Text('Udayana, S.IP, M,M',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            SizedBox(height: 2),
-                            Text('Staff',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400))
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        DropdownButtonHideUnderline(
-                          child: DropdownButton2(
-                            customButton: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: primaryColor,
-                            ),
-                            isExpanded: true,
-                            buttonStyleData: ButtonStyleData(
-                              // This is necessary for the ink response to match our customButton radius.
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                            ),
-                            dropdownStyleData: DropdownStyleData(
-                              width: 160,
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                color: Colors.white,
-                              ),
-                              offset: const Offset(40, -30),
-                            ),
-                            menuItemStyleData: MenuItemStyleData(
-                              customHeights: [
-                                ...List<double>.filled(
-                                    MenuItems.firstItems.length, 48),
-                                8,
-                                ...List<double>.filled(
-                                    MenuItems.secondItems.length, 48),
-                              ],
-                              padding:
-                                  const EdgeInsets.only(left: 16, right: 16),
-                            ),
-                            items: [
-                              ...MenuItems.firstItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
+                      ),
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.10,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Image.asset('assets/imgs/logo.png', width: 40),
+                          Row(
+                            children: [
+                              Container(
+                                height: 40,
+                                width: 40,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey,
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.person_2_rounded,
+                                  color: Colors.white,
+                                  size: 32,
                                 ),
                               ),
-                              const DropdownMenuItem<Divider>(
-                                  enabled: false, child: Divider()),
-                              ...MenuItems.secondItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
+                              const SizedBox(width: 8),
+                              const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, John',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500)),
+                                  SizedBox(height: 2),
+                                  Text('Udayana, S.IP, M,M',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400)),
+                                  SizedBox(height: 2),
+                                  Text('Staff',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
+                              const SizedBox(width: 8),
+                              DropdownButtonHideUnderline(
+                                child: DropdownButton2(
+                                  customButton: const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: primaryColor,
+                                  ),
+                                  isExpanded: true,
+                                  buttonStyleData: ButtonStyleData(
+                                    // This is necessary for the ink response to match our customButton radius.
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                  dropdownStyleData: DropdownStyleData(
+                                    width: 160,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(4),
+                                      color: Colors.white,
+                                    ),
+                                    offset: const Offset(40, -30),
+                                  ),
+                                  menuItemStyleData: MenuItemStyleData(
+                                    customHeights: [
+                                      ...List<double>.filled(
+                                          MenuItems.firstItems.length, 48),
+                                      8,
+                                      ...List<double>.filled(
+                                          MenuItems.secondItems.length, 48),
+                                    ],
+                                    padding: const EdgeInsets.only(
+                                        left: 16, right: 16),
+                                  ),
+                                  items: [
+                                    ...MenuItems.firstItems.map(
+                                      (item) => DropdownMenuItem<MenuItem>(
+                                        value: item,
+                                        child: MenuItems.buildItem(item),
+                                      ),
+                                    ),
+                                    const DropdownMenuItem<Divider>(
+                                        enabled: false, child: Divider()),
+                                    ...MenuItems.secondItems.map(
+                                      (item) => DropdownMenuItem<MenuItem>(
+                                        value: item,
+                                        child: MenuItems.buildItem(item),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (value) {},
                                 ),
                               ),
                             ],
-                            onChanged: (value) {},
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  bottom: 16.0, top: 12.0, left: 16, right: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.03,
-                    child: Text(
-                        !isDataAktifitas
-                            ? 'Permohonan Aktiftas'
-                            : 'Data Aktiftas',
-                        style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500)),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      if (isDataAktifitas) {
-                        isDataAktifitas = false;
-                      } else {
-                        isDataAktifitas = true;
-                      }
-                      setState(() {});
-                    },
-                    child: Container(
-                      height: 45,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: BorderRadius.circular(8),
+                          )
+                        ],
                       ),
-                      child: Center(
-                          child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            'assets/icons/sort.svg',
-                            colorFilter: const ColorFilter.mode(
-                                Colors.white, BlendMode.srcIn),
-                            height: 20,
-                            width: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                              isDataAktifitas
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 16.0, top: 12.0, left: 16, right: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.03,
+                          child: Text(
+                              !isDataAktifitas
                                   ? 'Permohonan Aktiftas'
                                   : 'Data Aktiftas',
                               style: const TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600)),
-                        ],
-                      )),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.05,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.height * 0.045,
-                      child: ListView.separated(
-                          separatorBuilder: (context, index) {
-                            return const SizedBox(width: 8);
-                          },
-                          scrollDirection: Axis.horizontal,
-                          shrinkWrap: true,
-                          itemCount: filter.length,
-                          padding: const EdgeInsets.only(right: 8),
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  selectedFilter = index;
-                                });
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: selectedFilter == index
-                                      ? primaryColor
-                                      : const Color(0xFF9E9E9E),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.all(8),
-                                child: Center(
-                                  child: Text(filter[index],
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500)),
+                                  fontSize: 20,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        userType == 'staff'
+                            ? Container()
+                            : InkWell(
+                                onTap: () {
+                                  if (isDataAktifitas) {
+                                    isDataAktifitas = false;
+                                  } else {
+                                    isDataAktifitas = true;
+                                  }
+                                  setState(() {});
+                                },
+                                child: Container(
+                                  height: 45,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: primaryColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                      child: Row(
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/icons/sort.svg',
+                                        colorFilter: const ColorFilter.mode(
+                                            Colors.white, BlendMode.srcIn),
+                                        height: 20,
+                                        width: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                          isDataAktifitas
+                                              ? 'Permohonan Aktiftas'
+                                              : 'Data Aktiftas',
+                                          style: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600)),
+                                    ],
+                                  )),
                                 ),
                               ),
-                            );
-                          }),
+                      ],
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.1,
-                      child: SvgPicture.asset(
-                        'assets/icons/filter.svg',
-                        colorFilter: const ColorFilter.mode(
-                            primaryColor, BlendMode.srcIn),
-                        height: 32,
-                        width: 32,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height * 0.05,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: MediaQuery.of(context).size.height * 0.045,
+                            child: ListView.separated(
+                                separatorBuilder: (context, index) {
+                                  return const SizedBox(width: 8);
+                                },
+                                scrollDirection: Axis.horizontal,
+                                shrinkWrap: true,
+                                itemCount: filter.length,
+                                padding: const EdgeInsets.only(right: 8),
+                                itemBuilder: (context, index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        selectedFilter = index;
+                                      });
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: selectedFilter == index
+                                            ? primaryColor
+                                            : const Color(0xFF9E9E9E),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: const EdgeInsets.all(8),
+                                      child: Center(
+                                        child: Text(filter[index],
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500)),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.1,
+                            child: SvgPicture.asset(
+                              'assets/icons/filter.svg',
+                              colorFilter: const ColorFilter.mode(
+                                  primaryColor, BlendMode.srcIn),
+                              height: 32,
+                              width: 32,
+                            ),
+                          )
+                        ],
                       ),
-                    )
-                  ],
-                ),
+                    ),
+                  ),
+                  userType == 'staff' ? aktifitasStaff() : aktifitasKadiv()
+                ],
               ),
-            ),
-            userType == 'staff' ? aktifitasStaff() : aktifitasKadiv()
-          ],
-        ),
       ),
     );
   }

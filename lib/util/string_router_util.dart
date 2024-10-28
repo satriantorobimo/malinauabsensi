@@ -9,6 +9,11 @@ class StringRouterUtil {
   static const String absenScreenRoute = 'absen-route';
   static const String absenKeluarScreenRoute = 'absen-keluar-route';
   static const String faceScanScreenRoute = 'face-scan-route';
+  static const String faceRegisterScanScreenRoute = 'face-register-scan-route';
+  static const String faceRegisterRightScanScreenRoute =
+      'face-register-right-scan-route';
+  static const String faceRegisterLeftScanScreenRoute =
+      'face-register-left-scan-route';
   static const String qrScanScreenRoute = 'qr-scan-route';
   static const String successScanScreenRoute = 'success-scan-route';
   static const String absenDetailScreenRoute = 'absen-detail-route';

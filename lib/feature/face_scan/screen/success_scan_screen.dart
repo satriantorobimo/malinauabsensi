@@ -5,7 +5,8 @@ import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
 class SuccessScanScreen extends StatefulWidget {
-  const SuccessScanScreen({super.key});
+  final bool isIn;
+  const SuccessScanScreen({super.key, required this.isIn});
 
   @override
   State<SuccessScanScreen> createState() => _SuccessScanScreenState();
@@ -160,10 +161,12 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
                   const SizedBox(height: 8),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.5,
-                    child: const Text(
-                        'Anda berhasil absen masuk. Selamat mengerjakan aktifitas anda hari ini.',
+                    child: Text(
+                        widget.isIn
+                            ? 'Anda berhasil absen masuk. Selamat mengerjakan aktifitas anda hari ini.'
+                            : 'Anda berhasil absen keluar. Selamat menikmati hari anda.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16,
                             color: Colors.black,
                             fontWeight: FontWeight.w500)),
