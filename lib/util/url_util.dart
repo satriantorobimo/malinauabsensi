@@ -31,6 +31,9 @@ class UrlUtil {
         'Accept': 'application/json'
       };
 
+  static Map<String, String> headerTypeWithTokenNoUserIdNoJson(String token) =>
+      {'Authorization': 'Bearer $token', 'Accept': '*/*'};
+
   static Map<String, String> headerTypeForm() => {
         'Content-Type': 'application/x-www-form-urlencoded',
       };
@@ -41,6 +44,10 @@ class UrlUtil {
 
   Map<String, String> getHeaderTypeWithTokenNoUserId(String token) {
     return headerTypeWithTokenNoUserId(token);
+  }
+
+  Map<String, String> getHeaderTypeWithTokenNoUserIdNoJson(String token) {
+    return headerTypeWithTokenNoUserIdNoJson(token);
   }
 
   Map<String, String> getHeaderTypeBasicAuth(String username, String password) {
@@ -74,5 +81,20 @@ class UrlUtil {
   String getUrlCheckOut(String data) {
     final String urlCheckOut2 = urlCheckOut(data);
     return baseUrl + urlCheckOut2;
+  }
+
+  static String urlDinasLuar(String page, String limit) =>
+      'v2/dinas-luar?page=$page&limit=$limit';
+
+  String getUrlDinasLuar(String page, String limit) {
+    final String urlDinasLuar2 = urlDinasLuar(page, limit);
+    return baseUrl + urlDinasLuar2;
+  }
+
+  static String urlDinasLuarDetail(String id) => 'v2/dinas-luar/$id';
+
+  String getUrlDinasLuarDetail(String id) {
+    final String urlDinasLuarDetail2 = urlDinasLuarDetail(id);
+    return baseUrl + urlDinasLuarDetail2;
   }
 }

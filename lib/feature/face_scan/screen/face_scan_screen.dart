@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:camera_camera/camera_camera.dart';
+import 'package:camera/camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

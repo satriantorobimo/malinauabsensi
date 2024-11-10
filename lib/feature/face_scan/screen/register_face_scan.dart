@@ -1,10 +1,13 @@
-import 'package:camera_camera/camera_camera.dart';
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:camera/camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:google_ml_vision/google_ml_vision.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
-import 'package:malinau_absensi/util/google_ml_kit.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
 class RegisterFaceScan extends StatefulWidget {
@@ -18,27 +21,23 @@ class RegisterFaceScan extends StatefulWidget {
 
 class _RegisterFaceScanState extends State<RegisterFaceScan> {
   CameraController? _controller;
+  final FaceDetector _faceDetector = GoogleVision.instance.faceDetector(
+    const FaceDetectorOptions(
+      mode: FaceDetectorMode.accurate,
+      enableLandmarks: true,
+    ),
+  );
+  int _currentStep = 1; // Step 1: Front, Step 2: Right, Step 3: Left
+  String _facePosition = 'No face detected';
+  bool _isDetecting = false;
   XFile? image;
   bool isBusy = false;
-  FaceDetector faceDetector =
-      GoogleMlKit.vision.faceDetector(FaceDetectorOptions(
-    enableContours: true,
-    enableClassification: true,
-    enableTracking: true,
-    enableLandmarks: true,
-  ));
 
   @override
   void initState() {
     super.initState();
 
     _initializeCamera();
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
   }
 
   Future<void> _initializeCamera() async {
@@ -50,12 +49,146 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
     );
     _controller = CameraController(
       frontCamera,
-      ResolutionPreset.medium,
+      ResolutionPreset.high,
+      imageFormatGroup: Platform.isAndroid
+          ? ImageFormatGroup.yuv420
+          : ImageFormatGroup.bgra8888,
     );
     await _controller!.initialize();
-    if (mounted) {
-      setState(() {});
+
+    _controller!.startImageStream((CameraImage image) {
+      if (!_isDetecting) {
+        _detectFaces(image);
+      }
+    });
+  }
+
+  Future<void> _detectFaces(CameraImage image) async {
+    if (_isDetecting || image.planes.isEmpty) return;
+    setState(() {
+      _isDetecting = true;
+    });
+
+    try {
+      final visionImage = _convertCameraImage(image);
+      final List<Face> faces = await _faceDetector.processImage(visionImage);
+
+      if (faces.isNotEmpty) {
+        final Face face = faces[0];
+        final leftEye = face.getLandmark(FaceLandmarkType.leftEye);
+        final rightEye = face.getLandmark(FaceLandmarkType.rightEye);
+
+        if (leftEye != null && rightEye != null) {
+          // Threshold to distinguish between front and side directions
+          const double threshold = 30.0;
+
+          double difference = leftEye.position.dx - rightEye.position.dx;
+          setState(() {
+            // Use thresholds for clearer distinctions
+            if (difference.abs() < threshold) {
+              _facePosition = 'Front Face';
+            } else if (difference > threshold) {
+              _facePosition = 'Looking Left';
+            } else if (difference < -threshold) {
+              _facePosition = 'Looking Right';
+            }
+            _checkStep(); // Verify if the current step matches the required face position
+          });
+        }
+      } else {
+        setState(() {
+          _facePosition = 'No face detected';
+        });
+      }
+    } catch (e) {
+      log('Error detecting face: $e');
+    } finally {
+      setState(() {
+        _isDetecting = false;
+      });
     }
+  }
+
+  GoogleVisionImage _convertCameraImage(CameraImage image) {
+    // Concatenate all bytes from planes
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    return GoogleVisionImage.fromBytes(
+      bytes,
+      GoogleVisionImageMetadata(
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: getRotation(),
+        rawFormat: image.format.raw,
+        planeData: image.planes.map((Plane plane) {
+          return GoogleVisionImagePlaneMetadata(
+            bytesPerRow: plane.bytesPerRow,
+            height: plane.height,
+            width: plane.width,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  ImageRotation getRotation() {
+    switch (_controller!.description.sensorOrientation) {
+      case 90:
+        return ImageRotation.rotation90;
+      case 180:
+        return ImageRotation.rotation180;
+      case 270:
+        return ImageRotation.rotation270;
+      default:
+        return ImageRotation.rotation0;
+    }
+  }
+
+  void _checkStep() {
+    switch (_currentStep) {
+      case 1: // Step 1: Front Face
+        if (_facePosition == 'Front Face') {
+          setState(() {
+            _currentStep = 2;
+            _facePosition = 'Please turn right';
+          });
+        }
+        break;
+      case 2: // Step 2: Right Face
+        if (_facePosition == 'Looking Right') {
+          setState(() {
+            _currentStep = 3;
+            _facePosition = 'Please turn left';
+          });
+        }
+        break;
+      case 3: // Step 3: Left Face
+        if (_facePosition == 'Looking Left') {
+          _navigateToNextPage();
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _navigateToNextPage() {
+    _controller!.stopImageStream();
+    Navigator.pushNamedAndRemoveUntil(
+        context,
+        StringRouterUtil.successScanScreenRoute,
+        arguments: false,
+        (route) => false);
+  }
+
+  @override
+  void dispose() {
+    _controller!.dispose();
+    _faceDetector.close;
+    super.dispose();
   }
 
   @override
@@ -75,15 +208,15 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
                 ),
                 child: Column(
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 32.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32.0),
                       child: Align(
                         alignment: Alignment.center,
                         child: Column(
                           children: [
-                            Text('Hadapkan muka ke depan',
+                            Text(_facePosition,
                                 textAlign: TextAlign.left,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
@@ -339,43 +472,6 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
                 ),
               ],
             )));
-  }
-
-  Future<void> processImage(InputImage inputImage) async {
-    if (isBusy) return;
-    isBusy = true;
-    final faces = await faceDetector.processImage(inputImage);
-    isBusy = false;
-
-    if (mounted) {
-      setState(() {
-        Navigator.of(context).pop(true);
-        if (faces.isNotEmpty) {
-          Navigator.pushNamed(context, StringRouterUtil.successScanScreenRoute);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Row(
-              children: [
-                Icon(
-                  Icons.face_retouching_natural_outlined,
-                  color: Colors.white,
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "Ups, pastikan wajah Anda terlihat jelas dengan cahaya yang cukup!",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                )
-              ],
-            ),
-            backgroundColor: Colors.redAccent,
-            shape: StadiumBorder(),
-            behavior: SnackBarBehavior.floating,
-          ));
-        }
-      });
-    }
   }
 }
 

@@ -1,4 +1,4 @@
-import 'package:camera_camera/camera_camera.dart';
+import 'package:camera/camera.dart';
 
 class ArgumentAbsenModel {
   final CameraDescription camera;

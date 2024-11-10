@@ -67,7 +67,7 @@ class Data {
 }
 
 class MenuActions {
-  int? roleID;
+  String? roleID;
   String? menuID;
   String? actionID;
 

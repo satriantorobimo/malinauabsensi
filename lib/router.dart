@@ -1,10 +1,11 @@
-import 'package:camera_camera/camera_camera.dart';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/feature/absensi/screen/absensi_screen.dart';
 import 'package:malinau_absensi/feature/absensi_detail/screen/absensi_detail_screen.dart';
 import 'package:malinau_absensi/feature/absensi_keluar/screen/absensi_keluar_screen.dart';
 import 'package:malinau_absensi/feature/aktifitas_detail/screen/aktifitas_detail_screen.dart';
+import 'package:malinau_absensi/feature/aktifitas_detail/screen/dinas_luar_detail_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/face_scan_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_left_scan.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_right_scan.dart';
@@ -123,6 +124,14 @@ class Routers {
       case StringRouterUtil.aktifitasDetailScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const AktifitasDetailScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.dinasLuarDetailScreenRoute:
+        final String id = settings.arguments as String;
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => DinasLuarDetailScreen(id: id),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/fab_bottom_app_bar_comp.dart';
-import 'package:malinau_absensi/feature/aktifitas/screen/aktifitas_screen.dart';
+import 'package:malinau_absensi/feature/aktifitas/screen/dinas_luar_screen.dart';
 import 'package:malinau_absensi/feature/home/screen/home_screen.dart';
 import 'package:malinau_absensi/feature/izin/screen/izin_screen.dart';
 import 'package:malinau_absensi/feature/laporan/screen/laporan_screen.dart';
@@ -23,13 +23,13 @@ class _TabScreenState extends State<TabScreen> {
       return const HomeScreen();
     }
     if (index == 1) {
-      return const AktifitasScreen();
+      return const DinasLuarScreen();
     }
     if (index == 2) {
-      return const IzinScreen();
+      return const HomeScreen();
     }
     if (index == 3) {
-      return const LaporanScreen();
+      return const HomeScreen();
     }
 
     return const HomeScreen();
@@ -58,8 +58,8 @@ class _TabScreenState extends State<TabScreen> {
         color: Colors.grey,
         selectedColor: primaryColor,
         onTabSelected: (index) {
-          bottomBarProvider.setPage(0);
-          bottomBarProvider.setTab(0);
+          bottomBarProvider.setPage(index);
+          bottomBarProvider.setTab(index);
         },
         items: [
           FABBottomAppBarComp(

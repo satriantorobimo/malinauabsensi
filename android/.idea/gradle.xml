@@ -7,22 +7,30 @@
         <compositeConfiguration>
           <compositeBuild compositeDefinitionSource="SCRIPT">
             <builds>
-              <build path="$USER_HOME$/snap/flutter/common/flutter/packages/flutter_tools/gradle" name="gradle">
+              <build path="$USER_HOME$/.fvm/versions/3.24.0/packages/flutter_tools/gradle" name="gradle">
                 <projects>
-                  <project path="$USER_HOME$/snap/flutter/common/flutter/packages/flutter_tools/gradle" />
+                  <project path="$USER_HOME$/.fvm/versions/3.24.0/packages/flutter_tools/gradle" />
                 </projects>
               </build>
             </builds>
           </compositeBuild>
         </compositeConfiguration>
+        <option name="testRunner" value="GRADLE" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="gradleJvm" value="Embedded JDK" />
         <option name="modules">
           <set>
+            <option value="$USER_HOME$/.fvm/versions/3.24.0/packages/flutter_tools/gradle" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/camera_android-0.10.9+11/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.22/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/geolocator_android-4.6.1/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/google_mlkit_commons-0.9.0/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/google_mlkit_face_detection-0.12.0/android" />
             <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.9/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-12.0.12/android" />
+            <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.3.2/android" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$USER_HOME$/snap/flutter/common/flutter/packages/flutter_tools/gradle" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

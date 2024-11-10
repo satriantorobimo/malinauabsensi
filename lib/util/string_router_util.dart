@@ -18,6 +18,7 @@ class StringRouterUtil {
   static const String successScanScreenRoute = 'success-scan-route';
   static const String absenDetailScreenRoute = 'absen-detail-route';
   static const String aktifitasDetailScreenRoute = 'aktifitas-detail-route';
+  static const String dinasLuarDetailScreenRoute = 'dinas-luar-detail-route';
   static const String tambahIzinScreenRoute = 'tambah-izin-route';
   static const String izinDetailScreenRoute = 'izin-detail-route';
   static const String permohonanIzinDetailScreenRoute =
