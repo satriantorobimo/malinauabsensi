@@ -5,10 +5,10 @@ abstract class DinasLuarListEvent extends Equatable {
 }
 
 class DinasLuarListAttempt extends DinasLuarListEvent {
-  const DinasLuarListAttempt({required this.page, required this.limit});
-  final String page;
-  final String limit;
+  const DinasLuarListAttempt({required this.start, required this.end});
+  final String start;
+  final String end;
 
   @override
-  List<Object> get props => [page, limit];
+  List<Object> get props => [start, end];
 }

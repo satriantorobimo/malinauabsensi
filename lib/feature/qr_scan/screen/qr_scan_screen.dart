@@ -4,6 +4,8 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class QrScanScreen extends StatefulWidget {
   const QrScanScreen({super.key});
@@ -94,27 +96,50 @@ class _QrScanScreenState extends State<QrScanScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      const Column(
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hi, John',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w500)),
-                          SizedBox(height: 2),
-                          Text('Udayana, S.IP, M,M',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF797979),
-                                  fontWeight: FontWeight.w400)),
-                          SizedBox(height: 2),
-                          Text('Staff',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF797979),
-                                  fontWeight: FontWeight.w400))
+                          FutureBuilder<String?>(
+                            future: SharedPrefUtil.getSharedString(
+                                'nama'), // Key for retrieval
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Container();
+                              } else if (snapshot.hasError) {
+                                return Text("Error: ${snapshot.error}");
+                              } else {
+                                final username =
+                                    snapshot.data ?? "No name found";
+                                return Text('Hi, $username',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500));
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 2),
+                          FutureBuilder<String?>(
+                            future: SharedPrefUtil.getSharedString(
+                                'role'), // Key for retrieval
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Container();
+                              } else if (snapshot.hasError) {
+                                return Text("Error: ${snapshot.error}");
+                              } else {
+                                final role = snapshot.data ?? "No role found";
+                                return Text(role,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF797979),
+                                        fontWeight: FontWeight.w400));
+                              }
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(width: 8),
@@ -166,7 +191,16 @@ class _QrScanScreenState extends State<QrScanScreen> {
                               ),
                             ),
                           ],
-                          onChanged: (value) {},
+                          onChanged: (value) {
+                            var a = value as MenuItem;
+                            if (a.text == 'Logout') {
+                              SharedPrefUtil.clearSharedPref();
+                              Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  StringRouterUtil.loginScreenRoute,
+                                  (route) => false);
+                            }
+                          },
                         ),
                       ),
                     ],

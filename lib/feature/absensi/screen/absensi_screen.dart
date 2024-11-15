@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -8,11 +7,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AbsesnsiScreen extends StatefulWidget {
-  const AbsesnsiScreen({super.key});
+  final bool isAbsen;
+  const AbsesnsiScreen({super.key, required this.isAbsen});
 
   @override
   State<AbsesnsiScreen> createState() => _AbsesnsiScreenState();
@@ -24,6 +27,7 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
     'Logout',
   ];
   bool isInternet = false;
+  bool isAbsen = false;
 
   String date = '';
   String time = '';
@@ -186,27 +190,50 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Column(
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Hi, John',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(height: 2),
-                            Text('Udayana, S.IP, M,M',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            SizedBox(height: 2),
-                            Text('Staff',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400))
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'nama'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final username =
+                                      snapshot.data ?? "No name found";
+                                  return Text('Hi, $username',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500));
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 2),
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'role'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final role = snapshot.data ?? "No role found";
+                                  return Text(role,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400));
+                                }
+                              },
+                            ),
                           ],
                         ),
                         const SizedBox(width: 8),
@@ -259,7 +286,16 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                                 ),
                               ),
                             ],
-                            onChanged: (value) {},
+                            onChanged: (value) {
+                              var a = value as MenuItem;
+                              if (a.text == 'Logout') {
+                                SharedPrefUtil.clearSharedPref();
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    StringRouterUtil.loginScreenRoute,
+                                    (route) => false);
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -323,12 +359,25 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                             WidgetsFlutterBinding.ensureInitialized();
                             final cameras = await availableCameras();
                             final firstCamera = cameras.first;
-                            if (context.mounted) {
-                              // Navigator.pushNamed(context,
-                              //     StringRouterUtil.faceScanScreenRoute);
-                              Navigator.pushNamed(context,
-                                  StringRouterUtil.faceRegisterScanScreenRoute,
-                                  arguments: firstCamera);
+                            String? userStatus =
+                                await SharedPrefUtil.getSharedString(
+                                    'userstatus');
+
+                            if (userStatus! == 'INACTIVE') {
+                              if (context.mounted) {
+                                Navigator.pushNamed(
+                                    context,
+                                    StringRouterUtil
+                                        .faceRegisterScanScreenRoute,
+                                    arguments: firstCamera);
+                              }
+                            } else {
+                              if (context.mounted) {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.faceScanScreenRoute,
+                                    arguments: ArgumentAbsenModel(
+                                        camera: firstCamera, isIn: true));
+                              }
                             }
                           },
                           child: Container(

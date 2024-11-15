@@ -26,15 +26,13 @@ class Data {
   String? requestType;
   String? userId;
   String? timestamp;
-  String? location;
 
-  Data({this.requestType, this.userId, this.timestamp, this.location});
+  Data({this.requestType, this.userId, this.timestamp});
 
   Data.fromJson(Map<String, dynamic> json) {
     requestType = json['request_type'];
     userId = json['user_id'];
     timestamp = json['timestamp'];
-    location = json['location'];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,7 +40,6 @@ class Data {
     data['request_type'] = requestType;
     data['user_id'] = userId;
     data['timestamp'] = timestamp;
-    data['location'] = location;
     return data;
   }
 }

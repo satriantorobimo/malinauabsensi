@@ -8,6 +8,7 @@ import 'package:malinau_absensi/feature/aktifitas/bloc/dinas_luar_list_bloc/bloc
 import 'package:malinau_absensi/feature/aktifitas/data/dinas_luar_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,8 +36,10 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
   bool isLoading = true;
   String userType = '';
   bool isDataAktifitas = true;
+  bool isReserved = false;
 
   List<Data> dataList = [];
+  List<Data> dataListTemp = [];
 
   DinasLuarListBloc dinasLuarListBloc =
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
@@ -44,7 +47,7 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
   @override
   void initState() {
     getUserType();
-    dinasLuarListBloc.add(const DinasLuarListAttempt(page: '1', limit: '10'));
+    dinasLuarListBloc.add(const DinasLuarListAttempt(start: '', end: ''));
     super.initState();
   }
 
@@ -106,27 +109,51 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Column(
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Hi, John',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500)),
-                                  SizedBox(height: 2),
-                                  Text('Udayana, S.IP, M,M',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                  SizedBox(height: 2),
-                                  Text('Staff',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400))
+                                  FutureBuilder<String?>(
+                                    future: SharedPrefUtil.getSharedString(
+                                        'nama'), // Key for retrieval
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Container();
+                                      } else if (snapshot.hasError) {
+                                        return Text("Error: ${snapshot.error}");
+                                      } else {
+                                        final username =
+                                            snapshot.data ?? "No name found";
+                                        return Text('Hi, $username',
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w500));
+                                      }
+                                    },
+                                  ),
+                                  const SizedBox(height: 2),
+                                  FutureBuilder<String?>(
+                                    future: SharedPrefUtil.getSharedString(
+                                        'role'), // Key for retrieval
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Container();
+                                      } else if (snapshot.hasError) {
+                                        return Text("Error: ${snapshot.error}");
+                                      } else {
+                                        final role =
+                                            snapshot.data ?? "No role found";
+                                        return Text(role,
+                                            style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF797979),
+                                                fontWeight: FontWeight.w400));
+                                      }
+                                    },
+                                  ),
                                 ],
                               ),
                               const SizedBox(width: 8),
@@ -180,7 +207,16 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                                       ),
                                     ),
                                   ],
-                                  onChanged: (value) {},
+                                  onChanged: (value) {
+                                    var a = value as MenuItem;
+                                    if (a.text == 'Logout') {
+                                      SharedPrefUtil.clearSharedPref();
+                                      Navigator.pushNamedAndRemoveUntil(
+                                          context,
+                                          StringRouterUtil.loginScreenRoute,
+                                          (route) => false);
+                                    }
+                                  },
                                 ),
                               ),
                             ],
@@ -229,6 +265,35 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                                       setState(() {
                                         selectedFilter = index;
                                       });
+                                      if (index == 0) {
+                                        dinasLuarListBloc.add(
+                                            const DinasLuarListAttempt(
+                                                start: '', end: ''));
+                                      } else if (index == 1) {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfLastSevenDays();
+                                        dinasLuarListBloc.add(
+                                            DinasLuarListAttempt(
+                                                start: dateRange['firstDate']!,
+                                                end: dateRange['lastDate']!));
+                                      } else if (index == 2) {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfCurrentMonth();
+                                        dinasLuarListBloc.add(
+                                            DinasLuarListAttempt(
+                                                start: dateRange['firstDate']!,
+                                                end: dateRange['lastDate']!));
+                                      } else {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfLastThreeMonths();
+                                        dinasLuarListBloc.add(
+                                            DinasLuarListAttempt(
+                                                start: dateRange['firstDate']!,
+                                                end: dateRange['lastDate']!));
+                                      }
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -251,12 +316,25 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                           ),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.1,
-                            child: SvgPicture.asset(
-                              'assets/icons/filter.svg',
-                              colorFilter: const ColorFilter.mode(
-                                  primaryColor, BlendMode.srcIn),
-                              height: 32,
-                              width: 32,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  if (isReserved) {
+                                    isReserved = false;
+                                    dataList = dataListTemp;
+                                  } else {
+                                    isReserved = true;
+                                    dataList = dataListTemp.reversed.toList();
+                                  }
+                                });
+                              },
+                              child: SvgPicture.asset(
+                                'assets/icons/filter.svg',
+                                colorFilter: const ColorFilter.mode(
+                                    primaryColor, BlendMode.srcIn),
+                                height: 32,
+                                width: 32,
+                              ),
                             ),
                           )
                         ],
@@ -275,6 +353,7 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                           setState(() {
                             isLoading = false;
                             dataList = state.dinasLuarListResponseModel.data!;
+                            dataListTemp = dataList;
                           });
                         }
                         if (state is DinasLuarListError) {

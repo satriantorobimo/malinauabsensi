@@ -11,8 +11,8 @@ class DinasLuarListBloc extends Bloc<DinasLuarListEvent, DinasLuarListState> {
       if (event is DinasLuarListAttempt) {
         try {
           emit(DinasLuarListLoading());
-          final dinasLuarListResponseModel = await aktifitasARepo
-              .attemptDinasLuarList(event.page, event.limit);
+          final dinasLuarListResponseModel =
+              await aktifitasARepo.attemptDinasLuarList(event.start, event.end);
           if (dinasLuarListResponseModel!.status == 'success') {
             emit(DinasLuarListLoaded(
                 dinasLuarListResponseModel: dinasLuarListResponseModel));

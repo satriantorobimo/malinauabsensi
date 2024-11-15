@@ -1,5 +1,6 @@
 import 'package:malinau_absensi/feature/login/data/login_request_model.dart';
 import 'package:malinau_absensi/feature/login/data/login_response_model.dart';
+import 'package:malinau_absensi/feature/login/data/user_detail_response_model.dart';
 import 'package:malinau_absensi/feature/login/domain/login_api.dart';
 
 class LoginRepo {
@@ -8,4 +9,7 @@ class LoginRepo {
   Future<LoginResponseModel?> attemptLoginEmail(
           LoginRequestModel loginRequestModel) =>
       loginApi.attemptLoginEmail(loginRequestModel);
+
+  Future<UserDetailResponseModel?> attemptUserDetail() =>
+      loginApi.attemptUserDetail();
 }

@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:google_ml_vision/google_ml_vision.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
+import 'package:malinau_absensi/util/convert_image_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
 class RegisterFaceScan extends StatefulWidget {
@@ -32,11 +35,11 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
   bool _isDetecting = false;
   XFile? image;
   bool isBusy = false;
+  Map<String, Uint8List> _capturedImages = {};
 
   @override
   void initState() {
     super.initState();
-
     _initializeCamera();
   }
 
@@ -78,21 +81,62 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
         final leftEye = face.getLandmark(FaceLandmarkType.leftEye);
         final rightEye = face.getLandmark(FaceLandmarkType.rightEye);
 
-        if (leftEye != null && rightEye != null) {
-          // Threshold to distinguish between front and side directions
-          const double threshold = 30.0;
+        // Check if headEulerAngleY and headEulerAngleX are available and use them if possible
+        double? headYaw = face.headEulerAngleY; // Y-axis rotation (left/right)
+        double? headPitch = face.headEulerAngleZ; // X-axis rotation (up/down)
 
-          double difference = leftEye.position.dx - rightEye.position.dx;
+        if (headYaw != null && headPitch != null) {
+          log('Head yaw angle: $headYaw, Head pitch angle: $headPitch');
+
           setState(() {
-            // Use thresholds for clearer distinctions
-            if (difference.abs() < threshold) {
-              _facePosition = 'Front Face';
-            } else if (difference > threshold) {
-              _facePosition = 'Looking Left';
-            } else if (difference < -threshold) {
-              _facePosition = 'Looking Right';
+            // Check front, right, and left positions based on headYaw (Y-axis rotation)
+            if (headYaw.abs() < 20) {
+              _facePosition = 'Hadapkan muka ke depan';
+              log('Front Face Detected');
+            } else if (headYaw > 40) {
+              _facePosition = 'Hadapkan muka ke samping kanan';
+              log('Right Face Detected');
+            } else if (headYaw < -20) {
+              _facePosition = 'Hadapkan muka ke samping kiri';
+              log('Left Face Detected');
             }
-            _checkStep(); // Verify if the current step matches the required face position
+
+            // Check top and bottom positions based on headPitch (X-axis rotation)
+            if (headPitch > 20) {
+              _facePosition = 'Hadapkan muka ke bawah';
+              log('Bottom Face Detected');
+            } else if (headPitch < -20) {
+              _facePosition = 'Hadapkan muka ke atas';
+              log('Top Face Detected');
+            }
+
+            _checkStep(
+                image); // Verify if the current step matches the required face position
+          });
+        } else if (leftEye != null && rightEye != null) {
+          // Fallback to eye position difference if head yaw is unavailable
+          final double difference = leftEye.position.dx - rightEye.position.dx;
+          log('Difference between left and right eye positions: $difference');
+
+          setState(() {
+            // Adjust these thresholds based on observed difference values
+            if (difference.abs() < 30) {
+              _facePosition = 'Hadapkan muka ke depan';
+              log('Front Face Detected 2');
+            } else if (difference >= 30) {
+              _facePosition = 'Hadapkan muka ke samping kanan';
+              log('Left Face Detected 2');
+            } else if (difference <= -30) {
+              _facePosition = 'Hadapkan muka ke samping kiri';
+              log('Right Face Detected 2');
+            }
+
+            _checkStep(image);
+          });
+        } else {
+          log("One or both eye landmarks not detected.");
+          setState(() {
+            _facePosition = 'Face detected but landmarks missing';
           });
         }
       } else {
@@ -147,26 +191,55 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
     }
   }
 
-  void _checkStep() {
+  void _checkStep(CameraImage image) {
     switch (_currentStep) {
       case 1: // Step 1: Front Face
-        if (_facePosition == 'Front Face') {
+        if (_facePosition == 'Hadapkan muka ke depan') {
           setState(() {
             _currentStep = 2;
-            _facePosition = 'Please turn right';
+            Uint8List capturedImage = convertCameraImageToUint8List(image);
+            _capturedImages['Front Face'] = capturedImage;
+            _facePosition = 'Hadapkan muka ke samping kanan';
           });
         }
         break;
       case 2: // Step 2: Right Face
-        if (_facePosition == 'Looking Right') {
+        if (_facePosition == 'Hadapkan muka ke samping kanan') {
           setState(() {
             _currentStep = 3;
-            _facePosition = 'Please turn left';
+            Uint8List capturedImage = convertCameraImageToUint8List(image);
+            _capturedImages['Right Face'] = capturedImage;
+            _facePosition = 'Hadapkan muka ke samping kiri';
           });
         }
         break;
       case 3: // Step 3: Left Face
-        if (_facePosition == 'Looking Left') {
+        if (_facePosition == 'Hadapkan muka ke samping kiri') {
+          setState(() {
+            _currentStep = 4;
+            Uint8List capturedImage = convertCameraImageToUint8List(image);
+            _capturedImages['Left Face'] = capturedImage;
+            _facePosition = 'Hadapkan muka ke atas';
+          });
+        }
+        break;
+      case 4: // Step 4: Top Face
+        if (_facePosition == 'Hadapkan muka ke atas') {
+          setState(() {
+            _currentStep = 5;
+            Uint8List capturedImage = convertCameraImageToUint8List(image);
+            _capturedImages['Top Face'] = capturedImage;
+            _facePosition = 'Hadapkan muka ke bawah';
+          });
+        }
+        break;
+      case 5: // Step 5: Bottom Face
+        if (_facePosition == 'Hadapkan muka ke bawah') {
+          setState(() {
+            Uint8List capturedImage = convertCameraImageToUint8List(image);
+            _capturedImages['Bottom Face'] = capturedImage;
+          });
+          _facePosition = 'Mohon menunggu sebentar';
           _navigateToNextPage();
         }
         break;
@@ -176,12 +249,7 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
   }
 
   void _navigateToNextPage() {
-    _controller!.stopImageStream();
-    Navigator.pushNamedAndRemoveUntil(
-        context,
-        StringRouterUtil.successScanScreenRoute,
-        arguments: false,
-        (route) => false);
+    _successDialog(context);
   }
 
   @override
@@ -189,6 +257,75 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
     _controller!.dispose();
     _faceDetector.close;
     super.dispose();
+  }
+
+  Future<void> _successDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Center(
+                  child: Image.asset(
+                    'assets/imgs/success.png',
+                    height: 100,
+                    width: 100,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text('Registrasi muka sukses',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                const Text(
+                    'Anda sudah bisa melakukan absensi melalui scan muka.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () async {
+                    _controller!.stopImageStream();
+
+                    WidgetsFlutterBinding.ensureInitialized();
+                    final cameras = await availableCameras();
+                    final firstCamera = cameras.first;
+                    if (context.mounted) {
+                      Navigator.pushNamed(
+                          context, StringRouterUtil.faceScanScreenRoute,
+                          arguments: ArgumentAbsenModel(
+                              camera: firstCamera, isIn: true));
+                    }
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.8,
+                    height: 41,
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Center(
+                        child: Text('Absen Masuk',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -224,54 +361,54 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 32.0, left: 32.0, right: 32.0),
-                      child: InkWell(
-                        onTap: () async {
-                          // if (_controller!.value.isInitialized) {
-                          //   _controller!.setFlashMode(FlashMode.off);
-                          //   image = await _controller!.takePicture();
-                          //   setState(() {
-                          //     // showLoaderDialog(context);
-                          //     final inputImage =
-                          //         InputImage.fromFilePath(image!.path);
-                          //     Platform.isAndroid
-                          //         ? processImage(inputImage)
-                          //         : Navigator.pushNamed(context,
-                          //             StringRouterUtil.successScanScreenRoute);
-                          //   });
-                          // }
-                          setState(() {
-                            _controller!.pausePreview();
-                          });
-                          await Navigator.pushNamed(
-                                  context,
-                                  StringRouterUtil
-                                      .faceRegisterRightScanScreenRoute,
-                                  arguments: widget.camera)
-                              .then((value) {
-                            setState(() {
-                              _controller!.resumePreview();
-                            });
-                          });
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Center(
-                              child: Text('Ambil Foto',
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600))),
-                        ),
-                      ),
-                    ),
+                    // Padding(
+                    //   padding: const EdgeInsets.only(
+                    //       top: 32.0, left: 32.0, right: 32.0),
+                    //   child: InkWell(
+                    //     onTap: () async {
+                    //       // if (_controller!.value.isInitialized) {
+                    //       //   _controller!.setFlashMode(FlashMode.off);
+                    //       //   image = await _controller!.takePicture();
+                    //       //   setState(() {
+                    //       //     // showLoaderDialog(context);
+                    //       //     final inputImage =
+                    //       //         InputImage.fromFilePath(image!.path);
+                    //       //     Platform.isAndroid
+                    //       //         ? processImage(inputImage)
+                    //       //         : Navigator.pushNamed(context,
+                    //       //             StringRouterUtil.successScanScreenRoute);
+                    //       //   });
+                    //       // }
+                    //       setState(() {
+                    //         _controller!.pausePreview();
+                    //       });
+                    //       await Navigator.pushNamed(
+                    //               context,
+                    //               StringRouterUtil
+                    //                   .faceRegisterRightScanScreenRoute,
+                    //               arguments: widget.camera)
+                    //           .then((value) {
+                    //         setState(() {
+                    //           _controller!.resumePreview();
+                    //         });
+                    //       });
+                    //     },
+                    //     child: Container(
+                    //       width: double.infinity,
+                    //       height: 50,
+                    //       decoration: BoxDecoration(
+                    //         color: primaryColor,
+                    //         borderRadius: BorderRadius.circular(8),
+                    //       ),
+                    //       child: const Center(
+                    //           child: Text('Ambil Foto',
+                    //               style: TextStyle(
+                    //                   fontSize: 15,
+                    //                   color: Colors.white,
+                    //                   fontWeight: FontWeight.w600))),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 )),
             body: Stack(
@@ -280,7 +417,10 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
                     ? const Center(child: CircularProgressIndicator())
                     : Stack(
                         children: [
-                          Center(child: CameraPreview(_controller!)),
+                          Center(
+                              child: AspectRatio(
+                                  aspectRatio: 4.0 / 7.0,
+                                  child: CameraPreview(_controller!))),
                           CustomPaint(
                             painter: OverlayPainter(
                                 screenHeight:
@@ -414,7 +554,16 @@ class _RegisterFaceScanState extends State<RegisterFaceScan> {
                                           ),
                                         ),
                                       ],
-                                      onChanged: (value) {},
+                                      onChanged: (value) {
+                                        var a = value as MenuItem;
+                                        if (a.text == 'Logout') {
+                                          SharedPrefUtil.clearSharedPref();
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              StringRouterUtil.loginScreenRoute,
+                                              (route) => false);
+                                        }
+                                      },
                                     ),
                                   ),
                                 ],
@@ -484,7 +633,7 @@ class OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final radius = screenWidth * 0.35;
-    final strokeWidth = 2.0;
+    const strokeWidth = 2.0;
     final circlePath = Path()
       ..addOval(Rect.fromCircle(
         center: Offset(screenWidth / 2, screenHeight / 2.3),

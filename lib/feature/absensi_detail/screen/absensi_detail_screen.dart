@@ -1,11 +1,19 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/bloc/detail_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_detail_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class AbsesnsiDetailScreen extends StatefulWidget {
-  const AbsesnsiDetailScreen({super.key});
+  const AbsesnsiDetailScreen({super.key, required this.id});
+  final String id;
 
   @override
   State<AbsesnsiDetailScreen> createState() => _AbsesnsiDetailScreenState();
@@ -13,22 +21,23 @@ class AbsesnsiDetailScreen extends StatefulWidget {
 
 class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
   final FocusNode _focus = FocusNode();
+  bool isLoading = true;
   final List<String> items = [
     'Setting',
     'Logout',
   ];
   bool isEdit = false;
+  Data data = Data();
 
   final TextEditingController _keteranganController = TextEditingController();
+
+  DetailBloc detailBloc = DetailBloc(absenRepo: AbsenRepo());
 
   @override
   void initState() {
     super.initState();
     _focus.addListener(_onFocusChange);
-    setState(() {
-      _keteranganController.text =
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.';
-    });
+    detailBloc.add(DetailAttempt(id: widget.id));
   }
 
   @override
@@ -90,27 +99,50 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Column(
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Hi, John',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(height: 2),
-                            Text('Udayana, S.IP, M,M',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            SizedBox(height: 2),
-                            Text('Staff',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400))
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'nama'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final username =
+                                      snapshot.data ?? "No name found";
+                                  return Text('Hi, $username',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500));
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 2),
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'role'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final role = snapshot.data ?? "No role found";
+                                  return Text(role,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400));
+                                }
+                              },
+                            ),
                           ],
                         ),
                         const SizedBox(width: 8),
@@ -163,7 +195,16 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                                 ),
                               ),
                             ],
-                            onChanged: (value) {},
+                            onChanged: (value) {
+                              var a = value as MenuItem;
+                              if (a.text == 'Logout') {
+                                SharedPrefUtil.clearSharedPref();
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    StringRouterUtil.loginScreenRoute,
+                                    (route) => false);
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -172,186 +213,233 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            BlocListener(
+                bloc: detailBloc,
+                listener: (_, DetailState state) async {
+                  if (state is DetailLoading) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                  }
+                  if (state is DetailLoaded) {
+                    setState(() {
+                      isLoading = false;
+                      data = state.absenDetailResponseModel.data!;
+                      _keteranganController.text = data.activity!;
+                    });
+                  }
+                  if (state is DetailError) {
+                    GeneralUtil().showSnackBarError(context, state.error!);
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                  if (state is DetailException) {
+                    GeneralUtil().showSnackBarError(context, state.error);
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                },
+                child: BlocBuilder(
+                    bloc: detailBloc,
+                    builder: (_, DetailState state) {
+                      return isLoading
+                          ? const Center(
+                              child: SizedBox(
+                                width: 45,
+                                height: 45,
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          : mainContent();
+                    })),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget mainContent() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: primaryColor,
+                size: 24,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(GeneralUtil.dateConvertDetail(data.createdAt!),
+                    style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF797979),
+                        fontWeight: FontWeight.w500)),
+              ),
+              Container()
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(
+              top: 40.0, left: 16, right: 16.0, bottom: 32.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
                 children: [
-                  const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: primaryColor,
-                    size: 24,
+                  SvgPicture.asset(
+                    'assets/icons/timer.svg',
+                    colorFilter:
+                        const ColorFilter.mode(primaryColor, BlendMode.srcIn),
+                    height: 40,
+                    width: 40,
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text('Monday, 8 November 2022',
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF797979),
-                            fontWeight: FontWeight.w500)),
-                  ),
-                  Container()
+                  Text(data.checkInTimestamp!,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                  const Text('Absen Datang',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF797979),
+                          fontWeight: FontWeight.w400)),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(
-                  top: 40.0, left: 16, right: 16.0, bottom: 32.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
                 children: [
-                  Column(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/timer.svg',
-                        colorFilter: const ColorFilter.mode(
-                            primaryColor, BlendMode.srcIn),
-                        height: 40,
-                        width: 40,
-                      ),
-                      const Text('--:--',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500)),
-                      const Text('Absen Datang',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
-                              fontWeight: FontWeight.w400)),
-                    ],
+                  SvgPicture.asset(
+                    'assets/icons/timer.svg',
+                    colorFilter:
+                        const ColorFilter.mode(primaryColor, BlendMode.srcIn),
+                    height: 40,
+                    width: 40,
                   ),
-                  Column(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/timer.svg',
-                        colorFilter: const ColorFilter.mode(
-                            primaryColor, BlendMode.srcIn),
-                        height: 40,
-                        width: 40,
-                      ),
-                      const Text('--:--',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500)),
-                      const Text('Absen Pulang',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
-                              fontWeight: FontWeight.w400)),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icons/timer.svg',
-                        colorFilter: const ColorFilter.mode(
-                            primaryColor, BlendMode.srcIn),
-                        height: 40,
-                        width: 40,
-                      ),
-                      const Text('--:--',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500)),
-                      const Text('Jam Kerja',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
-                              fontWeight: FontWeight.w400)),
-                    ],
-                  )
+                  Text(data.checkOutTimestamp!,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                  const Text('Absen Pulang',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF797979),
+                          fontWeight: FontWeight.w400)),
                 ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16.0),
-              child: Column(
+              Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Keterangan aktifitas hari ini',
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w500)),
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            isEdit = !isEdit;
-                            if (!isEdit) {
-                              _focus.unfocus();
-                            } else {
-                              _focus.requestFocus();
-                            }
-                          });
-                        },
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Center(
-                            child: isEdit
-                                ? const Icon(Icons.check,
-                                    size: 12, color: Colors.white)
-                                : SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        primaryColor, BlendMode.srcIn),
-                                    height: 12,
-                                    width: 12,
-                                  ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  SvgPicture.asset(
+                    'assets/icons/timer.svg',
+                    colorFilter:
+                        const ColorFilter.mode(primaryColor, BlendMode.srcIn),
+                    height: 40,
+                    width: 40,
                   ),
-                  const SizedBox(height: 8),
-                  Material(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(
-                            width: 1.0,
-                            color: isEdit
-                                ? const Color(0xFF9E9E9E)
-                                : Colors.white)),
-                    child: TextFormField(
-                      onChanged: (value) {
-                        setState(() {});
-                      },
-                      controller: _keteranganController,
-                      maxLines: 8,
-                      focusNode: _focus,
-                      textAlign: TextAlign.justify,
-                      decoration: InputDecoration(
-                          hintText: 'Tulis keterangan aktifitas anda disini',
-                          isDense: true,
-                          contentPadding: const EdgeInsets.all(16),
-                          hintStyle: TextStyle(
-                              color: Colors.grey.withOpacity(0.5),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
-                          )),
+                  Text(data.workingHourCount.toString(),
+                      style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                  const Text('Jam Kerja',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF797979),
+                          fontWeight: FontWeight.w400)),
+                ],
+              )
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Keterangan aktifitas hari ini',
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        isEdit = !isEdit;
+                        if (!isEdit) {
+                          _focus.unfocus();
+                        } else {
+                          _focus.requestFocus();
+                        }
+                      });
+                    },
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: isEdit
+                            ? const Icon(Icons.check,
+                                size: 12, color: Colors.white)
+                            : SvgPicture.asset(
+                                'assets/icons/edit.svg',
+                                colorFilter: const ColorFilter.mode(
+                                    primaryColor, BlendMode.srcIn),
+                                height: 12,
+                                width: 12,
+                              ),
+                      ),
                     ),
                   ),
                 ],
               ),
-            )
-          ],
-        ),
-      ),
+              const SizedBox(height: 8),
+              Material(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(
+                        width: 1.0,
+                        color:
+                            isEdit ? const Color(0xFF9E9E9E) : Colors.white)),
+                child: TextFormField(
+                  onChanged: (value) {
+                    setState(() {});
+                  },
+                  controller: _keteranganController,
+                  maxLines: 8,
+                  focusNode: _focus,
+                  textAlign: TextAlign.justify,
+                  decoration: InputDecoration(
+                      hintText: 'Tulis keterangan aktifitas anda disini',
+                      isDense: true,
+                      contentPadding: const EdgeInsets.all(16),
+                      hintStyle: TextStyle(
+                          color: Colors.grey.withOpacity(0.5),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      )),
+                ),
+              ),
+            ],
+          ),
+        )
+      ],
     );
   }
 }

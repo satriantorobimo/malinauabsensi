@@ -6,6 +6,7 @@ import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/util/google_ml_kit.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
 class RegisterFaceLeftScan extends StatefulWidget {
@@ -324,7 +325,16 @@ class _RegisterFaceLeftScanState extends State<RegisterFaceLeftScan> {
                                           ),
                                         ),
                                       ],
-                                      onChanged: (value) {},
+                                      onChanged: (value) {
+                                        var a = value as MenuItem;
+                                        if (a.text == 'Logout') {
+                                          SharedPrefUtil.clearSharedPref();
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              StringRouterUtil.loginScreenRoute,
+                                              (route) => false);
+                                        }
+                                      },
                                     ),
                                   ),
                                 ],
@@ -431,7 +441,7 @@ class OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final radius = screenWidth * 0.35;
-    final strokeWidth = 2.0;
+    const strokeWidth = 2.0;
     final circlePath = Path()
       ..addOval(Rect.fromCircle(
         center: Offset(screenWidth / 2, screenHeight / 2.3),

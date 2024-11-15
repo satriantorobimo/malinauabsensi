@@ -7,9 +7,12 @@ import 'package:malinau_absensi/feature/absensi_keluar/screen/absensi_keluar_scr
 import 'package:malinau_absensi/feature/aktifitas_detail/screen/aktifitas_detail_screen.dart';
 import 'package:malinau_absensi/feature/aktifitas_detail/screen/dinas_luar_detail_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/face_scan_screen.dart';
+import 'package:malinau_absensi/feature/face_scan/screen/face_scan_v2_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_left_scan.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_right_scan.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan.dart';
+import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan_v2.dart';
+import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan_v3.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/success_scan_screen.dart';
 import 'package:malinau_absensi/feature/izin_detail/screen/izin_detail_screen.dart';
 import 'package:malinau_absensi/feature/login/screen/login_screen.dart';
@@ -46,15 +49,17 @@ class Routers {
                 FadeTransition(opacity: a, child: c));
 
       case StringRouterUtil.absenScreenRoute:
+        final bool isAbsen = settings.arguments as bool;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => const AbsesnsiScreen(),
+            pageBuilder: (_, __, ___) => AbsesnsiScreen(isAbsen: isAbsen),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
 
       case StringRouterUtil.absenKeluarScreenRoute:
+        final bool isAbsen = settings.arguments as bool;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => const AbsesnsiKeluarScreen(),
+            pageBuilder: (_, __, ___) => AbsesnsiKeluarScreen(isAbsen: isAbsen),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
@@ -63,9 +68,9 @@ class Routers {
         final ArgumentAbsenModel argumentAbsenModel =
             settings.arguments as ArgumentAbsenModel;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => FaceScanScreen(
+            pageBuilder: (_, __, ___) => FaceScanV2Screen(
                   argumentAbsenModel: argumentAbsenModel,
-                ),
+                ), //FaceScanScreen
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
@@ -74,7 +79,8 @@ class Routers {
         final CameraDescription camera =
             settings.arguments as CameraDescription;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => RegisterFaceScan(camera: camera),
+            pageBuilder: (_, __, ___) => RegisterFaceScanV3(
+                camera: camera), //RegisterFaceScan(camera: camera),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
@@ -98,8 +104,9 @@ class Routers {
                 FadeTransition(opacity: a, child: c));
 
       case StringRouterUtil.absenDetailScreenRoute:
+        final String id = settings.arguments as String;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => const AbsesnsiDetailScreen(),
+            pageBuilder: (_, __, ___) => AbsesnsiDetailScreen(id: id),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

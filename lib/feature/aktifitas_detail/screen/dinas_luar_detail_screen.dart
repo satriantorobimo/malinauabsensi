@@ -6,6 +6,8 @@ import 'package:malinau_absensi/feature/aktifitas/bloc/dinas_luar_detail_bloc/bl
 import 'package:malinau_absensi/feature/aktifitas/data/dinas_luar_detail_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/maps_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 
 class DinasLuarDetailScreen extends StatefulWidget {
   const DinasLuarDetailScreen({super.key, required this.id});
@@ -80,27 +82,50 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Column(
+                        Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Hi, John',
-                                style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            SizedBox(height: 2),
-                            Text('Udayana, S.IP, M,M',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            SizedBox(height: 2),
-                            Text('Staff',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400))
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'nama'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final username =
+                                      snapshot.data ?? "No name found";
+                                  return Text('Hi, $username',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500));
+                                }
+                              },
+                            ),
+                            const SizedBox(height: 2),
+                            FutureBuilder<String?>(
+                              future: SharedPrefUtil.getSharedString(
+                                  'role'), // Key for retrieval
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return Container();
+                                } else if (snapshot.hasError) {
+                                  return Text("Error: ${snapshot.error}");
+                                } else {
+                                  final role = snapshot.data ?? "No role found";
+                                  return Text(role,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400));
+                                }
+                              },
+                            ),
                           ],
                         ),
                         const SizedBox(width: 8),
@@ -270,23 +295,26 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
                     color: Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
-            Text(data.address!,
-                style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500)),
-            const SizedBox(height: 16),
-            const Text('Titik Lokasi',
-                style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
-                    fontWeight: FontWeight.w500)),
-            const SizedBox(height: 8),
-            Text(data.address!,
-                style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500)),
+            Row(
+              children: [
+                Text(data.address!,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () {
+                    MapUtil.openMap(data.location!.lat!.toDouble(),
+                        data.location!.long!.toDouble());
+                  },
+                  child: const Icon(
+                    Icons.pin_drop_rounded,
+                    color: primaryColor,
+                  ),
+                )
+              ],
+            ),
             const SizedBox(height: 16),
             const Text('Tanggal Mulai - Tanggal Akhir',
                 style: TextStyle(

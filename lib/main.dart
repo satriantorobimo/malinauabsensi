@@ -27,7 +27,8 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => TabProvider()),
       ],
       child: MaterialApp(
-        title: 'Sales Order',
+        title: 'Malinau Absensi',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: primaryColor,
           textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),

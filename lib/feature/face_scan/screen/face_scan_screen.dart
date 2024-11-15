@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_ml_vision/google_ml_vision.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/bloc/in_bloc/bloc.dart';
@@ -30,6 +34,16 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
   InBloc inBloc = InBloc(absenRepo: AbsenRepo());
   OutBloc outBloc = OutBloc(absenRepo: AbsenRepo());
   bool isLoading = false;
+  bool isScan = false;
+
+  bool _isDetecting = false;
+  String _facePosition = 'No face detected';
+  final FaceDetector _faceDetector = GoogleVision.instance.faceDetector(
+    const FaceDetectorOptions(
+      mode: FaceDetectorMode.accurate,
+      enableLandmarks: true,
+    ),
+  );
   @override
   void initState() {
     super.initState();
@@ -40,6 +54,7 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
   @override
   void dispose() {
     _controller?.dispose();
+    _faceDetector.close;
     super.dispose();
   }
 
@@ -52,12 +67,112 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
     );
     _controller = CameraController(
       frontCamera,
-      ResolutionPreset.medium,
+      ResolutionPreset.high,
+      imageFormatGroup: Platform.isAndroid
+          ? ImageFormatGroup.yuv420
+          : ImageFormatGroup.bgra8888,
     );
     await _controller!.initialize();
+
     if (mounted) {
       setState(() {});
     }
+  }
+
+  Future<void> _detectFaces(CameraImage image) async {
+    if (_isDetecting || image.planes.isEmpty) return;
+    setState(() {
+      _isDetecting = true;
+    });
+
+    try {
+      final visionImage = _convertCameraImage(image);
+      final List<Face> faces = await _faceDetector.processImage(visionImage);
+
+      if (faces.isNotEmpty) {
+        setState(() {
+          _facePosition = 'Mohon menunggu sebentar';
+        });
+        log("Process Image");
+        setState(() {
+          _isDetecting = true;
+        });
+        final String? userid = await SharedPrefUtil.getSharedString('userid');
+        if (widget.argumentAbsenModel.isIn) {
+          final Map mapData = {};
+          mapData['user_id'] = userid;
+          mapData['time_stamp'] = DateTime.now().millisecondsSinceEpoch;
+          final json = jsonEncode(mapData);
+
+          String cvrt = base64Encode(utf8.encode(json));
+          inBloc.add(InAttempt(
+              absenRequestModel:
+                  AbsenRequestModel(qrContent: cvrt, requestType: 'in')));
+        } else {
+          final Map mapData = {};
+          mapData['user_id'] = userid;
+          mapData['time_stamp'] = DateTime.now().millisecondsSinceEpoch;
+          final json = jsonEncode(mapData);
+
+          String cvrt = base64Encode(utf8.encode(json));
+          outBloc.add(OutAttempt(
+              absenRequestModel:
+                  AbsenRequestModel(qrContent: cvrt, requestType: 'out')));
+        }
+      } else {
+        setState(() {
+          _facePosition = 'No face detected';
+        });
+      }
+    } catch (e) {
+      log('Error detecting face: $e');
+    }
+  }
+
+  GoogleVisionImage _convertCameraImage(CameraImage image) {
+    // Concatenate all bytes from planes
+    final WriteBuffer allBytes = WriteBuffer();
+    for (final Plane plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+
+    return GoogleVisionImage.fromBytes(
+      bytes,
+      GoogleVisionImageMetadata(
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: getRotation(),
+        rawFormat: image.format.raw,
+        planeData: image.planes.map((Plane plane) {
+          return GoogleVisionImagePlaneMetadata(
+            bytesPerRow: plane.bytesPerRow,
+            height: plane.height,
+            width: plane.width,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  ImageRotation getRotation() {
+    switch (_controller!.description.sensorOrientation) {
+      case 90:
+        return ImageRotation.rotation90;
+      case 180:
+        return ImageRotation.rotation180;
+      case 270:
+        return ImageRotation.rotation270;
+      default:
+        return ImageRotation.rotation0;
+    }
+  }
+
+  Future<void> scanFace() async {
+    _controller!.startImageStream((CameraImage image) {
+      if (!_isDetecting) {
+        _detectFaces(image);
+      }
+    });
   }
 
   @override
@@ -148,58 +263,44 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                 child: CircularProgressIndicator(),
                               ),
                             )
-                          : Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 32.0, left: 32.0, right: 32.0),
-                              child: InkWell(
-                                onTap: () async {
-                                  final String? userid =
-                                      await SharedPrefUtil.getSharedString(
-                                          'userid');
-                                  if (widget.argumentAbsenModel.isIn) {
-                                    final Map mapData = {};
-                                    mapData['user_id'] = userid;
-                                    mapData['time_stamp'] =
-                                        DateTime.now().millisecondsSinceEpoch;
-                                    final json = jsonEncode(mapData);
-
-                                    String cvrt =
-                                        base64Encode(utf8.encode(json));
-                                    inBloc.add(InAttempt(
-                                        absenRequestModel: AbsenRequestModel(
-                                            qrContent: cvrt,
-                                            requestType: 'in')));
-                                  } else {
-                                    final Map mapData = {};
-                                    mapData['user_id'] = userid;
-                                    mapData['time_stamp'] =
-                                        DateTime.now().millisecondsSinceEpoch;
-                                    final json = jsonEncode(mapData);
-
-                                    String cvrt =
-                                        base64Encode(utf8.encode(json));
-                                    outBloc.add(OutAttempt(
-                                        absenRequestModel: AbsenRequestModel(
-                                            qrContent: cvrt,
-                                            requestType: 'out')));
-                                  }
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(8),
+                          : isScan
+                              ? Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 32.0, left: 32.0, right: 32.0),
+                                  child: Text(_facePosition,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500)),
+                                )
+                              : Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 32.0, left: 32.0, right: 32.0),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      setState(() {
+                                        isScan = true;
+                                      });
+                                      scanFace();
+                                    },
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Center(
+                                          child: Text('Scan',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                      FontWeight.w600))),
+                                    ),
                                   ),
-                                  child: const Center(
-                                      child: Text('Scan',
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600))),
                                 ),
-                              ),
-                            ),
                     ),
                     const Padding(
                       padding: EdgeInsets.only(top: 32.0, left: 32),
@@ -235,7 +336,10 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                     ? const Center(child: CircularProgressIndicator())
                     : Stack(
                         children: [
-                          Center(child: CameraPreview(_controller!)),
+                          Center(
+                              child: AspectRatio(
+                                  aspectRatio: 4.0 / 7.0,
+                                  child: CameraPreview(_controller!))),
                           CustomPaint(
                             painter: OverlayPainter(
                                 screenHeight:
@@ -292,28 +396,56 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Column(
+                                  Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text('Hi, John',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500)),
-                                      SizedBox(height: 2),
-                                      Text('Udayana, S.IP, M,M',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400)),
-                                      SizedBox(height: 2),
-                                      Text('Staff',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400))
+                                      FutureBuilder<String?>(
+                                        future: SharedPrefUtil.getSharedString(
+                                            'nama'), // Key for retrieval
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Container();
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                                "Error: ${snapshot.error}");
+                                          } else {
+                                            final username = snapshot.data ??
+                                                "No name found";
+                                            return Text('Hi, $username',
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.black,
+                                                    fontWeight:
+                                                        FontWeight.w500));
+                                          }
+                                        },
+                                      ),
+                                      const SizedBox(height: 2),
+                                      FutureBuilder<String?>(
+                                        future: SharedPrefUtil.getSharedString(
+                                            'role'), // Key for retrieval
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Container();
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                                "Error: ${snapshot.error}");
+                                          } else {
+                                            final role = snapshot.data ??
+                                                "No role found";
+                                            return Text(role,
+                                                style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: Color(0xFF797979),
+                                                    fontWeight:
+                                                        FontWeight.w400));
+                                          }
+                                        },
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(width: 8),
@@ -369,7 +501,16 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                           ),
                                         ),
                                       ],
-                                      onChanged: (value) {},
+                                      onChanged: (value) {
+                                        var a = value as MenuItem;
+                                        if (a.text == 'Logout') {
+                                          SharedPrefUtil.clearSharedPref();
+                                          Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              StringRouterUtil.loginScreenRoute,
+                                              (route) => false);
+                                        }
+                                      },
                                     ),
                                   ),
                                 ],
@@ -441,7 +582,7 @@ class OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final radius = screenWidth * 0.35;
-    final strokeWidth = 2.0;
+    const strokeWidth = 2.0;
     final circlePath = Path()
       ..addOval(Rect.fromCircle(
         center: Offset(screenWidth / 2, screenHeight / 2.3),

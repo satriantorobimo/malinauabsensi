@@ -15,14 +15,13 @@ class AktifitasApi {
   UrlUtil urlUtil = UrlUtil();
 
   Future<DinasLuarListResponseModel> attemptDinasLuarList(
-      String page, String limit) async {
+      String start, String end) async {
     final String? token = await SharedPrefUtil.getSharedString('token');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserIdNoJson(token!);
 
     try {
-      final res = await http.get(
-          Uri.parse(urlUtil.getUrlDinasLuar(page, limit)),
+      final res = await http.get(Uri.parse(urlUtil.getUrlDinasLuar(end, start)),
           headers: header);
       if (res.statusCode == 200) {
         dinasLuarListResponseModel =

@@ -69,6 +69,13 @@ class UrlUtil {
     return baseUrl + getUrlLogin2;
   }
 
+  static String urlLoginNip() => 'v1/login/nip';
+
+  String getUrlLoginNip() {
+    final String getUrlLoginNip2 = urlLoginNip();
+    return baseUrl + getUrlLoginNip2;
+  }
+
   static String urlCheckIn(String data) => 'v1/user/$data/in';
 
   String getUrlCheckIn(String data) {
@@ -83,11 +90,11 @@ class UrlUtil {
     return baseUrl + urlCheckOut2;
   }
 
-  static String urlDinasLuar(String page, String limit) =>
-      'v2/dinas-luar?page=$page&limit=$limit';
+  static String urlDinasLuar(String start, String end) =>
+      'v2/dinas-luar?page=1&limit=500&start_date=$start&end_date=$end';
 
-  String getUrlDinasLuar(String page, String limit) {
-    final String urlDinasLuar2 = urlDinasLuar(page, limit);
+  String getUrlDinasLuar(String start, String end) {
+    final String urlDinasLuar2 = urlDinasLuar(start, end);
     return baseUrl + urlDinasLuar2;
   }
 
@@ -96,5 +103,34 @@ class UrlUtil {
   String getUrlDinasLuarDetail(String id) {
     final String urlDinasLuarDetail2 = urlDinasLuarDetail(id);
     return baseUrl + urlDinasLuarDetail2;
+  }
+
+  static String urlAbsensiList(String id, String start, String end) =>
+      'v2/attendance/$id/list?page=1&limit=500&start_date=$start&end_date=$end';
+
+  String getUrlAbsensiList(String id, String start, String end) {
+    final String urlAbsensiList2 = urlAbsensiList(id, start, end);
+    return baseUrl + urlAbsensiList2;
+  }
+
+  static String urlAbsensiDetail(String id) => 'v1/attendance/$id';
+
+  String getUrlAbsensiDetail(String id) {
+    final String urlAbsensiDetail2 = urlAbsensiDetail(id);
+    return baseUrl + urlAbsensiDetail2;
+  }
+
+  static String urlUserDetail(String id) => 'v1/user/$id';
+
+  String getUrlUserDetail(String id) {
+    final String urlUserDetail2 = urlUserDetail(id);
+    return baseUrl + urlUserDetail2;
+  }
+
+  static String urlRegisterFace(String id) =>
+      'https://api-dev.anydev.online/v1/user/$id/index_face_images';
+
+  String getUrlRegisterFace(String id) {
+    return urlRegisterFace(id);
   }
 }

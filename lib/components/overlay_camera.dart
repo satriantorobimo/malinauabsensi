@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 class FaceOverlay extends StatelessWidget {
+  const FaceOverlay({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: Size(351, 261),
+      size: const Size(351, 261),
       painter: FaceOverlayPainter(),
     );
   }

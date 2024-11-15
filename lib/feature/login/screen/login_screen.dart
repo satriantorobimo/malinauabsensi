@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
+import 'package:malinau_absensi/feature/login/bloc/user_detail_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/login/data/login_request_model.dart';
 import 'package:malinau_absensi/feature/login/domain/login_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _passwordCtrl = TextEditingController();
   LoginBloc loginBloc = LoginBloc(loginRepo: LoginRepo());
+  UserDetailBloc userDetailBloc = UserDetailBloc(loginRepo: LoginRepo());
 
   @override
   Widget build(BuildContext context) {
@@ -216,105 +219,159 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    BlocListener(
-                        bloc: loginBloc,
-                        listener: (_, LoginState state) async {
-                          if (state is LoginLoading) {
-                            setState(() {
-                              isLoading = true;
-                            });
-                          }
-                          if (state is LoginLoaded) {
-                            setState(() {
-                              isLoading = false;
-                            });
-                            final SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
-                            if (_emailCtrl.text
-                                .toLowerCase()
-                                .contains('staff')) {
-                              prefs.setString('user', 'staff');
-                            } else {
-                              prefs.setString('user', 'kadiv');
-                            }
-                            prefs.setString(
-                                'token', state.loginResponseModel.data!.token!);
-                            prefs.setString('userid',
-                                state.loginResponseModel.data!.userId!);
-                            if (!context.mounted) return;
-                            Navigator.pushNamedAndRemoveUntil(
-                                context,
-                                StringRouterUtil.tabScreenRoute,
-                                (route) => false);
-                          }
-                          if (state is LoginError) {
-                            GeneralUtil()
-                                .showSnackBarError(context, state.error!);
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                          if (state is LoginException) {
-                            GeneralUtil()
-                                .showSnackBarError(context, state.error);
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                        },
-                        child: BlocBuilder(
-                            bloc: loginBloc,
-                            builder: (_, LoginState state) {
-                              return isLoading
-                                  ? const Center(
-                                      child: SizedBox(
-                                        width: 45,
-                                        height: 45,
-                                        child: CircularProgressIndicator(),
-                                      ),
-                                    )
-                                  : InkWell(
-                                      onTap: () {
-                                        if (!isNik) {
-                                          if (_emailCtrl.text.isEmpty ||
-                                              _emailCtrl.text == '' ||
-                                              _passwordCtrl.text.isEmpty ||
-                                              _passwordCtrl.text == '') {
-                                            GeneralUtil().showSnackBarError(
-                                                context,
-                                                'Email dan Password tidak boleh kosong');
-                                          } else {
-                                            loginBloc.add(LoginAttempt(
-                                                loginRequestModel:
-                                                    LoginRequestModel(
-                                                        email: _emailCtrl.text,
-                                                        password: _passwordCtrl
-                                                            .text)));
-                                          }
-                                        } else {
-                                          GeneralUtil().showSnackBarError(
-                                              context,
-                                              'Login NIP belum tersedia');
-                                        }
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: 50,
-                                        decoration: BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: const Center(
-                                            child: Text('Masuk',
-                                                style: TextStyle(
-                                                    fontSize: 15,
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w600))),
-                                      ),
-                                    );
-                            })),
+                    MultiBlocListener(
+                        listeners: [
+                          BlocListener(
+                              bloc: loginBloc,
+                              listener: (_, LoginState state) async {
+                                if (state is LoginLoading) {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                }
+                                if (state is LoginLoaded) {
+                                  final SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  if (_emailCtrl.text
+                                      .toLowerCase()
+                                      .contains('staff')) {
+                                    prefs.setString('user', 'staff');
+                                  } else {
+                                    prefs.setString('user', 'kadiv');
+                                  }
+                                  prefs.setString('token',
+                                      state.loginResponseModel.data!.token!);
+                                  prefs.setString('userid',
+                                      state.loginResponseModel.data!.userId!);
+                                  prefs.setString(
+                                      'userstatus',
+                                      state.loginResponseModel.data!
+                                          .userStatus!);
+                                  prefs.setString(
+                                      'attendstatus',
+                                      state.loginResponseModel.data!
+                                          .attendanceStatus!);
+                                  prefs.setString(
+                                      'clockinstart',
+                                      state.loginResponseModel.data!
+                                          .checkInStartTime!);
+                                  prefs.setString(
+                                      'clockinend',
+                                      state.loginResponseModel.data!
+                                          .checkInEndTime!);
+                                  prefs.setString(
+                                      'clockoutstart',
+                                      state.loginResponseModel.data!
+                                          .checkOutStartTime!);
+                                  prefs.setString(
+                                      'clockoutend',
+                                      state.loginResponseModel.data!
+                                          .checkOutEndTime!);
+                                  userDetailBloc.add(UserDetailAttempt());
+                                }
+                                if (state is LoginError) {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                                if (state is LoginException) {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error);
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              }),
+                          BlocListener(
+                              bloc: userDetailBloc,
+                              listener: (_, UserDetailState state) {
+                                if (state is UserDetailLoading) {
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                }
+                                if (state is UserDetailLoaded) {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  SharedPrefUtil.saveSharedString(
+                                      'nama',
+                                      state
+                                          .userDetailResponseModel.data!.name!);
+
+                                  SharedPrefUtil.saveSharedString(
+                                      'role',
+                                      state
+                                          .userDetailResponseModel.data!.role!);
+
+                                  if (!context.mounted) return;
+                                  Navigator.pushNamedAndRemoveUntil(
+                                      context,
+                                      StringRouterUtil.tabScreenRoute,
+                                      (route) => false);
+                                }
+                                if (state is UserDetailError) {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                                if (state is UserDetailException) {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error);
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              }),
+                        ],
+                        child: isLoading
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 45,
+                                  height: 45,
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : InkWell(
+                                onTap: () {
+                                  if (!isNik) {
+                                    if (_emailCtrl.text.isEmpty ||
+                                        _emailCtrl.text == '' ||
+                                        _passwordCtrl.text.isEmpty ||
+                                        _passwordCtrl.text == '') {
+                                      GeneralUtil().showSnackBarError(context,
+                                          'Email dan Password tidak boleh kosong');
+                                    } else {
+                                      loginBloc.add(LoginAttempt(
+                                          loginRequestModel: LoginRequestModel(
+                                              email: _emailCtrl.text,
+                                              nip: _nipCtrl.text,
+                                              password: _passwordCtrl.text)));
+                                    }
+                                  } else {
+                                    GeneralUtil().showSnackBarError(
+                                        context, 'Login NIP belum tersedia');
+                                  }
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: primaryColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Center(
+                                      child: Text('Masuk',
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600))),
+                                ),
+                              )),
                     const SizedBox(height: 16),
                     InkWell(
                       onTap: () {},

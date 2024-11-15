@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class MenuItem {
   const MenuItem({
@@ -20,16 +22,5 @@ class MenuItems {
       item.text,
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
     );
-  }
-
-  static void onChanged(BuildContext context, MenuItem item) {
-    switch (item) {
-      case MenuItems.setting:
-        //Do something
-        break;
-      case MenuItems.logout:
-        //Do something
-        break;
-    }
   }
 }

@@ -390,7 +390,7 @@ class OverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final radius = screenWidth * 0.35;
-    final strokeWidth = 2.0;
+    const strokeWidth = 2.0;
     final circlePath = Path()
       ..addOval(Rect.fromCircle(
         center: Offset(screenWidth / 2, screenHeight / 2.3),

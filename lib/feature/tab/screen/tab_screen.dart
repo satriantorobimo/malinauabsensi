@@ -4,9 +4,10 @@ import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/fab_bottom_app_bar_comp.dart';
 import 'package:malinau_absensi/feature/aktifitas/screen/dinas_luar_screen.dart';
 import 'package:malinau_absensi/feature/home/screen/home_screen.dart';
-import 'package:malinau_absensi/feature/izin/screen/izin_screen.dart';
-import 'package:malinau_absensi/feature/laporan/screen/laporan_screen.dart';
+import 'package:malinau_absensi/feature/izin/screen/under_construction.dart';
 import 'package:malinau_absensi/feature/tab/provider/tab_provider.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:provider/provider.dart';
 
@@ -26,10 +27,10 @@ class _TabScreenState extends State<TabScreen> {
       return const DinasLuarScreen();
     }
     if (index == 2) {
-      return const HomeScreen();
+      return const UnderConstructionScreen();
     }
     if (index == 3) {
-      return const HomeScreen();
+      return const UnderConstructionScreen();
     }
 
     return const HomeScreen();
@@ -41,8 +42,36 @@ class _TabScreenState extends State<TabScreen> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
-        onPressed: () {
-          Navigator.pushNamed(context, StringRouterUtil.absenScreenRoute);
+        onPressed: () async {
+          String? clockinstart =
+              await SharedPrefUtil.getSharedString('clockinstart');
+
+          String? clockoutstart =
+              await SharedPrefUtil.getSharedString('clockoutstart');
+
+          String? attendstatus =
+              await SharedPrefUtil.getSharedString('attendstatus');
+
+          if (context.mounted) {
+            if (GeneralUtil().isWithinCheckInTime(clockinstart!) &&
+                attendstatus == 'Tidak Masuk') {
+              SharedPrefUtil.saveSharedString('attendstatus', 'Masuk');
+              Navigator.pushNamed(context, StringRouterUtil.absenScreenRoute,
+                  arguments: true);
+            } else if (attendstatus == 'Masuk') {
+              if (GeneralUtil().isWithinCheckInTime(clockoutstart!)) {
+                Navigator.pushNamed(
+                    context, StringRouterUtil.absenKeluarScreenRoute,
+                    arguments: true);
+              } else {
+                GeneralUtil().showSnackBarError(
+                    context, 'Absen keluar start dari pukul $clockoutstart');
+              }
+            } else {
+              Navigator.pushNamed(context, StringRouterUtil.absenScreenRoute,
+                  arguments: false);
+            }
+          }
         },
         backgroundColor: primaryColor,
         child: SvgPicture.asset(
