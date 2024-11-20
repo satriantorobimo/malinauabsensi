@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -71,17 +72,17 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('2 Nov 2023',
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF797979),
+                            fontSize: GeneralUtil.fontSize(context) * 0.35,
+                            color: const Color(0xFF797979),
                             fontWeight: FontWeight.w500)),
                     Text('Isi Keterangan Aktifitas',
                         style: TextStyle(
-                            fontSize: 16,
+                            fontSize: GeneralUtil.fontSize(context) * 0.4,
                             color: Colors.black,
                             fontWeight: FontWeight.w500)),
                   ],
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       contentPadding: const EdgeInsets.all(16),
                       hintStyle: TextStyle(
                           color: Colors.grey.withOpacity(0.5),
-                          fontSize: 14,
+                          fontSize: GeneralUtil.fontSize(context) * 0.35,
                           fontWeight: FontWeight.w500),
                       filled: true,
                       fillColor: Colors.white,
@@ -140,15 +141,68 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: primaryColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(
+                  child: Center(
                       child: Text('Simpan',
                           style: TextStyle(
-                              fontSize: 15,
+                              fontSize: GeneralUtil.fontSize(context) * 0.37,
                               color: Colors.white,
                               fontWeight: FontWeight.w600))),
                 ),
               ),
             ],
+          );
+        });
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
           );
         });
   }
@@ -325,41 +379,44 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(bottom: 18.0),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.05,
+                height: MediaQuery.of(context).size.height * 0.11,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const Column(
+                child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(top: 16.0),
+                        padding: const EdgeInsets.only(top: 16.0),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('Daftar Absensi',
                                 style: TextStyle(
-                                    fontSize: 20,
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.5,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
-                            // InkWell(
-                            //   onTap: () {
-                            //     Navigator.pushNamed(context,
-                            //         StringRouterUtil.absenKeluarScreenRoute);
-                            //   },
-                            //   child: Container(
-                            //     width: 115,
-                            //     height: 45,
-                            //     decoration: BoxDecoration(
-                            //       color: primaryColor,
-                            //       borderRadius: BorderRadius.circular(8),
-                            //     ),
-                            //     child: const Center(
-                            //         child: Text('Absen Keluar',
-                            //             style: TextStyle(
-                            //                 fontSize: 15,
-                            //                 color: Colors.white,
-                            //                 fontWeight: FontWeight.w600))),
-                            //   ),
-                            // ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                    context, StringRouterUtil.absenScreenRoute,
+                                    arguments: true);
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: primaryColor,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Center(
+                                    child: Text('Absen Masuk',
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.35,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600))),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -511,7 +568,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.height * 0.045,
+                      height: MediaQuery.of(context).size.height * 0.05,
                       child: ListView.separated(
                           separatorBuilder: (context, index) {
                             return const SizedBox(width: 8);
@@ -556,11 +613,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                       : const Color(0xFF9E9E9E),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(6),
                                 child: Center(
-                                  child: Text(filter[index],
-                                      style: const TextStyle(
-                                          fontSize: 14,
+                                  child: AutoSizeText(filter[index],
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.4,
                                           color: Colors.white,
                                           fontWeight: FontWeight.w500)),
                                 ),
@@ -617,10 +676,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     });
                   }
                   if (state is ListException) {
-                    GeneralUtil().showSnackBarError(context, state.error);
                     setState(() {
                       isLoading = false;
                     });
+                    _expDialog(context);
                   }
                 },
                 child: BlocBuilder(
@@ -690,18 +749,26 @@ class _HomeScreenState extends State<HomeScreen> {
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('Nov',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
+                            FittedBox(
+                              fit: BoxFit.fitWidth,
+                              child: Text(
+                                  GeneralUtil.monthCheck2(
+                                      data[index].createdAt!),
+                                  style: TextStyle(
+                                      fontSize:
+                                          GeneralUtil.fontSize(context) * 0.4,
+                                      color: const Color(0xFF797979),
+                                      fontWeight: FontWeight.w400)),
+                            ),
                             Text(
                                 GeneralUtil.dateDayCheck(
                                     data[index].createdAt!),
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400)),
+                                style:
+                                    TextStyle(
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) * 0.4,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w400)),
                           ],
                         ),
                         const SizedBox(width: 18),
@@ -710,13 +777,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(GeneralUtil.dayCheck(data[index].createdAt!),
-                                style: const TextStyle(
-                                    fontSize: 16,
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.4,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
                             Text(data[index].status!,
                                 style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
                                     color: data[index].status! == 'Masuk'
                                         ? greenColor
                                         : redColor,
@@ -731,8 +800,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                               '${data[index].checkInTime!.string} - ${data[index].checkOutTime!.string}',
-                              style: const TextStyle(
-                                  fontSize: 16,
+                              style: TextStyle(
+                                  fontSize: GeneralUtil.fontSize(context) * 0.4,
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500)),
                           const SizedBox(width: 18),

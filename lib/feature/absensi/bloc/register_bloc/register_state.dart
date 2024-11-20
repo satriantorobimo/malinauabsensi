@@ -13,7 +13,7 @@ class RegisterLoading extends RegisterState {}
 
 class RegisterLoaded extends RegisterState {
   const RegisterLoaded({required this.result});
-  final bool result;
+  final String result;
   @override
   List<Object> get props => [result];
 }

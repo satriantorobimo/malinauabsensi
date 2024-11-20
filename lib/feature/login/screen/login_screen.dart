@@ -36,14 +36,14 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.only(bottom: 18),
                 child: Container(
-                  height: MediaQuery.of(context).size.height * 0.27,
+                  height: MediaQuery.of(context).size.height * 0.28,
                   width: MediaQuery.of(context).size.width,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/imgs/header.png'),
-                      fit: BoxFit.fitWidth,
+                      fit: BoxFit.fill,
                     ),
                   ),
                   child: Column(
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
                 child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.66,
+                  height: MediaQuery.of(context).size.height * 0.65,
                   width: MediaQuery.of(context).size.width,
                   child: Column(children: [
                     isNik
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     MultiBlocListener(
                         listeners: [
                           BlocListener(

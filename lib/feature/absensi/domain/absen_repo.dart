@@ -23,6 +23,6 @@ class AbsenRepo {
   Future<AbsenDetailResponseModel?> attemptAbsenDetail(String id) =>
       absenApi.attemptAbsenDetail(id);
 
-  Future<bool?> attemptRegister(Map<String, Uint8List> capturedImages) =>
+  Future<String?> attemptRegister(Map<String, Uint8List> capturedImages) =>
       absenApi.attemptRegister(capturedImages);
 }

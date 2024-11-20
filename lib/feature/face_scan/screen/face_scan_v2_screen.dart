@@ -183,13 +183,66 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
     }
   }
 
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
             backgroundColor: Colors.white,
             bottomNavigationBar: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.35,
+                height: MediaQuery.of(context).size.height * 0.22,
                 child: Column(
                   children: [
                     MultiBlocListener(
@@ -221,11 +274,10 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                 });
                               }
                               if (state is InException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                _expDialog(context);
                               }
                             }),
                         BlocListener(
@@ -255,11 +307,10 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                 });
                               }
                               if (state is OutException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                _expDialog(context);
                               }
                             }),
                       ],
@@ -284,13 +335,16 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                 feedback,
                                 textAlign: TextAlign
                                     .center, // Center-align text horizontally
-                                style: const TextStyle(
-                                    color: Colors.white, fontSize: 16),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize:
+                                      GeneralUtil.fontSize(context) * 0.35,
+                                ),
                               ),
                             ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 32.0, left: 32),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 32),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Column(
@@ -298,18 +352,20 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                             Text('Cara penggunaan Face ID Scan',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.4,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
-                            SizedBox(
+                            const SizedBox(
                               height: 8,
                             ),
                             Text(
                                 '1. Posisikan kamera ke muka anda.\n2. Tekan tombol “Scan”\n3. dan selamat beraktifitas',
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFF000000),
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF000000),
                                     fontWeight: FontWeight.w400)),
                           ],
                         ),
@@ -321,19 +377,20 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
               children: [
                 _controller == null || !_controller!.value.isInitialized
                     ? const Center(child: CircularProgressIndicator())
-                    : Stack(
-                        children: [
-                          Center(
-                              child: AspectRatio(
-                                  aspectRatio: 4.0 / 7.0,
-                                  child: CameraPreview(_controller!))),
-                          CustomPaint(
-                            painter: OverlayPainter(
-                                screenHeight:
-                                    MediaQuery.of(context).size.height,
-                                screenWidth: MediaQuery.of(context).size.width),
-                          ),
-                        ],
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 40.0),
+                        child: Stack(
+                          children: [
+                            Center(child: CameraPreview(_controller!)),
+                            CustomPaint(
+                              painter: OverlayPainter(
+                                  screenHeight:
+                                      MediaQuery.of(context).size.height,
+                                  screenWidth:
+                                      MediaQuery.of(context).size.width),
+                            ),
+                          ],
+                        ),
                       ),
                 Positioned(
                   top: 0,
@@ -507,7 +564,7 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 24, right: 24, top: 24, bottom: 40),
+                              left: 24, right: 24, top: 24, bottom: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,10 +583,12 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                 padding: const EdgeInsets.only(top: 4.0),
                                 child: Column(
                                   children: [
-                                    const Text('Face ID Scan',
+                                    Text('Face ID Scan',
                                         style: TextStyle(
-                                            fontSize: 20,
-                                            color: Color(0xFF202020),
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.6,
+                                            color: const Color(0xFF202020),
                                             fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 8),
                                     SizedBox(
@@ -539,8 +598,10 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                               ? 'Mohon scan muka anda untuk absen masuk'
                                               : 'Mohon scan muka anda untuk absen pulang',
                                           textAlign: TextAlign.center,
-                                          style: const TextStyle(
-                                              fontSize: 16,
+                                          style: TextStyle(
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.4,
                                               color: Colors.black,
                                               fontWeight: FontWeight.w500)),
                                     ),
@@ -568,7 +629,7 @@ class OverlayPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final radius = screenWidth * 0.35;
+    final radius = screenWidth * 0.34;
     const strokeWidth = 2.0;
     final circlePath = Path()
       ..addOval(Rect.fromCircle(

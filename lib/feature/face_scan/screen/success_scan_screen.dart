@@ -2,6 +2,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
@@ -186,9 +187,9 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
                     height: 95,
                   ),
                   const SizedBox(height: 16),
-                  const Text('Verifikasi Sukses',
+                  Text('Verifikasi Sukses',
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: GeneralUtil.fontSize(context) * 0.6,
                           color: Colors.black,
                           fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
@@ -199,8 +200,8 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
                             ? 'Anda berhasil absen masuk. Selamat mengerjakan aktifitas anda hari ini.'
                             : 'Anda berhasil absen keluar. Selamat menikmati hari anda.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            fontSize: 16,
+                        style: TextStyle(
+                            fontSize: GeneralUtil.fontSize(context) * 0.4,
                             color: Colors.black,
                             fontWeight: FontWeight.w500)),
                   )
@@ -220,10 +221,10 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
                   color: primaryColor,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Center(
+                child: Center(
                     child: Text('Kembali',
                         style: TextStyle(
-                            fontSize: 15,
+                            fontSize: GeneralUtil.fontSize(context) * 0.45,
                             color: Colors.white,
                             fontWeight: FontWeight.w600))),
               ),

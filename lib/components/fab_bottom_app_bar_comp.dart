@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:malinau_absensi/util/general_util.dart';
 
 class FABBottomAppBarComp {
   FABBottomAppBarComp({required this.iconData, required this.text});
@@ -77,7 +78,10 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
             SizedBox(height: widget.iconSize),
             Text(
               widget.centerItemText,
-              style: TextStyle(color: widget.color),
+              style: TextStyle(
+                color: widget.color,
+                fontSize: GeneralUtil.fontSize(context) * 0.4,
+              ),
             ),
           ],
         ),
@@ -110,7 +114,10 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
                 ),
                 Text(
                   item.text,
-                  style: TextStyle(color: color),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
+                  ),
                 )
               ],
             ),

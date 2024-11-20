@@ -45,13 +45,13 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
   XFile? image;
   bool isBusy = false;
   Map<String, Uint8List> _capturedImages = {};
-  Map<String, Uint8List> rotatedImages = {};
   bool _isBuffering = false;
   bool front = false;
   bool left = false;
   bool right = false;
   bool top = false;
   bool bot = false;
+  bool isError = false;
   RegisterBloc registerBloc = RegisterBloc(absenRepo: AbsenRepo());
 
   @override
@@ -261,13 +261,13 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
     }
   }
 
-  void _navigateToNextPage() {
+  void _navigateToNextPage() async {
     if (front && right && left && top && bot) {
       const double angle = 3 * 3.141592653589793 / 2; // 270 degrees
-      setState(() async {
-        rotatedImages = await rotateImages(_capturedImages, angle);
-      });
-      _successDialog(context);
+      Map<String, Uint8List> rotatedImages =
+          await rotateImages(_capturedImages, angle);
+      _controller!.stopImageStream();
+      registerBloc.add(RegisterAttempt(capturedImages: rotatedImages));
     } else {
       log('Belum semua');
     }
@@ -320,7 +320,75 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
   }
 
   Future<void> _successDialog(BuildContext context) async {
-    bool isLoading = false;
+    return showDialog(
+        context: context,
+        builder: (buildContext) {
+          return StatefulBuilder(builder: (buildContext, setStates) {
+            return AlertDialog(
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0))),
+              content: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Image.asset(
+                      'assets/imgs/success.png',
+                      height: 100,
+                      width: 100,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Registrasi muka sukses',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.6,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Text('Anda sudah bisa melakukan absensi melalui scan muka.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.4,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 24),
+                  InkWell(
+                    onTap: () async {
+                      WidgetsFlutterBinding.ensureInitialized();
+                      final cameras = await availableCameras();
+                      final firstCamera = cameras.first;
+                      if (context.mounted) {
+                        Navigator.pushNamed(
+                            context, StringRouterUtil.faceScanScreenRoute,
+                            arguments: ArgumentAbsenModel(
+                                camera: firstCamera, isIn: true));
+                      }
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: 41,
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                          child: Text('Absen Masuk',
+                              style: TextStyle(
+                                  fontSize:
+                                      GeneralUtil.fontSize(context) * 0.45,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600))),
+                    ),
+                  )
+                ],
+              ),
+            );
+          });
+        });
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
     return showDialog(
         context: context,
         builder: (context) {
@@ -331,92 +399,42 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Center(
-                  child: Image.asset(
-                    'assets/imgs/success.png',
-                    height: 100,
-                    width: 100,
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text('Registrasi muka sukses',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                const Text(
-                    'Anda sudah bisa melakukan absensi melalui scan muka.',
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 16,
                         color: Colors.black,
                         fontWeight: FontWeight.w500)),
                 const SizedBox(height: 24),
-                BlocListener(
-                    bloc: registerBloc,
-                    listener: (_, RegisterState state) async {
-                      if (state is RegisterLoading) {
-                        isLoading = true;
-                      }
-                      if (state is RegisterLoaded) {
-                        SharedPrefUtil.saveSharedString('userstatus', 'ACTIVE');
-
-                        isLoading = false;
-                        WidgetsFlutterBinding.ensureInitialized();
-                        final cameras = await availableCameras();
-                        final firstCamera = cameras.first;
-                        if (context.mounted) {
-                          Navigator.pushNamed(
-                              context, StringRouterUtil.faceScanScreenRoute,
-                              arguments: ArgumentAbsenModel(
-                                  camera: firstCamera, isIn: true));
-                        }
-                      }
-                      if (state is RegisterError) {
-                        GeneralUtil().showSnackBarError(context, state.error!);
-                        isLoading = false;
-                      }
-                      if (state is RegisterException) {
-                        GeneralUtil().showSnackBarError(context, state.error);
-                        isLoading = false;
-                      }
-                    },
-                    child: BlocBuilder(
-                        bloc: registerBloc,
-                        builder: (_, RegisterState state) {
-                          return isLoading
-                              ? const Center(
-                                  child: SizedBox(
-                                    width: 45,
-                                    height: 45,
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                )
-                              : InkWell(
-                                  onTap: () async {
-                                    _controller!.stopImageStream();
-                                    registerBloc.add(RegisterAttempt(
-                                        capturedImages: rotatedImages));
-                                  },
-                                  child: Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.8,
-                                    height: 41,
-                                    decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Center(
-                                        child: Text('Absen Masuk',
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600))),
-                                  ),
-                                );
-                        })),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
               ],
             ),
           );
@@ -429,7 +447,7 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
         child: Scaffold(
             backgroundColor: Colors.white,
             bottomNavigationBar: Container(
-                height: MediaQuery.of(context).size.height * 0.35,
+                height: MediaQuery.of(context).size.height * 0.2,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -441,17 +459,89 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 32.0),
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Align(
                         alignment: Alignment.center,
                         child: Column(
                           children: [
-                            Text(_facePosition,
-                                textAlign: TextAlign.left,
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
+                            BlocListener(
+                                bloc: registerBloc,
+                                listener: (_, RegisterState state) async {
+                                  if (state is RegisterLoading) {
+                                    setState(() {
+                                      isError = false;
+                                    });
+                                  }
+                                  if (state is RegisterLoaded) {
+                                    SharedPrefUtil.saveSharedString(
+                                        'userstatus', 'ACTIVE');
+                                    _successDialog(context);
+                                  }
+                                  if (state is RegisterError) {
+                                    setState(() {
+                                      isError = true;
+                                    });
+                                    GeneralUtil().showSnackBarError(
+                                        context, state.error!);
+                                  }
+                                  if (state is RegisterException) {
+                                    setState(() {
+                                      isError = true;
+                                    });
+                                    _expDialog(context);
+                                  }
+                                },
+                                child: BlocBuilder(
+                                    bloc: registerBloc,
+                                    builder: (_, RegisterState state) {
+                                      return isError
+                                          ? Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 32.0, right: 32.0),
+                                              child: InkWell(
+                                                onTap: () async {
+                                                  const double angle = 3 *
+                                                      3.141592653589793 /
+                                                      2; // 270 degrees
+                                                  Map<String, Uint8List>
+                                                      rotatedImages =
+                                                      await rotateImages(
+                                                          _capturedImages,
+                                                          angle);
+
+                                                  registerBloc.add(
+                                                      RegisterAttempt(
+                                                          capturedImages:
+                                                              rotatedImages));
+                                                },
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  height: 50,
+                                                  decoration: BoxDecoration(
+                                                    color: primaryColor,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: const Center(
+                                                      child: Text('Ulangi',
+                                                          style: TextStyle(
+                                                              fontSize: 15,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600))),
+                                                ),
+                                              ),
+                                            )
+                                          : Text(_facePosition,
+                                              textAlign: TextAlign.left,
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500));
+                                    })),
                           ],
                         ),
                       ),
@@ -510,19 +600,20 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
               children: [
                 _controller == null || !_controller!.value.isInitialized
                     ? const Center(child: CircularProgressIndicator())
-                    : Stack(
-                        children: [
-                          Center(
-                              child: AspectRatio(
-                                  aspectRatio: 4.0 / 7.0,
-                                  child: CameraPreview(_controller!))),
-                          CustomPaint(
-                            painter: OverlayPainter(
-                                screenHeight:
-                                    MediaQuery.of(context).size.height,
-                                screenWidth: MediaQuery.of(context).size.width),
-                          ),
-                        ],
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 40.0),
+                        child: Stack(
+                          children: [
+                            Center(child: CameraPreview(_controller!)),
+                            CustomPaint(
+                              painter: OverlayPainter(
+                                  screenHeight:
+                                      MediaQuery.of(context).size.height,
+                                  screenWidth:
+                                      MediaQuery.of(context).size.width),
+                            ),
+                          ],
+                        ),
                       ),
                 Positioned(
                   top: 0,
@@ -696,7 +787,7 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(
-                              left: 24, right: 24, top: 24, bottom: 40),
+                              left: 24, right: 24, top: 24, bottom: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -711,23 +802,28 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
                                   size: 24,
                                 ),
                               ),
-                              const Padding(
-                                padding: EdgeInsets.only(top: 4.0, right: 16),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 4.0, right: 16),
                                 child: Column(
                                   children: [
                                     Text('Registrasi Muka',
                                         style: TextStyle(
-                                            fontSize: 20,
-                                            color: Color(0xFF202020),
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.6,
+                                            color: const Color(0xFF202020),
                                             fontWeight: FontWeight.w600)),
-                                    SizedBox(height: 8),
+                                    const SizedBox(height: 8),
                                     SizedBox(
                                       width: 245,
                                       child: Text(
                                           'Mohon ikuti perintah dibawah untuk menyelesaikan registrasi muka',
                                           textAlign: TextAlign.center,
                                           style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.35,
                                               color: Colors.black,
                                               fontWeight: FontWeight.w500)),
                                     ),

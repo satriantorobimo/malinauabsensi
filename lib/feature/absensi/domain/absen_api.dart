@@ -118,7 +118,7 @@ class AbsenApi {
     }
   }
 
-  Future<bool> attemptRegister(Map<String, Uint8List> capturedImages) async {
+  Future<String> attemptRegister(Map<String, Uint8List> capturedImages) async {
     final String? userid = await SharedPrefUtil.getSharedString('userid');
 
     try {
@@ -138,12 +138,15 @@ class AbsenApi {
       });
 
       // Send the request
-      var response = await request.send();
+      final streamedResponse = await request.send();
+
+      // Convert the streamed response to a regular response
+      final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        return true;
+        return response.body;
       } else {
-        throw false;
+        throw response.body;
       }
     } catch (ex) {
       throw ex.toString();

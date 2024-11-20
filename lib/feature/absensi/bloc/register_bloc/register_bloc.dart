@@ -10,11 +10,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       if (event is RegisterAttempt) {
         try {
           emit(RegisterLoading());
-          bool? result = await absenRepo.attemptRegister(event.capturedImages);
-          if (result!) {
-            emit(RegisterLoaded(result: result));
+          String? result =
+              await absenRepo.attemptRegister(event.capturedImages);
+          if (result == 'Successfully uploaded image') {
+            emit(RegisterLoaded(result: result!));
           } else {
-            emit(const RegisterError('Error'));
+            emit(RegisterError(result));
           }
         } catch (e) {
           emit(RegisterException(e.toString()));

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -207,17 +208,7 @@ class _IzinScreenState extends State<IzinScreen> {
                 ),
               ),
             ),
-            isLoading
-                ? const Center(
-                    child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : userType == 'staff'
-                    ? staffWidget()
-                    : kadivWidget()
+            staffWidget()
           ],
         ),
       ),
@@ -232,16 +223,16 @@ class _IzinScreenState extends State<IzinScreen> {
             padding: const EdgeInsets.only(bottom: 8.0, top: 12.0),
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.07,
+              height: MediaQuery.of(context).size.height * 0.1,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Daftar Izin',
+                      Text('Daftar Izin',
                           style: TextStyle(
-                              fontSize: 20,
+                              fontSize: GeneralUtil.fontSize(context) * 0.6,
                               color: Colors.black,
                               fontWeight: FontWeight.w500)),
                       InkWell(
@@ -250,14 +241,13 @@ class _IzinScreenState extends State<IzinScreen> {
                               context, StringRouterUtil.tambahIzinScreenRoute);
                         },
                         child: Container(
-                          height: 45,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: primaryColor,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Center(
-                              child: Row(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               SvgPicture.asset(
                                 'assets/icons/plus.svg',
@@ -266,14 +256,14 @@ class _IzinScreenState extends State<IzinScreen> {
                                 height: 20,
                                 width: 20,
                               ),
-                              const SizedBox(width: 8),
-                              const Text('Tambah',
+                              Text('Tambah',
                                   style: TextStyle(
-                                      fontSize: 15,
+                                      fontSize:
+                                          GeneralUtil.fontSize(context) * 0.45,
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600)),
                             ],
-                          )),
+                          ),
                         ),
                       ),
                     ],
@@ -353,13 +343,13 @@ class _IzinScreenState extends State<IzinScreen> {
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.05,
+              height: MediaQuery.of(context).size.height * 0.055,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.045,
+                    height: MediaQuery.of(context).size.height * 0.055,
                     child: ListView.separated(
                         separatorBuilder: (context, index) {
                           return const SizedBox(width: 8);
@@ -385,8 +375,10 @@ class _IzinScreenState extends State<IzinScreen> {
                               padding: const EdgeInsets.all(8),
                               child: Center(
                                 child: Text(filter[index],
-                                    style: const TextStyle(
-                                        fontSize: 14,
+                                    style: TextStyle(
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.35,
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500)),
                               ),
@@ -447,45 +439,53 @@ class _IzinScreenState extends State<IzinScreen> {
                                   bottomLeft: Radius.circular(6),
                                 ),
                               ),
-                              child: const Center(
+                              child: Center(
                                 child: Text('01',
                                     style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.45,
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500)),
                               ),
                             ),
                             const SizedBox(width: 10),
-                            const Column(
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('Aktifitas',
                                     style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF797979),
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) * 0.3,
+                                        color: const Color(0xFF797979),
                                         fontWeight: FontWeight.w400)),
                                 Text('12/03/22 - 12/03/22',
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.35,
                                         color: Colors.black,
                                         fontWeight: FontWeight.w500)),
                               ],
                             ),
                             const SizedBox(width: 16),
-                            const Column(
+                            Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text('Izin',
                                     style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF797979),
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) * 0.3,
+                                        color: const Color(0xFF797979),
                                         fontWeight: FontWeight.w400)),
                                 Text('Cuti',
                                     style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.35,
                                         color: Colors.black,
                                         fontWeight: FontWeight.w500)),
                               ],
@@ -496,12 +496,14 @@ class _IzinScreenState extends State<IzinScreen> {
                           padding: const EdgeInsets.only(right: 16.0),
                           child: Row(
                             children: [
-                              const SizedBox(
+                              SizedBox(
                                 width: 60,
                                 child: Text('Pending',
                                     textAlign: TextAlign.right,
                                     style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.35,
                                         color: yellowColor,
                                         fontWeight: FontWeight.w500)),
                               ),
@@ -533,582 +535,6 @@ class _IzinScreenState extends State<IzinScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: redColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('02',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('12/03/22 - 12/03/22',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Izin',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('Cuti',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 60,
-                              child: Text('Not Approved',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: redColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            const SizedBox(width: 18),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 16,
-                                    width: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: greenColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('03',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('12/03/22 - 12/03/22',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Izin',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('Cuti',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 60,
-                              child: Text('Approved',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: greenColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            const SizedBox(width: 18),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 16,
-                                    width: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: yellowColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('04',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('12/03/22 - 12/03/22',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Izin',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('Cuti',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 60,
-                              child: Text('Pending',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: yellowColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            const SizedBox(width: 18),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 16,
-                                    width: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: redColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('05',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('12/03/22 - 12/03/22',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Izin',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('Cuti',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 60,
-                              child: Text('Not Approved',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: redColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            const SizedBox(width: 18),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 16,
-                                    width: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 35,
-                            decoration: const BoxDecoration(
-                              color: greenColor,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(6),
-                                bottomLeft: Radius.circular(6),
-                              ),
-                            ),
-                            child: const Center(
-                              child: Text('06',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Aktifitas',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('12/03/22 - 12/03/22',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Izin',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Text('Cuti',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 16.0),
-                        child: Row(
-                          children: [
-                            const SizedBox(
-                              width: 60,
-                              child: Text('Approved',
-                                  textAlign: TextAlign.right,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: yellowColor,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            const SizedBox(width: 18),
-                            InkWell(
-                              onTap: () {},
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: greenColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/icons/edit.svg',
-                                    colorFilter: const ColorFilter.mode(
-                                        Colors.white, BlendMode.srcIn),
-                                    height: 16,
-                                    width: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
               ],
             ),
           )

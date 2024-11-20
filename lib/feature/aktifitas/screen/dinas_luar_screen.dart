@@ -44,6 +44,59 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
   DinasLuarListBloc dinasLuarListBloc =
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
 
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   @override
   void initState() {
     getUserType();
@@ -230,11 +283,11 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                         bottom: 16.0, top: 12.0, left: 16, right: 16),
                     child: SizedBox(
                       height: MediaQuery.of(context).size.height * 0.03,
-                      child: const Align(
+                      child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text('Daftar Dinas Luar',
                             style: TextStyle(
-                                fontSize: 20,
+                                fontSize: GeneralUtil.fontSize(context) * 0.5,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500)),
                       ),
@@ -244,13 +297,13 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Container(
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.05,
+                      height: MediaQuery.of(context).size.height * 0.055,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.8,
-                            height: MediaQuery.of(context).size.height * 0.045,
+                            height: MediaQuery.of(context).size.height * 0.055,
                             child: ListView.separated(
                                 separatorBuilder: (context, index) {
                                   return const SizedBox(width: 8);
@@ -305,8 +358,10 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                                       padding: const EdgeInsets.all(8),
                                       child: Center(
                                         child: Text(filter[index],
-                                            style: const TextStyle(
-                                                fontSize: 14,
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.4,
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w500)),
                                       ),
@@ -364,10 +419,10 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                           });
                         }
                         if (state is DinasLuarListException) {
-                          GeneralUtil().showSnackBarError(context, state.error);
                           setState(() {
                             isLoading = false;
                           });
+                          _expDialog(context);
                         }
                       },
                       child: BlocBuilder(
@@ -436,36 +491,36 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                     ),
                     child: Center(
                       child: Text('0${index + 1}',
-                          style: const TextStyle(
-                              fontSize: 16,
+                          style: TextStyle(
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
                               color: Colors.white,
                               fontWeight: FontWeight.w500)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.60,
+                    width: MediaQuery.of(context).size.width * 0.55,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(dataList[index].name!,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 15,
+                            style: TextStyle(
+                                fontSize: GeneralUtil.fontSize(context) * 0.45,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500)),
                         Text(dataList[index].address!,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF797979),
+                            style: TextStyle(
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w400)),
                         Text(
                             '${GeneralUtil.dateConvert(dataList[index].startDate!)} - ${GeneralUtil.dateConvert(dataList[index].endDate!)}',
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF797979),
+                            style: TextStyle(
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w400)),
                       ],
                     ),
@@ -477,7 +532,7 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                       children: [
                         Text(dataList[index].statusPengajuan!,
                             style: TextStyle(
-                                fontSize: 13,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
                                 color:
                                     dataList[index].statusPengajuan == 'Pending'
                                         ? yellowColor

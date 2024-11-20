@@ -8,6 +8,7 @@ import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/maps_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class DinasLuarDetailScreen extends StatefulWidget {
   const DinasLuarDetailScreen({super.key, required this.id});
@@ -32,6 +33,59 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
   void initState() {
     dinasLuarDetailBloc.add(DinasLuarDetailAttempt(id: widget.id));
     super.initState();
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -181,17 +235,22 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: primaryColor,
-                    size: 24,
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: primaryColor,
+                      size: 24,
+                    ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
                     child: Text('Detail Dinas Luar',
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF797979),
+                            fontSize: GeneralUtil.fontSize(context) * 0.35,
+                            color: const Color(0xFF797979),
                             fontWeight: FontWeight.w500)),
                   ),
                   Container()
@@ -219,10 +278,10 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
                     });
                   }
                   if (state is DinasLuarDetailException) {
-                    GeneralUtil().showSnackBarError(context, state.error);
                     setState(() {
                       isLoading = false;
                     });
+                    _expDialog(context);
                   }
                 },
                 child: BlocBuilder(
@@ -265,43 +324,47 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
                   Border.all(color: const Color(0xFFC2C2C2).withOpacity(0.1))),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Judul',
+            Text('Judul',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(data.name!,
-                style: const TextStyle(
-                    fontSize: 16,
+                style: TextStyle(
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
                     color: Colors.black,
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
-            const Text('Deskripsi',
+            Text('Deskripsi',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(data.description!,
-                style: const TextStyle(
-                    fontSize: 16,
+                style: TextStyle(
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
                     color: Colors.black,
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
-            const Text('Alamat',
+            Text('Alamat',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Row(
               children: [
-                Text(data.address!,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w500)),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  child: Text(data.address!,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.4,
+                          color: Colors.black,
+                          overflow: TextOverflow.fade,
+                          fontWeight: FontWeight.w500)),
+                ),
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () {
@@ -316,40 +379,40 @@ class _DinasLuarDetailScreenState extends State<DinasLuarDetailScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Tanggal Mulai - Tanggal Akhir',
+            Text('Tanggal Mulai - Tanggal Akhir',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(
                 '${GeneralUtil.dateConvert(data.startDate!)} - ${GeneralUtil.dateConvert(data.endDate!)}',
-                style: const TextStyle(
-                    fontSize: 16,
+                style: TextStyle(
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
                     color: Colors.black,
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
-            const Text('File Penduking',
+            Text('File Penduking',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(data.fileName ?? '-',
-                style: const TextStyle(
-                    fontSize: 16,
+                style: TextStyle(
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
                     color: Colors.black,
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 16),
-            const Text('Status',
+            Text('Status',
                 style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF797979),
+                    fontSize: GeneralUtil.fontSize(context) * 0.35,
+                    color: const Color(0xFF797979),
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
             Text(data.statusPengajuan!,
                 style: TextStyle(
-                    fontSize: 16,
+                    fontSize: GeneralUtil.fontSize(context) * 0.4,
                     color: data.statusPengajuan == 'Pending'
                         ? yellowColor
                         : greenColor,

@@ -91,7 +91,7 @@ class UrlUtil {
   }
 
   static String urlDinasLuar(String start, String end) =>
-      'v2/dinas-luar?page=1&limit=500&start_date=$start&end_date=$end';
+      'v2/dinas-luar?page=1&limit=500&start_date=$start&to_date=$end&status=Approved';
 
   String getUrlDinasLuar(String start, String end) {
     final String urlDinasLuar2 = urlDinasLuar(start, end);

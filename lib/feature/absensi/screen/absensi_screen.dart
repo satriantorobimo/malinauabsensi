@@ -325,23 +325,23 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                     child: Column(
                       children: [
                         Text(date,
-                            style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
+                            style: TextStyle(
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w500)),
                         const SizedBox(height: 8),
                         Text(time,
-                            style: const TextStyle(
-                                fontSize: 28,
+                            style: TextStyle(
+                                fontSize: GeneralUtil.fontSize(context) * 1,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w600)),
                         const SizedBox(height: 24),
-                        const SizedBox(
+                        SizedBox(
                           width: 245,
                           child: Text('Pilih salah satu cara untuk absen masuk',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: GeneralUtil.fontSize(context) * 0.4,
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500)),
                         ),
@@ -382,7 +382,7 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                           },
                           child: Container(
                             padding: const EdgeInsets.all(12.0),
-                            width: 245,
+                            width: MediaQuery.of(context).size.width * 0.55,
                             height: 65,
                             decoration: BoxDecoration(
                                 gradient: const LinearGradient(
@@ -415,9 +415,10 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Text('Face Scan',
+                                Text('Face Scan',
                                     style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) * 0.6,
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500)),
                               ],
@@ -483,7 +484,8 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(12.0),
-                                  width: 245,
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.55,
                                   height: 65,
                                   decoration: BoxDecoration(
                                       gradient: const LinearGradient(
@@ -516,9 +518,11 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                                         width: 40,
                                       ),
                                       const SizedBox(width: 24),
-                                      const Text('QR-Code',
+                                      Text('QR-Code',
                                           style: TextStyle(
-                                              fontSize: 20,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.6,
                                               color: Colors.white,
                                               fontWeight: FontWeight.w500)),
                                     ],
@@ -546,15 +550,15 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                         height: 40,
                         width: 40,
                       ),
-                      const Text('--:--',
+                      Text('--:--',
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: GeneralUtil.fontSize(context) * 0.55,
                               color: Colors.black,
                               fontWeight: FontWeight.w500)),
-                      const Text('Absen Datang',
+                      Text('Absen Datang',
                           style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
+                              fontSize: GeneralUtil.fontSize(context) * 0.35,
+                              color: const Color(0xFF797979),
                               fontWeight: FontWeight.w400)),
                     ],
                   ),
@@ -568,15 +572,15 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                         height: 40,
                         width: 40,
                       ),
-                      const Text('--:--',
+                      Text('--:--',
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: GeneralUtil.fontSize(context) * 0.55,
                               color: Colors.black,
                               fontWeight: FontWeight.w500)),
-                      const Text('Absen Pulang',
+                      Text('Absen Pulang',
                           style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
+                              fontSize: GeneralUtil.fontSize(context) * 0.35,
+                              color: const Color(0xFF797979),
                               fontWeight: FontWeight.w400)),
                     ],
                   ),
@@ -590,15 +594,15 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                         height: 40,
                         width: 40,
                       ),
-                      const Text('--:--',
+                      Text('--:--',
                           style: TextStyle(
-                              fontSize: 18,
+                              fontSize: GeneralUtil.fontSize(context) * 0.55,
                               color: Colors.black,
                               fontWeight: FontWeight.w500)),
-                      const Text('Jam Kerja',
+                      Text('Jam Kerja',
                           style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF797979),
+                              fontSize: GeneralUtil.fontSize(context) * 0.35,
+                              color: const Color(0xFF797979),
                               fontWeight: FontWeight.w400)),
                     ],
                   )

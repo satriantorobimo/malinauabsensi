@@ -164,10 +164,15 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: primaryColor,
-                    size: 24,
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: primaryColor,
+                      size: 24,
+                    ),
                   ),
                   const Padding(
                     padding: EdgeInsets.only(top: 4.0),

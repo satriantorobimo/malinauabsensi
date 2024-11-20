@@ -51,210 +51,267 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
     debugPrint("Focus: ${_focus.hasFocus.toString()}");
   }
 
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 3,
-                      offset: const Offset(-6, 4), // Shadow position
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 3,
+                        offset: const Offset(-6, 4), // Shadow position
+                      ),
+                    ],
+                    border: Border(
+                      bottom: BorderSide(
+                          width: 1, color: Colors.grey.withOpacity(0.1)),
                     ),
-                  ],
-                  border: Border(
-                    bottom: BorderSide(
-                        width: 1, color: Colors.grey.withOpacity(0.1)),
                   ),
-                ),
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.10,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.asset('assets/imgs/logo.png', width: 40),
-                    Row(
-                      children: [
-                        Container(
-                          height: 40,
-                          width: 40,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.10,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Image.asset('assets/imgs/logo.png', width: 40),
+                      Row(
+                        children: [
+                          Container(
+                            height: 40,
+                            width: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.person_2_rounded,
+                              color: Colors.white,
+                              size: 32,
+                            ),
                           ),
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.person_2_rounded,
-                            color: Colors.white,
-                            size: 32,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        DropdownButtonHideUnderline(
-                          child: DropdownButton2(
-                            customButton: const Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: primaryColor,
-                            ),
-                            isExpanded: true,
-                            buttonStyleData: ButtonStyleData(
-                              // This is necessary for the ink response to match our customButton radius.
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40),
+                          const SizedBox(width: 8),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              FutureBuilder<String?>(
+                                future: SharedPrefUtil.getSharedString(
+                                    'nama'), // Key for retrieval
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Container();
+                                  } else if (snapshot.hasError) {
+                                    return Text("Error: ${snapshot.error}");
+                                  } else {
+                                    final username =
+                                        snapshot.data ?? "No name found";
+                                    return Text('Hi, $username',
+                                        style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500));
+                                  }
+                                },
                               ),
-                            ),
-                            dropdownStyleData: DropdownStyleData(
-                              width: 160,
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                                color: Colors.white,
-                              ),
-                              offset: const Offset(40, -30),
-                            ),
-                            menuItemStyleData: MenuItemStyleData(
-                              customHeights: [
-                                ...List<double>.filled(
-                                    MenuItems.firstItems.length, 48),
-                                8,
-                                ...List<double>.filled(
-                                    MenuItems.secondItems.length, 48),
-                              ],
-                              padding:
-                                  const EdgeInsets.only(left: 16, right: 16),
-                            ),
-                            items: [
-                              ...MenuItems.firstItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
-                                ),
-                              ),
-                              const DropdownMenuItem<Divider>(
-                                  enabled: false, child: Divider()),
-                              ...MenuItems.secondItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
-                                ),
+                              const SizedBox(height: 2),
+                              FutureBuilder<String?>(
+                                future: SharedPrefUtil.getSharedString(
+                                    'role'), // Key for retrieval
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return Container();
+                                  } else if (snapshot.hasError) {
+                                    return Text("Error: ${snapshot.error}");
+                                  } else {
+                                    final role =
+                                        snapshot.data ?? "No role found";
+                                    return Text(role,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Color(0xFF797979),
+                                            fontWeight: FontWeight.w400));
+                                  }
+                                },
                               ),
                             ],
-                            onChanged: (value) {
-                              var a = value as MenuItem;
-                              if (a.text == 'Logout') {
-                                SharedPrefUtil.clearSharedPref();
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    StringRouterUtil.loginScreenRoute,
-                                    (route) => false);
-                              }
-                            },
                           ),
-                        ),
-                      ],
-                    )
-                  ],
+                          const SizedBox(width: 8),
+                          DropdownButtonHideUnderline(
+                            child: DropdownButton2(
+                              customButton: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: primaryColor,
+                              ),
+                              isExpanded: true,
+                              buttonStyleData: ButtonStyleData(
+                                // This is necessary for the ink response to match our customButton radius.
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(40),
+                                ),
+                              ),
+                              dropdownStyleData: DropdownStyleData(
+                                width: 160,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: Colors.white,
+                                ),
+                                offset: const Offset(40, -30),
+                              ),
+                              menuItemStyleData: MenuItemStyleData(
+                                customHeights: [
+                                  ...List<double>.filled(
+                                      MenuItems.firstItems.length, 48),
+                                  8,
+                                  ...List<double>.filled(
+                                      MenuItems.secondItems.length, 48),
+                                ],
+                                padding:
+                                    const EdgeInsets.only(left: 16, right: 16),
+                              ),
+                              items: [
+                                ...MenuItems.firstItems.map(
+                                  (item) => DropdownMenuItem<MenuItem>(
+                                    value: item,
+                                    child: MenuItems.buildItem(item),
+                                  ),
+                                ),
+                                const DropdownMenuItem<Divider>(
+                                    enabled: false, child: Divider()),
+                                ...MenuItems.secondItems.map(
+                                  (item) => DropdownMenuItem<MenuItem>(
+                                    value: item,
+                                    child: MenuItems.buildItem(item),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                var a = value as MenuItem;
+                                if (a.text == 'Logout') {
+                                  SharedPrefUtil.clearSharedPref();
+                                  Navigator.pushNamedAndRemoveUntil(
+                                      context,
+                                      StringRouterUtil.loginScreenRoute,
+                                      (route) => false);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-            BlocListener(
-                bloc: detailBloc,
-                listener: (_, DetailState state) async {
-                  if (state is DetailLoading) {
-                    setState(() {
-                      isLoading = true;
-                    });
-                  }
-                  if (state is DetailLoaded) {
-                    setState(() {
-                      isLoading = false;
-                      data = state.absenDetailResponseModel.data!;
-                      _keteranganController.text = data.activity!;
-                    });
-                  }
-                  if (state is DetailError) {
-                    GeneralUtil().showSnackBarError(context, state.error!);
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
-                  if (state is DetailException) {
-                    GeneralUtil().showSnackBarError(context, state.error);
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
-                },
-                child: BlocBuilder(
-                    bloc: detailBloc,
-                    builder: (_, DetailState state) {
-                      return isLoading
-                          ? const Center(
-                              child: SizedBox(
-                                width: 45,
-                                height: 45,
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : mainContent();
-                    })),
-          ],
+              BlocListener(
+                  bloc: detailBloc,
+                  listener: (_, DetailState state) async {
+                    if (state is DetailLoading) {
+                      setState(() {
+                        isLoading = true;
+                      });
+                    }
+                    if (state is DetailLoaded) {
+                      setState(() {
+                        isLoading = false;
+                        data = state.absenDetailResponseModel.data!;
+                        _keteranganController.text = data.activity!;
+                      });
+                    }
+                    if (state is DetailError) {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
+                    if (state is DetailException) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      _expDialog(context);
+                    }
+                  },
+                  child: BlocBuilder(
+                      bloc: detailBloc,
+                      builder: (_, DetailState state) {
+                        return isLoading
+                            ? const Center(
+                                child: SizedBox(
+                                  width: 45,
+                                  height: 45,
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                            : mainContent();
+                      })),
+            ],
+          ),
         ),
       ),
     );
@@ -269,17 +326,22 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: primaryColor,
-                size: 24,
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: primaryColor,
+                  size: 24,
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: Text(GeneralUtil.dateConvertDetail(data.createdAt!),
-                    style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF797979),
+                    style: TextStyle(
+                        fontSize: GeneralUtil.fontSize(context) * 0.35,
+                        color: const Color(0xFF797979),
                         fontWeight: FontWeight.w500)),
               ),
               Container()
@@ -302,14 +364,14 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                     width: 40,
                   ),
                   Text(data.checkInTimestamp!,
-                      style: const TextStyle(
-                          fontSize: 18,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.5,
                           color: Colors.black,
                           fontWeight: FontWeight.w500)),
-                  const Text('Absen Datang',
+                  Text('Absen Datang',
                       style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF797979),
+                          fontSize: GeneralUtil.fontSize(context) * 0.35,
+                          color: const Color(0xFF797979),
                           fontWeight: FontWeight.w400)),
                 ],
               ),
@@ -323,14 +385,14 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                     width: 40,
                   ),
                   Text(data.checkOutTimestamp!,
-                      style: const TextStyle(
-                          fontSize: 18,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.5,
                           color: Colors.black,
                           fontWeight: FontWeight.w500)),
-                  const Text('Absen Pulang',
+                  Text('Absen Pulang',
                       style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF797979),
+                          fontSize: GeneralUtil.fontSize(context) * 0.35,
+                          color: const Color(0xFF797979),
                           fontWeight: FontWeight.w400)),
                 ],
               ),
@@ -344,14 +406,14 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                     width: 40,
                   ),
                   Text(data.workingHourCount.toString(),
-                      style: const TextStyle(
-                          fontSize: 18,
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.5,
                           color: Colors.black,
                           fontWeight: FontWeight.w500)),
-                  const Text('Jam Kerja',
+                  Text('Jam Kerja',
                       style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF797979),
+                          fontSize: GeneralUtil.fontSize(context) * 0.35,
+                          color: const Color(0xFF797979),
                           fontWeight: FontWeight.w400)),
                 ],
               )
@@ -365,9 +427,9 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Keterangan aktifitas hari ini',
+                  Text('Keterangan aktifitas hari ini',
                       style: TextStyle(
-                          fontSize: 16,
+                          fontSize: GeneralUtil.fontSize(context) * 0.4,
                           color: Colors.black,
                           fontWeight: FontWeight.w500)),
                   InkWell(
@@ -389,16 +451,13 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Center(
-                        child: isEdit
-                            ? const Icon(Icons.check,
-                                size: 12, color: Colors.white)
-                            : SvgPicture.asset(
-                                'assets/icons/edit.svg',
-                                colorFilter: const ColorFilter.mode(
-                                    primaryColor, BlendMode.srcIn),
-                                height: 12,
-                                width: 12,
-                              ),
+                        child: SvgPicture.asset(
+                          'assets/icons/edit.svg',
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
+                          height: 12,
+                          width: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -417,7 +476,7 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                     setState(() {});
                   },
                   controller: _keteranganController,
-                  maxLines: 8,
+                  maxLines: 5,
                   focusNode: _focus,
                   textAlign: TextAlign.justify,
                   decoration: InputDecoration(
@@ -426,7 +485,7 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                       contentPadding: const EdgeInsets.all(16),
                       hintStyle: TextStyle(
                           color: Colors.grey.withOpacity(0.5),
-                          fontSize: 14,
+                          fontSize: GeneralUtil.fontSize(context) * 0.35,
                           fontWeight: FontWeight.w500),
                       filled: true,
                       fillColor: Colors.white,
@@ -434,6 +493,26 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,
                       )),
+                ),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Center(
+                      child: Text('Simpan',
+                          style: TextStyle(
+                              fontSize: GeneralUtil.fontSize(context) * 0.37,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600))),
                 ),
               ),
             ],

@@ -58,6 +58,59 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
     super.dispose();
   }
 
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   Future<void> _initializeCamera() async {
     final cameras = await availableCameras();
 
@@ -213,11 +266,10 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                 });
                               }
                               if (state is InException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                _expDialog(context);
                               }
                             }),
                         BlocListener(
@@ -247,11 +299,10 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                 });
                               }
                               if (state is OutException) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                _expDialog(context);
                               }
                             }),
                       ],

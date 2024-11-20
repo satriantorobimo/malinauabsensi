@@ -86,6 +86,13 @@ class GeneralUtil {
     return hari;
   }
 
+  static double fontSize(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    // Define font size based on screen width
+    return screenHeight * 0.05;
+  }
+
   static String dateDayCheck(String data) {
     DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
     var inputDate = DateTime.parse(parseDate.toString());
@@ -99,6 +106,15 @@ class GeneralUtil {
     DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
     var inputDate = DateTime.parse(parseDate.toString());
     var outputFormat = DateFormat('MM');
+    var outputDate = outputFormat.format(inputDate);
+
+    return outputDate;
+  }
+
+  static String monthCheck2(String data) {
+    DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
+    var inputDate = DateTime.parse(parseDate.toString());
+    var outputFormat = DateFormat('MMM');
     var outputDate = outputFormat.format(inputDate);
 
     return outputDate;
@@ -125,6 +141,18 @@ class GeneralUtil {
   Map<String, String> getFormattedFirstAndLastDateOfLastSevenDays() {
     DateTime now = DateTime.now();
     DateTime firstDate = now.subtract(const Duration(days: 6));
+    DateTime lastDate = now;
+    String formattedFirstDate = DateFormat('yyyy-MM-dd').format(firstDate);
+    String formattedLastDate = DateFormat('yyyy-MM-dd').format(lastDate);
+    return {
+      'firstDate': formattedFirstDate,
+      'lastDate': formattedLastDate,
+    };
+  }
+
+  Map<String, String> getFormattedFirstAndLastDateOfLast3Days() {
+    DateTime now = DateTime.now();
+    DateTime firstDate = now.subtract(const Duration(days: 3));
     DateTime lastDate = now;
     String formattedFirstDate = DateFormat('yyyy-MM-dd').format(firstDate);
     String formattedLastDate = DateFormat('yyyy-MM-dd').format(lastDate);
