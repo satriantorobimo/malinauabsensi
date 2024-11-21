@@ -3,14 +3,21 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/bloc/avail_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/absensi/bloc/list_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_list_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/update_absen_request_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart'
+    as user;
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+
+import '../../absensi/bloc/update_bloc/bloc.dart';
 
 class Menu {
   int id;
@@ -36,8 +43,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _keteranganController = TextEditingController();
   ListBloc listBloc = ListBloc(absenRepo: AbsenRepo());
+  UpdateBloc updateBloc = UpdateBloc(absenRepo: AbsenRepo());
+  AvailBloc availBloc = AvailBloc(absenRepo: AbsenRepo());
   List<Data> data = [];
   List<Data> tempData = [];
+  late user.Data dataUser;
   bool isLoading = true;
   bool isReserved = false;
   List<String> filter = [
@@ -54,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int selectedFilter = 0;
 
-  Future<void> _displayTextInputDialog(BuildContext context) async {
+  Future<void> _displayTextInputDialog(BuildContext context, String id) async {
     return showDialog(
         context: context,
         barrierDismissible: false,
@@ -130,25 +140,95 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             actions: <Widget>[
-              InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                      child: Text('Simpan',
-                          style: TextStyle(
-                              fontSize: GeneralUtil.fontSize(context) * 0.37,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600))),
-                ),
-              ),
+              BlocListener(
+                  bloc: updateBloc,
+                  listener: (_, UpdateState state) async {
+                    if (state is UpdateLoading) {}
+                    if (state is UpdateLoaded) {
+                      Navigator.pop(context);
+                    }
+                    if (state is UpdateError) {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
+                    if (state is UpdateException) {
+                      _expDialog(context);
+                    }
+                  },
+                  child: BlocBuilder(
+                      bloc: updateBloc,
+                      builder: (_, UpdateState state) {
+                        if (state is UpdateLoading) {
+                          return const Center(
+                            child: SizedBox(
+                              width: 45,
+                              height: 45,
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                        if (state is UpdateLoaded) {
+                          return InkWell(
+                            onTap: () {
+                              DateTime now = DateTime.now();
+                              String formatedDate =
+                                  DateFormat('dd-MM-yyyy').format(now);
+                              updateBloc.add(UpdateAttempt(
+                                  updateAbsenRequestModel:
+                                      UpdateAbsenRequestModel(
+                                          requestDate: formatedDate,
+                                          keterangan:
+                                              _keteranganController.text,
+                                          userID: id)));
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                  child: Text('Simpan',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.37,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600))),
+                            ),
+                          );
+                        }
+
+                        return InkWell(
+                          onTap: () {
+                            DateTime now = DateTime.now();
+                            String formatedDate =
+                                DateFormat('dd-MM-yyyy').format(now);
+                            updateBloc.add(UpdateAttempt(
+                                updateAbsenRequestModel:
+                                    UpdateAbsenRequestModel(
+                                        requestDate: formatedDate,
+                                        keterangan: _keteranganController.text,
+                                        userID: id)));
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                                child: Text('Simpan',
+                                    style: TextStyle(
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.37,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600))),
+                          ),
+                        );
+                      })),
             ],
           );
         });
@@ -210,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     listBloc.add(const ListAttempt(start: '', end: ''));
+
     super.initState();
   }
 
@@ -395,28 +476,61 @@ class _HomeScreenState extends State<HomeScreen> {
                                         GeneralUtil.fontSize(context) * 0.5,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
-                            InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                    context, StringRouterUtil.absenScreenRoute,
-                                    arguments: true);
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                padding: const EdgeInsets.all(12),
-                                child: Center(
-                                    child: Text('Absen Masuk',
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.35,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600))),
-                              ),
-                            ),
+                            isLoading
+                                ? Container()
+                                : InkWell(
+                                    onTap: () {
+                                      if (dataUser.isAvailableToCheckIn!) {
+                                        if (GeneralUtil().isWithinCheckInTime(
+                                            dataUser.checkOutRangeTime!
+                                                .startTime!)) {
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .absenKeluarScreenRoute,
+                                              arguments: true);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context,
+                                              'Absen keluar start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                        }
+                                      } else {
+                                        if (GeneralUtil().isWithinCheckInTime(
+                                            dataUser.checkInRangeTime!
+                                                .startTime!)) {
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .absenKeluarScreenRoute,
+                                              arguments: dataUser);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context,
+                                              'Absen masuk start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                        }
+                                      }
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: primaryColor,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.all(12),
+                                      child: Center(
+                                          child: Text(
+                                              dataUser.isAvailableToCheckIn!
+                                                  ? 'Absen Keluar'
+                                                  : 'Absen Masuk',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color: Colors.white,
+                                                  fontWeight:
+                                                      FontWeight.w600))),
+                                    ),
+                                  ),
                           ],
                         ),
                       ),
@@ -654,47 +768,73 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            BlocListener(
-                bloc: listBloc,
-                listener: (_, ListState state) async {
-                  if (state is ListLoading) {
-                    setState(() {
-                      isLoading = true;
-                    });
-                  }
-                  if (state is ListLoaded) {
-                    setState(() {
-                      isLoading = false;
-                      data.addAll(state.absenListResponseModel.data!);
-                      tempData = data;
-                    });
-                  }
-                  if (state is ListError) {
-                    GeneralUtil().showSnackBarError(context, state.error!);
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
-                  if (state is ListException) {
-                    setState(() {
-                      isLoading = false;
-                    });
-                    _expDialog(context);
-                  }
-                },
-                child: BlocBuilder(
-                    bloc: listBloc,
-                    builder: (_, ListState state) {
-                      return isLoading
-                          ? const Center(
-                              child: SizedBox(
-                                width: 45,
-                                height: 45,
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : mainContent();
-                    })),
+            MultiBlocListener(
+              listeners: [
+                BlocListener(
+                  bloc: listBloc,
+                  listener: (_, ListState state) async {
+                    if (state is ListLoading) {
+                      setState(() {
+                        isLoading = true;
+                      });
+                    }
+                    if (state is ListLoaded) {
+                      availBloc.add(AvailAttempt());
+                      setState(() {
+                        data.addAll(state.absenListResponseModel.data!);
+                        tempData = data;
+                      });
+                    }
+                    if (state is ListError) {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
+                    if (state is ListException) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      _expDialog(context);
+                    }
+                  },
+                ),
+                BlocListener(
+                  bloc: availBloc,
+                  listener: (_, AvailState state) async {
+                    if (state is AvailLoading) {}
+                    if (state is AvailLoaded) {
+                      setState(() {
+                        isLoading = false;
+
+                        dataUser = state.userAvailabilityResponseModel.data!;
+                      });
+                    }
+                    if (state is AvailError) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
+                    if (state is ListException) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      _expDialog(context);
+                    }
+                  },
+                ),
+              ],
+              child: isLoading
+                  ? const Center(
+                      child: SizedBox(
+                        width: 45,
+                        height: 45,
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  : mainContent(),
+            )
           ],
         ),
       ),
@@ -807,7 +947,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 18),
                           InkWell(
                             onTap: () {
-                              _displayTextInputDialog(context);
+                              _displayTextInputDialog(context, data[index].id!);
                             },
                             child: Container(
                               width: 24,

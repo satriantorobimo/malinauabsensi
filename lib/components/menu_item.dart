@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:malinau_absensi/util/shared_pref_util.dart';
-import 'package:malinau_absensi/util/string_router_util.dart';
 
 class MenuItem {
   const MenuItem({
@@ -11,9 +9,10 @@ class MenuItem {
 }
 
 class MenuItems {
-  static const List<MenuItem> firstItems = [setting];
-  static const List<MenuItem> secondItems = [logout];
+  static const List<MenuItem> firstItems = [profile];
+  static const List<MenuItem> secondItems = [setting, logout];
 
+  static const profile = MenuItem(text: 'Profile');
   static const setting = MenuItem(text: 'Setting');
   static const logout = MenuItem(text: 'Logout');
 

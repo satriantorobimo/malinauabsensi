@@ -1,10 +1,17 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
+import 'package:malinau_absensi/feature/aktifitas/bloc/acara_detail_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:malinau_absensi/util/maps_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/util/string_router_util.dart';
 
 class AktifitasDetailScreen extends StatefulWidget {
-  const AktifitasDetailScreen({super.key});
+  const AktifitasDetailScreen({super.key, required this.id});
+  final String id;
 
   @override
   State<AktifitasDetailScreen> createState() => _AktifitasDetailScreenState();
@@ -12,10 +19,73 @@ class AktifitasDetailScreen extends StatefulWidget {
 
 class _AktifitasDetailScreenState extends State<AktifitasDetailScreen> {
   String? selectedValue;
+  bool isLoading = true;
   final List<String> items = [
     'Setting',
     'Logout',
   ];
+
+  AcaraDetailBloc acaraDetailBloc =
+      AcaraDetailBloc(aktifitasARepo: AktifitasARepo());
+
+  @override
+  void initState() {
+    acaraDetailBloc.add(AcaraDetailAttempt(id: widget.id));
+    super.initState();
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: GeneralUtil.fontSize(context) * 0.4,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +152,10 @@ class _AktifitasDetailScreenState extends State<AktifitasDetailScreen> {
                                   final username =
                                       snapshot.data ?? "No name found";
                                   return Text('Hi, $username',
-                                      style: const TextStyle(
-                                          fontSize: 14,
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.35,
                                           color: Colors.black,
                                           fontWeight: FontWeight.w500));
                                 }
@@ -142,8 +214,10 @@ class _AktifitasDetailScreenState extends State<AktifitasDetailScreen> {
                                       child: Center(
                                         child: Text(
                                           item,
-                                          style: const TextStyle(
-                                              fontSize: 14,
+                                          style: TextStyle(
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.35,
                                               fontWeight: FontWeight.w500),
                                         ),
                                       ),
@@ -174,125 +248,289 @@ class _AktifitasDetailScreenState extends State<AktifitasDetailScreen> {
                       size: 24,
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text('Detail Aktifitas',
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text('Detail Acara',
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF797979),
+                            fontSize: GeneralUtil.fontSize(context) * 0.35,
+                            color: const Color(0xFF797979),
                             fontWeight: FontWeight.w500)),
                   ),
                   Container()
                 ],
               ),
             ),
-            Padding(
-                padding: const EdgeInsets.only(
-                    top: 40.0, left: 16, right: 16.0, bottom: 32.0),
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
+            BlocListener(
+                bloc: acaraDetailBloc,
+                listener: (_, AcaraDetailState state) async {
+                  if (state is AcaraDetailLoading) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                  }
+                  if (state is AcaraDetailLoaded) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                  if (state is AcaraDetailError) {
+                    GeneralUtil().showSnackBarError(context, state.error!);
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                  if (state is AcaraDetailException) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                    _expDialog(context);
+                  }
+                },
+                child: BlocBuilder(
+                    bloc: acaraDetailBloc,
+                    builder: (_, AcaraDetailState state) {
+                      if (state is AcaraDetailLoaded) {
+                        return Expanded(
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: [
+                              Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 40.0,
+                                      left: 16,
+                                      right: 16.0,
+                                      bottom: 32.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.1),
+                                            blurRadius: 3,
+                                            offset: const Offset(
+                                                -6, 4), // Shadow position
+                                          ),
+                                        ],
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                            color: const Color(0xFFC2C2C2)
+                                                .withOpacity(0.1))),
+                                    child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Jenis Acara',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              state.acaraDetailResponseModel
+                                                  .data!.kind!,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.4,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 16),
+                                          Text('Judul',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              state.acaraDetailResponseModel
+                                                  .data!.name!,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.4,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 16),
+                                          Text('Deskripsi',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              state.acaraDetailResponseModel
+                                                  .data!.description!,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.4,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 16),
+                                          Text('Alamat',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.6,
+                                                child: Text(
+                                                    state
+                                                        .acaraDetailResponseModel
+                                                        .data!
+                                                        .address!,
+                                                    style: TextStyle(
+                                                        fontSize: GeneralUtil
+                                                                .fontSize(
+                                                                    context) *
+                                                            0.4,
+                                                        color: Colors.black,
+                                                        overflow:
+                                                            TextOverflow.fade,
+                                                        fontWeight:
+                                                            FontWeight.w500)),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              InkWell(
+                                                onTap: () {
+                                                  MapUtil.openMap(
+                                                      state
+                                                          .acaraDetailResponseModel
+                                                          .data!
+                                                          .location!
+                                                          .lat!,
+                                                      state
+                                                          .acaraDetailResponseModel
+                                                          .data!
+                                                          .location!
+                                                          .long!);
+                                                },
+                                                child: const Icon(
+                                                  Icons.pin_drop_rounded,
+                                                  color: primaryColor,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text('Hari',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              GeneralUtil.dayConv(state
+                                                  .acaraDetailResponseModel
+                                                  .data!
+                                                  .day!
+                                                  .toString()),
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.4,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 16),
+                                          Text('Jam',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              '${state.acaraDetailResponseModel.data!.startTime!} - ${state.acaraDetailResponseModel.data!.endTime!}',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.4,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 16),
+                                          Text('Status',
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      GeneralUtil.fontSize(
+                                                              context) *
+                                                          0.35,
+                                                  color:
+                                                      const Color(0xFF797979),
+                                                  fontWeight: FontWeight.w500)),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                              state.acaraDetailResponseModel
+                                                          .data!.status ==
+                                                      false
+                                                  ? 'Tidak Aktif'
+                                                  : 'Aktif',
+                                              style: TextStyle(
+                                                  fontSize: GeneralUtil
+                                                          .fontSize(context) *
+                                                      0.4,
+                                                  color:
+                                                      state.acaraDetailResponseModel
+                                                                  .data!.status ==
+                                                              false
+                                                          ? yellowColor
+                                                          : greenColor,
+                                                  fontWeight: FontWeight.w500)),
+                                        ]),
+                                  )),
+                            ],
+                          ),
+                        );
+                      }
+                      if (state is AcaraDetailError) {
+                        return Container();
+                      }
+                      if (state is AcaraDetailException) {
+                        return Container();
+                      }
+                      return const Center(
+                        child: SizedBox(
+                          width: 45,
+                          height: 45,
+                          child: CircularProgressIndicator(),
                         ),
-                      ],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Tanggal Izin',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('12/12/2020 - 12/12/2022',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('Aktifitas',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('Lorem itsum',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('Keterangan',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text(
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('Jumlah Waktu',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('300',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('Jumlah',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('10',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('File Penduking',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('lorem.docs',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 16),
-                        Text('Status',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        SizedBox(height: 8),
-                        Text('Pending',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: yellowColor,
-                                fontWeight: FontWeight.w500)),
-                      ]),
-                )),
+                      );
+                    })),
           ],
         ),
       ),

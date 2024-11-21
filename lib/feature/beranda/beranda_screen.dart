@@ -4,12 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
+import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
+import 'package:malinau_absensi/feature/tab/provider/tab_provider.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
-
+import 'package:community_charts_flutter/community_charts_flutter.dart'
+    as chart;
+import 'package:provider/provider.dart';
 import '../absensi/bloc/list_bloc/bloc.dart';
-import '../absensi/data/absen_list_response_model.dart';
+import '../aktifitas/bloc/dinas_luar_list_bloc/bloc.dart';
 
 class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
@@ -19,14 +23,38 @@ class BerandaScreen extends StatefulWidget {
 }
 
 class _BerandaScreenState extends State<BerandaScreen> {
+  late List<chart.Series> seriesList;
+  late bool animate;
+
   final List<String> items = [
+    'Profile',
     'Setting',
     'Logout',
   ];
   bool isLoading = true;
   ListBloc listBloc = ListBloc(absenRepo: AbsenRepo());
-  List<Data> data = [];
+  DinasLuarListBloc dinasLuarListBloc =
+      DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
   int selectedFilter = 0;
+  static List<chart.Series<OrdinalSales, String>> _createSampleData() {
+    final data = [
+      OrdinalSales('Mon', 5),
+      OrdinalSales('Tue', 25),
+      OrdinalSales('Wed', 25),
+      OrdinalSales('Thu', 100),
+      OrdinalSales('Fri', 75),
+    ];
+
+    return [
+      chart.Series<OrdinalSales, String>(
+        id: 'Sales',
+        colorFn: (_, __) => chart.MaterialPalette.blue.shadeDefault,
+        domainFn: (OrdinalSales sales, _) => sales.year,
+        measureFn: (OrdinalSales sales, _) => sales.sales,
+        data: data,
+      )
+    ];
+  }
 
   Future<void> _expDialog(BuildContext context) async {
     return showDialog(
@@ -87,6 +115,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
         GeneralUtil().getFormattedFirstAndLastDateOfLast3Days();
     listBloc.add(ListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
+    // dinasLuarListBloc.add(DinasLuarListAttempt(
+    //     end: dateRange['firstDate']!, start: dateRange['lastDate']!));
     super.initState();
   }
 
@@ -242,6 +272,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                     context,
                                     StringRouterUtil.loginScreenRoute,
                                     (route) => false);
+                              } else if (a.text == 'Setting') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.settingScreenRoute);
+                              } else if (a.text == 'Profile') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.profileScreenRoute);
                               }
                             },
                           ),
@@ -261,12 +297,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Text('Beranda',
+                      Text('Ringkasan Absensi',
                           style: TextStyle(
                               backgroundColor: Colors.white,
-                              fontSize: GeneralUtil.fontSize(context) * 0.5,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
                               color: Colors.black,
-                              fontWeight: FontWeight.w500)),
+                              fontWeight: FontWeight.w600)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -408,119 +444,157 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text('Absensi',
-                      style: TextStyle(
-                          backgroundColor: Colors.white,
-                          fontSize: GeneralUtil.fontSize(context) * 0.4,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Absensi 3 hari Terakhir',
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600)),
+                      InkWell(
+                        onTap: () {
+                          var bottomBarProvider =
+                              Provider.of<TabProvider>(context, listen: false);
+                          bottomBarProvider.setPage(2);
+                          bottomBarProvider.setTab(2);
+                        },
+                        child: Text('Selengkapnya',
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   BlocListener(
                       bloc: listBloc,
                       listener: (_, ListState state) async {
-                        if (state is ListLoading) {
-                          setState(() {
-                            isLoading = true;
-                          });
-                        }
-                        if (state is ListLoaded) {
-                          setState(() {
-                            isLoading = false;
-                            data.addAll(state.absenListResponseModel.data!);
-                          });
-                        }
+                        if (state is ListLoading) {}
+                        if (state is ListLoaded) {}
                         if (state is ListError) {
                           GeneralUtil()
                               .showSnackBarError(context, state.error!);
-                          setState(() {
-                            isLoading = false;
-                          });
                         }
                         if (state is ListException) {
-                          setState(() {
-                            isLoading = false;
-                          });
                           _expDialog(context);
                         }
                       },
                       child: BlocBuilder(
                           bloc: listBloc,
                           builder: (_, ListState state) {
-                            return isLoading
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 35,
-                                      height: 35,
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  )
-                                : ListView.separated(
-                                    physics:
-                                        const NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      return InkWell(
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              StringRouterUtil
-                                                  .absenDetailScreenRoute,
-                                              arguments: data[index].id);
-                                        },
-                                        child: Container(
-                                          height: 50,
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 3,
-                                                  offset: const Offset(
-                                                      -6, 4), // Shadow position
-                                                ),
-                                              ],
-                                              border: Border.all(
-                                                  color: const Color(0xFFC2C2C2)
-                                                      .withOpacity(0.1))),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    width: 16,
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          data[index].status! ==
-                                                                  'Masuk'
-                                                              ? greenColor
-                                                              : redColor,
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .only(
-                                                        topLeft:
-                                                            Radius.circular(6),
-                                                        bottomLeft:
-                                                            Radius.circular(6),
+                            if (state is ListLoaded) {
+                              return state.absenListResponseModel.data!.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                          'Data absen 3 hari terakhir belum tersedia',
+                                          style: TextStyle(
+                                              backgroundColor: Colors.white,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.35,
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w500)),
+                                    )
+                                  : ListView.separated(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context,
+                                                StringRouterUtil
+                                                    .absenDetailScreenRoute,
+                                                arguments: state
+                                                    .absenListResponseModel
+                                                    .data![index]
+                                                    .id);
+                                          },
+                                          child: Container(
+                                            height: 50,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(-6,
+                                                        4), // Shadow position
+                                                  ),
+                                                ],
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFFC2C2C2)
+                                                            .withOpacity(0.1))),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 16,
+                                                      decoration: BoxDecoration(
+                                                        color: state
+                                                                    .absenListResponseModel
+                                                                    .data![
+                                                                        index]
+                                                                    .status! ==
+                                                                'Masuk'
+                                                            ? greenColor
+                                                            : redColor,
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  6),
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  6),
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      FittedBox(
-                                                        fit: BoxFit.fitWidth,
-                                                        child: Text(
+                                                    const SizedBox(width: 10),
+                                                    Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        FittedBox(
+                                                          fit: BoxFit.fitWidth,
+                                                          child: Text(
+                                                              GeneralUtil.monthCheck2(state
+                                                                  .absenListResponseModel
+                                                                  .data![index]
+                                                                  .createdAt!),
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.4,
+                                                                  color: const Color(
+                                                                      0xFF797979),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400)),
+                                                        ),
+                                                        Text(
                                                             GeneralUtil
-                                                                .monthCheck2(data[
+                                                                .dateDayCheck(state
+                                                                    .absenListResponseModel
+                                                                    .data![
                                                                         index]
                                                                     .createdAt!),
                                                             style: TextStyle(
@@ -528,42 +602,70 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                         .fontSize(
                                                                             context) *
                                                                     0.4,
-                                                                color: const Color(
-                                                                    0xFF797979),
+                                                                color: Colors
+                                                                    .black,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w400)),
-                                                      ),
-                                                      Text(
-                                                          GeneralUtil
-                                                              .dateDayCheck(data[
-                                                                      index]
-                                                                  .createdAt!),
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.4,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400)),
-                                                    ],
-                                                  ),
-                                                  const SizedBox(width: 18),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
+                                                      ],
+                                                    ),
+                                                    const SizedBox(width: 18),
+                                                    Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                            GeneralUtil.dayCheck(state
+                                                                .absenListResponseModel
+                                                                .data![index]
+                                                                .createdAt!),
+                                                            style: TextStyle(
+                                                                fontSize: GeneralUtil
+                                                                        .fontSize(
+                                                                            context) *
+                                                                    0.4,
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w500)),
+                                                        Text(
+                                                            state
+                                                                .absenListResponseModel
+                                                                .data![index]
+                                                                .status!,
+                                                            style: TextStyle(
+                                                                fontSize: GeneralUtil
+                                                                        .fontSize(
+                                                                            context) *
+                                                                    0.35,
+                                                                color: state
+                                                                            .absenListResponseModel
+                                                                            .data![
+                                                                                index]
+                                                                            .status! ==
+                                                                        'Masuk'
+                                                                    ? greenColor
+                                                                    : redColor,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400)),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 16.0),
+                                                  child: Row(
                                                     children: [
                                                       Text(
-                                                          GeneralUtil.dayCheck(
-                                                              data[index]
-                                                                  .createdAt!),
+                                                          '${state.absenListResponseModel.data![index].checkInTime!.string} - ${state.absenListResponseModel.data![index].checkOutTime!.string}',
                                                           style: TextStyle(
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
@@ -574,83 +676,79 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w500)),
-                                                      Text(data[index].status!,
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.35,
-                                                              color: data[index]
-                                                                          .status! ==
-                                                                      'Masuk'
-                                                                  ? greenColor
-                                                                  : redColor,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400)),
+                                                      const SizedBox(width: 18),
+                                                      InkWell(
+                                                        onTap: () {},
+                                                        child: Container(
+                                                          width: 24,
+                                                          height: 24,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: primaryColor,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4),
+                                                          ),
+                                                          child: const Center(
+                                                              child: Icon(
+                                                            Icons
+                                                                .arrow_forward_ios_rounded,
+                                                            color: Colors.white,
+                                                            size: 16,
+                                                          )),
+                                                        ),
+                                                      ),
                                                     ],
                                                   ),
-                                                ],
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 16.0),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                        '${data[index].checkInTime!.string} - ${data[index].checkOutTime!.string}',
-                                                        style: TextStyle(
-                                                            fontSize: GeneralUtil
-                                                                    .fontSize(
-                                                                        context) *
-                                                                0.4,
-                                                            color: Colors.black,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w500)),
-                                                    const SizedBox(width: 18),
-                                                    InkWell(
-                                                      onTap: () {},
-                                                      child: Container(
-                                                        width: 24,
-                                                        height: 24,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: primaryColor,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(4),
-                                                        ),
-                                                        child: const Center(
-                                                            child: Icon(
-                                                          Icons
-                                                              .arrow_forward_ios_rounded,
-                                                          color: Colors.white,
-                                                          size: 16,
-                                                        )),
-                                                      ),
-                                                    ),
-                                                  ],
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    },
-                                    separatorBuilder: (context, index) {
-                                      return const SizedBox(height: 10);
-                                    },
-                                    itemCount: data.length);
+                                        );
+                                      },
+                                      separatorBuilder: (context, index) {
+                                        return const SizedBox(height: 10);
+                                      },
+                                      itemCount: state
+                                          .absenListResponseModel.data!.length);
+                            }
+                            return const Center(
+                              child: SizedBox(
+                                width: 35,
+                                height: 35,
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
                           })),
-                  const SizedBox(height: 16),
-                  Text('Acara',
-                      style: TextStyle(
-                          backgroundColor: Colors.white,
-                          fontSize: GeneralUtil.fontSize(context) * 0.4,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Acara Terdekat',
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600)),
+                      InkWell(
+                        onTap: () {
+                          var bottomBarProvider =
+                              Provider.of<TabProvider>(context, listen: false);
+                          bottomBarProvider.setPage(4);
+                          bottomBarProvider.setTab(4);
+                        },
+                        child: Text('Selengkapnya',
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   ListView(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
@@ -766,8 +864,492 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context,
+                              StringRouterUtil.aktifitasDetailScreenRoute);
+                        },
+                        child: Container(
+                          height: 50,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  blurRadius: 3,
+                                  offset:
+                                      const Offset(-6, 4), // Shadow position
+                                ),
+                              ],
+                              border: Border.all(
+                                  color: const Color(0xFFC2C2C2)
+                                      .withOpacity(0.1))),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: 35,
+                                decoration: const BoxDecoration(
+                                  color: yellowColor,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(6),
+                                    bottomLeft: Radius.circular(6),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text('01',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.4,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.23,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Judul',
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.3,
+                                            color: const Color(0xFF797979),
+                                            fontWeight: FontWeight.w400)),
+                                    Text('Alamat',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.35,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Senin',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.3,
+                                          color: const Color(0xFF797979),
+                                          fontWeight: FontWeight.w400)),
+                                  Text('09:00 - 18:00',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.35,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                              Text('Upacara',
+                                  style: TextStyle(
+                                      fontSize:
+                                          GeneralUtil.fontSize(context) * 0.3,
+                                      color: const Color(0xFF797979),
+                                      fontWeight: FontWeight.w400)),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 6.0),
+                                child: SizedBox(
+                                  width: 60,
+                                  child: Text('Pending',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.35,
+                                          color: yellowColor,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context,
+                              StringRouterUtil.aktifitasDetailScreenRoute);
+                        },
+                        child: Container(
+                          height: 50,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  blurRadius: 3,
+                                  offset:
+                                      const Offset(-6, 4), // Shadow position
+                                ),
+                              ],
+                              border: Border.all(
+                                  color: const Color(0xFFC2C2C2)
+                                      .withOpacity(0.1))),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                width: 35,
+                                decoration: const BoxDecoration(
+                                  color: yellowColor,
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(6),
+                                    bottomLeft: Radius.circular(6),
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text('01',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.4,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.23,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Judul',
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.3,
+                                            color: const Color(0xFF797979),
+                                            fontWeight: FontWeight.w400)),
+                                    Text('Alamat',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.35,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500)),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Senin',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.3,
+                                          color: const Color(0xFF797979),
+                                          fontWeight: FontWeight.w400)),
+                                  Text('09:00 - 18:00',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.35,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                              Text('Upacara',
+                                  style: TextStyle(
+                                      fontSize:
+                                          GeneralUtil.fontSize(context) * 0.3,
+                                      color: const Color(0xFF797979),
+                                      fontWeight: FontWeight.w400)),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 6.0),
+                                child: SizedBox(
+                                  width: 60,
+                                  child: Text('Pending',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.35,
+                                          color: yellowColor,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Dinas Luar Terdekat',
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600)),
+                      InkWell(
+                        onTap: () {
+                          var bottomBarProvider =
+                              Provider.of<TabProvider>(context, listen: false);
+                          bottomBarProvider.setPage(3);
+                          bottomBarProvider.setTab(3);
+                        },
+                        child: Text('Selengkapnya',
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  BlocListener(
+                      bloc: dinasLuarListBloc,
+                      listener: (_, DinasLuarListState state) async {
+                        if (state is DinasLuarListLoading) {}
+                        if (state is DinasLuarListLoaded) {}
+                        if (state is DinasLuarListError) {
+                          GeneralUtil()
+                              .showSnackBarError(context, state.error!);
+                        }
+                        if (state is DinasLuarListException) {
+                          _expDialog(context);
+                        }
+                      },
+                      child: BlocBuilder(
+                          bloc: dinasLuarListBloc,
+                          builder: (_, DinasLuarListState state) {
+                            if (state is DinasLuarListLoaded) {
+                              return state
+                                      .dinasLuarListResponseModel.data!.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                          'Data dinas luar terdekat belum tersedia',
+                                          style: TextStyle(
+                                              backgroundColor: Colors.white,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.35,
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w500)),
+                                    )
+                                  : ListView.separated(
+                                      itemCount: state
+                                          .dinasLuarListResponseModel
+                                          .data!
+                                          .length,
+                                      separatorBuilder: (context, index) {
+                                        return const SizedBox(height: 10);
+                                      },
+                                      padding: const EdgeInsets.only(
+                                          left: 16, right: 16, bottom: 40),
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context,
+                                                StringRouterUtil
+                                                    .dinasLuarDetailScreenRoute,
+                                                arguments: state
+                                                    .dinasLuarListResponseModel
+                                                    .data![index]
+                                                    .id);
+                                          },
+                                          child: Container(
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(-6,
+                                                        4), // Shadow position
+                                                  ),
+                                                ],
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFFC2C2C2)
+                                                            .withOpacity(0.1))),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Container(
+                                                  width: 35,
+                                                  height: 60,
+                                                  decoration: BoxDecoration(
+                                                    color: state
+                                                                .dinasLuarListResponseModel
+                                                                .data![index]
+                                                                .statusPengajuan ==
+                                                            'Pending'
+                                                        ? yellowColor
+                                                        : greenColor,
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(6),
+                                                      bottomLeft:
+                                                          Radius.circular(6),
+                                                    ),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text('0${index + 1}',
+                                                        style: TextStyle(
+                                                            fontSize: GeneralUtil
+                                                                    .fontSize(
+                                                                        context) *
+                                                                0.4,
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500)),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.55,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                          state
+                                                              .dinasLuarListResponseModel
+                                                              .data![index]
+                                                              .name!,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.4,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                      Text(
+                                                          state
+                                                              .dinasLuarListResponseModel
+                                                              .data![index]
+                                                              .address!,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.3,
+                                                              color: const Color(
+                                                                  0xFF797979),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400)),
+                                                      Text(
+                                                          '${GeneralUtil.dateConvert(state.dinasLuarListResponseModel.data![index].startDate!)} - ${GeneralUtil.dateConvert(state.dinasLuarListResponseModel.data![index].endDate!)}',
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.3,
+                                                              color: const Color(
+                                                                  0xFF797979),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 16.0),
+                                                  child: Row(
+                                                    children: [
+                                                      Text(
+                                                          state
+                                                              .dinasLuarListResponseModel
+                                                              .data![index]
+                                                              .statusPengajuan!,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.35,
+                                                              color: state
+                                                                          .dinasLuarListResponseModel
+                                                                          .data![
+                                                                              index]
+                                                                          .statusPengajuan ==
+                                                                      'Pending'
+                                                                  ? yellowColor
+                                                                  : greenColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                      const SizedBox(width: 8),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                            }
+                            return const Center(
+                              child: SizedBox(
+                                width: 45,
+                                height: 45,
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          })),
+                  const SizedBox(height: 24),
+                  Text('Tunjangan yang sudah dicapai',
+                      style: TextStyle(
+                          backgroundColor: Colors.white,
+                          fontSize: GeneralUtil.fontSize(context) * 0.4,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.25,
+                      child: chart.BarChart(_createSampleData()))
                 ],
               ),
             ),
@@ -776,4 +1358,11 @@ class _BerandaScreenState extends State<BerandaScreen> {
       ),
     );
   }
+}
+
+class OrdinalSales {
+  final String year;
+  final int sales;
+
+  OrdinalSales(this.year, this.sales);
 }

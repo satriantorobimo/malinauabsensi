@@ -243,30 +243,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                       state.loginResponseModel.data!.token!);
                                   prefs.setString('userid',
                                       state.loginResponseModel.data!.userId!);
-                                  prefs.setString(
-                                      'userstatus',
-                                      state.loginResponseModel.data!
-                                          .userStatus!);
-                                  prefs.setString(
-                                      'attendstatus',
-                                      state.loginResponseModel.data!
-                                          .attendanceStatus!);
-                                  prefs.setString(
-                                      'clockinstart',
-                                      state.loginResponseModel.data!
-                                          .checkInStartTime!);
-                                  prefs.setString(
-                                      'clockinend',
-                                      state.loginResponseModel.data!
-                                          .checkInEndTime!);
-                                  prefs.setString(
-                                      'clockoutstart',
-                                      state.loginResponseModel.data!
-                                          .checkOutStartTime!);
-                                  prefs.setString(
-                                      'clockoutend',
-                                      state.loginResponseModel.data!
-                                          .checkOutEndTime!);
                                   userDetailBloc.add(UserDetailAttempt());
                                 }
                                 if (state is LoginError) {

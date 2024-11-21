@@ -1,8 +1,12 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/aktifitas/bloc/acara_list_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
+import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
@@ -32,10 +36,14 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
   bool isLoading = true;
   String userType = '';
   bool isDataAktifitas = true;
+  AcaraListBloc acaraListBloc = AcaraListBloc(aktifitasARepo: AktifitasARepo());
+  List<Data> dataList = [];
+  List<Data> dataListTemp = [];
 
   @override
   void initState() {
     getUserType();
+    acaraListBloc.add(const AcaraListAttempt(start: '', end: ''));
     super.initState();
   }
 
@@ -45,6 +53,59 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
     userType = type;
     isLoading = false;
     setState(() {});
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -252,6 +313,32 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                                       setState(() {
                                         selectedFilter = index;
                                       });
+                                      if (index == 0) {
+                                        acaraListBloc.add(
+                                            const AcaraListAttempt(
+                                                start: '', end: ''));
+                                      } else if (index == 1) {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfLastSevenDays();
+                                        acaraListBloc.add(AcaraListAttempt(
+                                            start: dateRange['firstDate']!,
+                                            end: dateRange['lastDate']!));
+                                      } else if (index == 2) {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfCurrentMonth();
+                                        acaraListBloc.add(AcaraListAttempt(
+                                            start: dateRange['firstDate']!,
+                                            end: dateRange['lastDate']!));
+                                      } else {
+                                        Map<String, String> dateRange =
+                                            GeneralUtil()
+                                                .getFormattedFirstAndLastDateOfLastThreeMonths();
+                                        acaraListBloc.add(AcaraListAttempt(
+                                            start: dateRange['firstDate']!,
+                                            end: dateRange['lastDate']!));
+                                      }
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -266,7 +353,7 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
-                                                    0.35,
+                                                    0.4,
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.w500)),
                                       ),
@@ -288,7 +375,48 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                       ),
                     ),
                   ),
-                  aktifitasStaff()
+                  BlocListener(
+                      bloc: acaraListBloc,
+                      listener: (_, AcaraListState state) async {
+                        if (state is AcaraListLoading) {
+                          setState(() {
+                            isLoading = true;
+                          });
+                        }
+                        if (state is AcaraListLoaded) {
+                          setState(() {
+                            isLoading = false;
+                            dataList = state.acaraListResponseModel.data!;
+                            dataListTemp = dataList;
+                          });
+                        }
+                        if (state is AcaraListError) {
+                          GeneralUtil()
+                              .showSnackBarError(context, state.error!);
+                          setState(() {
+                            isLoading = false;
+                          });
+                        }
+                        if (state is AcaraListException) {
+                          setState(() {
+                            isLoading = false;
+                          });
+                          _expDialog(context);
+                        }
+                      },
+                      child: BlocBuilder(
+                          bloc: acaraListBloc,
+                          builder: (_, AcaraListState state) {
+                            return isLoading
+                                ? const Center(
+                                    child: SizedBox(
+                                      width: 45,
+                                      height: 45,
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : aktifitasStaff();
+                          })),
                 ],
               ),
       ),
@@ -296,15 +424,19 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
   }
 
   Widget aktifitasStaff() {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      physics: const NeverScrollableScrollPhysics(),
+    return ListView.separated(
+      itemCount: dataList.length,
+      separatorBuilder: (context, index) {
+        return const SizedBox(height: 10);
+      },
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 40),
       shrinkWrap: true,
-      children: [
-        InkWell(
+      itemBuilder: (context, index) {
+        return InkWell(
           onTap: () {
             Navigator.pushNamed(
-                context, StringRouterUtil.aktifitasDetailScreenRoute);
+                context, StringRouterUtil.aktifitasDetailScreenRoute,
+                arguments: dataList[index].id);
           },
           child: Container(
             height: 50,
@@ -326,15 +458,17 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
               children: [
                 Container(
                   width: 35,
-                  decoration: const BoxDecoration(
-                    color: yellowColor,
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: dataList[index].status == false
+                        ? yellowColor
+                        : greenColor,
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(6),
                       bottomLeft: Radius.circular(6),
                     ),
                   ),
                   child: Center(
-                    child: Text('01',
+                    child: Text('0${index + 1}',
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.4,
                             color: Colors.white,
@@ -347,12 +481,12 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Judul',
+                      Text(dataList[index].name!,
                           style: TextStyle(
                               fontSize: GeneralUtil.fontSize(context) * 0.3,
                               color: const Color(0xFF797979),
                               fontWeight: FontWeight.w400)),
-                      Text('Alamat',
+                      Text(dataList[index].address!,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               fontSize: GeneralUtil.fontSize(context) * 0.35,
@@ -365,19 +499,20 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Senin',
+                    Text(GeneralUtil.dayConv(dataList[index].day!.toString()),
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.3,
                             color: const Color(0xFF797979),
                             fontWeight: FontWeight.w400)),
-                    Text('09:00 - 18:00',
+                    Text(
+                        '${dataList[index].startTime!} - ${dataList[index].endTime!}',
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.35,
                             color: Colors.black,
                             fontWeight: FontWeight.w500)),
                   ],
                 ),
-                Text('Upacara',
+                Text(dataList[index].kind!,
                     style: TextStyle(
                         fontSize: GeneralUtil.fontSize(context) * 0.3,
                         color: const Color(0xFF797979),
@@ -386,18 +521,23 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                   padding: const EdgeInsets.only(right: 6.0),
                   child: SizedBox(
                     width: 60,
-                    child: Text('Pending',
+                    child: Text(
+                        dataList[index].status == false
+                            ? 'Tidak Aktif'
+                            : 'Aktif',
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.35,
-                            color: yellowColor,
+                            color: dataList[index].status == false
+                                ? yellowColor
+                                : greenColor,
                             fontWeight: FontWeight.w500)),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

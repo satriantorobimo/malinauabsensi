@@ -1,3 +1,5 @@
+import 'package:malinau_absensi/feature/aktifitas/data/acara_detail_response_model.dart';
+import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/data/dinas_luar_detail_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/data/dinas_luar_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_api.dart';
@@ -11,4 +13,10 @@ class AktifitasARepo {
 
   Future<DinasLuarDetailResponseModel?> attemptDinasLuarDetail(String id) =>
       aktifitasApi.attemptDinasLuarDetail(id);
+
+  Future<AcaraListResponseModel?> attemptAcaraList(String page, String limit) =>
+      aktifitasApi.attemptAcaraList(page, limit);
+
+  Future<AcaraDetailResponseModel?> attemptAcaraDetail(String id) =>
+      aktifitasApi.attemptAcaraDetail(id);
 }

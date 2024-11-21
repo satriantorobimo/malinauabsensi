@@ -506,20 +506,20 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                         Text(dataList[index].name!,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.45,
+                                fontSize: GeneralUtil.fontSize(context) * 0.4,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500)),
                         Text(dataList[index].address!,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                fontSize: GeneralUtil.fontSize(context) * 0.3,
                                 color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w400)),
                         Text(
                             '${GeneralUtil.dateConvert(dataList[index].startDate!)} - ${GeneralUtil.dateConvert(dataList[index].endDate!)}',
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                fontSize: GeneralUtil.fontSize(context) * 0.3,
                                 color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w400)),
                       ],

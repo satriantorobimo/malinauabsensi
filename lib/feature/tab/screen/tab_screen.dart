@@ -27,10 +27,10 @@ class _TabScreenState extends State<TabScreen> {
       return const BerandaScreen();
     }
     if (index == 1) {
-      return const DinasLuarScreen();
+      return const IzinScreen();
     }
     if (index == 2) {
-      return const IzinScreen();
+      return const DinasLuarScreen();
     }
     if (index == 3) {
       return const AktifitasScreen();
@@ -101,9 +101,9 @@ class _TabScreenState extends State<TabScreen> {
         items: [
           FABBottomAppBarComp(
               iconData: 'assets/icons/home.svg', text: 'Beranda'),
+          FABBottomAppBarComp(iconData: 'assets/icons/izin.svg', text: 'Izin'),
           FABBottomAppBarComp(
               iconData: 'assets/icons/activity.svg', text: 'Dinas Luar'),
-          FABBottomAppBarComp(iconData: 'assets/icons/izin.svg', text: 'Izin'),
           FABBottomAppBarComp(iconData: 'assets/icons/izin.svg', text: 'Acara'),
         ],
         backgroundColor: Colors.white,

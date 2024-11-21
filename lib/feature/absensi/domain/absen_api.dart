@@ -6,6 +6,8 @@ import 'package:malinau_absensi/feature/absensi/data/absen_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_detail_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_list_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/general_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/update_absen_request_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/url_util.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +18,8 @@ class AbsenApi {
   AbsenDetailResponseModel absenDetailResponseModel =
       AbsenDetailResponseModel();
   GeneralResponseModel generalResponseModel = GeneralResponseModel();
+  UserAvailabilityResponseModel userAvailabilityResponseModel =
+      UserAvailabilityResponseModel();
 
   UrlUtil urlUtil = UrlUtil();
 
@@ -147,6 +151,60 @@ class AbsenApi {
         return response.body;
       } else {
         throw response.body;
+      }
+    } catch (ex) {
+      throw ex.toString();
+    }
+  }
+
+  Future<GeneralResponseModel> attemptUpdateAbsen(
+      UpdateAbsenRequestModel updateAbsenRequestModel) async {
+    final String? token = await SharedPrefUtil.getSharedString('token');
+    final String? userid = await SharedPrefUtil.getSharedString('userid');
+    final Map<String, String> header =
+        urlUtil.getHeaderTypeWithTokenNoUserId(token!);
+    final Map mapData = {};
+    mapData['userID'] = userid;
+    mapData['requestDate'] = updateAbsenRequestModel.requestDate;
+    mapData['keterangan'] = updateAbsenRequestModel.keterangan;
+    final json = jsonEncode(mapData);
+
+    try {
+      final res = await http.put(
+          Uri.parse(urlUtil.getUrlUpdateAbsen(updateAbsenRequestModel.userID!)),
+          body: json,
+          headers: header);
+      if (res.statusCode == 200) {
+        generalResponseModel =
+            GeneralResponseModel.fromJson(jsonDecode(res.body));
+        return generalResponseModel;
+      } else {
+        generalResponseModel =
+            GeneralResponseModel.fromJson(jsonDecode(res.body));
+        throw generalResponseModel.message!;
+      }
+    } catch (ex) {
+      throw ex.toString();
+    }
+  }
+
+  Future<UserAvailabilityResponseModel> attemptUserAvailability() async {
+    final String? token = await SharedPrefUtil.getSharedString('token');
+    final String? userid = await SharedPrefUtil.getSharedString('userid');
+    final Map<String, String> header =
+        urlUtil.getHeaderTypeWithTokenNoUserId(token!);
+
+    try {
+      final res = await http.get(Uri.parse(urlUtil.getUrlAbsensiAvail(userid!)),
+          headers: header);
+      if (res.statusCode == 200) {
+        userAvailabilityResponseModel =
+            UserAvailabilityResponseModel.fromJson(jsonDecode(res.body));
+        return userAvailabilityResponseModel;
+      } else {
+        userAvailabilityResponseModel =
+            UserAvailabilityResponseModel.fromJson(jsonDecode(res.body));
+        throw userAvailabilityResponseModel.message!;
       }
     } catch (ex) {
       throw ex.toString();

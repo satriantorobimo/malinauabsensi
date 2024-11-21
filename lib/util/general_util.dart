@@ -38,6 +38,50 @@ class GeneralUtil {
     return outputDate;
   }
 
+  static String dayConv(String data) {
+    var hari = "";
+
+    switch (data) {
+      case '1':
+        {
+          hari = "Minggu";
+        }
+        break;
+      case '2':
+        {
+          hari = "Senin";
+        }
+        break;
+      case '3':
+        {
+          hari = "Selasa";
+        }
+        break;
+      case '4':
+        {
+          hari = "Rabu";
+        }
+        break;
+      case '5':
+        {
+          hari = "Kamis";
+        }
+        break;
+      case '6':
+        {
+          hari = "Jumat";
+        }
+        break;
+      case '7':
+        {
+          hari = "Sabtu";
+        }
+        break;
+    }
+
+    return hari;
+  }
+
   static String dayCheck(String data) {
     DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
     var inputDate = DateTime.parse(parseDate.toString());

@@ -25,4 +25,6 @@ class StringRouterUtil {
       'permohonan-izin-detail-route';
   static const String permohonanAktifitasDetailScreenRoute =
       'permohonan-aktifitas-detail-route';
+  static const String settingScreenRoute = 'setting-route';
+  static const String profileScreenRoute = 'profile-route';
 }

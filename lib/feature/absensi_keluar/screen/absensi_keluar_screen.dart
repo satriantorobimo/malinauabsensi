@@ -8,14 +8,14 @@ import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AbsesnsiKeluarScreen extends StatefulWidget {
-  final bool isAbsen;
-
-  const AbsesnsiKeluarScreen({super.key, required this.isAbsen});
+  final Data dataUser;
+  const AbsesnsiKeluarScreen({super.key, required this.dataUser});
 
   @override
   State<AbsesnsiKeluarScreen> createState() => _AbsesnsiKeluarScreenState();

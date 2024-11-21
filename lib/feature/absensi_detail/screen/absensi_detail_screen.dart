@@ -2,10 +2,13 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/bloc/detail_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/absensi/bloc/update_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_detail_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/update_absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
@@ -32,6 +35,7 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
   final TextEditingController _keteranganController = TextEditingController();
 
   DetailBloc detailBloc = DetailBloc(absenRepo: AbsenRepo());
+  UpdateBloc updateBloc = UpdateBloc(absenRepo: AbsenRepo());
 
   @override
   void initState() {
@@ -496,25 +500,97 @@ class _AbsesnsiDetailScreenState extends State<AbsesnsiDetailScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              InkWell(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                      child: Text('Simpan',
-                          style: TextStyle(
-                              fontSize: GeneralUtil.fontSize(context) * 0.37,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600))),
-                ),
-              ),
+              BlocListener(
+                  bloc: updateBloc,
+                  listener: (_, UpdateState state) async {
+                    if (state is UpdateLoading) {}
+                    if (state is UpdateLoaded) {
+                      setState(() {
+                        isEdit = !isEdit;
+                      });
+                    }
+                    if (state is UpdateError) {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
+                    if (state is UpdateException) {
+                      _expDialog(context);
+                    }
+                  },
+                  child: BlocBuilder(
+                      bloc: updateBloc,
+                      builder: (_, UpdateState state) {
+                        if (state is UpdateLoading) {
+                          return const Center(
+                            child: SizedBox(
+                              width: 45,
+                              height: 45,
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                        if (state is UpdateLoaded) {
+                          return InkWell(
+                            onTap: () {
+                              DateTime now = DateTime.now();
+                              String formatedDate =
+                                  DateFormat('dd-MM-yyyy').format(now);
+                              updateBloc.add(UpdateAttempt(
+                                  updateAbsenRequestModel:
+                                      UpdateAbsenRequestModel(
+                                          requestDate: formatedDate,
+                                          keterangan:
+                                              _keteranganController.text,
+                                          userID: widget.id)));
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                  child: Text('Simpan',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.37,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600))),
+                            ),
+                          );
+                        }
+
+                        return InkWell(
+                          onTap: () {
+                            DateTime now = DateTime.now();
+                            String formatedDate =
+                                DateFormat('dd-MM-yyyy').format(now);
+                            updateBloc.add(UpdateAttempt(
+                                updateAbsenRequestModel:
+                                    UpdateAbsenRequestModel(
+                                        requestDate: formatedDate,
+                                        keterangan: _keteranganController.text,
+                                        userID: widget.id)));
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: primaryColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                                child: Text('Simpan',
+                                    style: TextStyle(
+                                        fontSize:
+                                            GeneralUtil.fontSize(context) *
+                                                0.37,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600))),
+                          ),
+                        );
+                      })),
             ],
           ),
         )

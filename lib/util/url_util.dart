@@ -90,6 +90,28 @@ class UrlUtil {
     return baseUrl + urlCheckOut2;
   }
 
+  static String urlUpdateAbsen(String id) => 'v2/attendance/$id';
+
+  String getUrlUpdateAbsen(String id) {
+    final String urlUpdateAbsen2 = urlUpdateAbsen(id);
+    return baseUrl + urlUpdateAbsen2;
+  }
+
+  static String urlAcaraList(String start, String end) =>
+      'v1/event?page=1&limit=500&start_date=$start&to_date=$end';
+
+  String getUrlAcaraList(String start, String end) {
+    final String urlAcaraList2 = urlAcaraList(start, end);
+    return baseUrl + urlAcaraList2;
+  }
+
+  static String urlAcaraDetail(String id) => 'v1/event/$id';
+
+  String getUrlAcaraDetail(String id) {
+    final String urlAcaraDetail2 = urlAcaraDetail(id);
+    return baseUrl + urlAcaraDetail2;
+  }
+
   static String urlDinasLuar(String start, String end) =>
       'v2/dinas-luar?page=1&limit=500&start_date=$start&to_date=$end&status=Approved';
 
@@ -118,6 +140,13 @@ class UrlUtil {
   String getUrlAbsensiDetail(String id) {
     final String urlAbsensiDetail2 = urlAbsensiDetail(id);
     return baseUrl + urlAbsensiDetail2;
+  }
+
+  static String urlAbsensiAvail(String id) => 'v2/user/$id//availability';
+
+  String getUrlAbsensiAvail(String id) {
+    final String urlAbsensiAvail2 = urlAbsensiAvail(id);
+    return baseUrl + urlAbsensiAvail2;
   }
 
   static String urlUserDetail(String id) => 'v1/user/$id';
