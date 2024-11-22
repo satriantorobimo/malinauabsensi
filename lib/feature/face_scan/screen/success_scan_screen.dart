@@ -5,6 +5,7 @@ import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SuccessScanScreen extends StatefulWidget {
   final bool isIn;
@@ -15,6 +16,23 @@ class SuccessScanScreen extends StatefulWidget {
 }
 
 class _SuccessScanScreenState extends State<SuccessScanScreen> {
+  bool isLoadingData = true;
+  late String name;
+  late String role;
+  @override
+  void initState() {
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -63,52 +81,55 @@ class _SuccessScanScreenState extends State<SuccessScanScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FutureBuilder<String?>(
-                            future: SharedPrefUtil.getSharedString(
-                                'nama'), // Key for retrieval
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Container();
-                              } else if (snapshot.hasError) {
-                                return Text("Error: ${snapshot.error}");
-                              } else {
-                                final username =
-                                    snapshot.data ?? "No name found";
-                                return Text('Hi, $username',
+                      isLoadingData
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    width: 80,
+                                    height: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    width: 80,
+                                    height: 16,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Hi, $name',
                                     style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black,
-                                        fontWeight: FontWeight.w500));
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 2),
-                          FutureBuilder<String?>(
-                            future: SharedPrefUtil.getSharedString(
-                                'role'), // Key for retrieval
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Container();
-                              } else if (snapshot.hasError) {
-                                return Text("Error: ${snapshot.error}");
-                              } else {
-                                final role = snapshot.data ?? "No role found";
-                                return Text(role,
+                                        fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 2),
+                                Text(role,
                                     style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF797979),
-                                        fontWeight: FontWeight.w400));
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                                        fontWeight: FontWeight.w400))
+                              ],
+                            ),
                       const SizedBox(width: 8),
                       DropdownButtonHideUnderline(
                         child: DropdownButton2(

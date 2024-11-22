@@ -120,6 +120,28 @@ class UrlUtil {
     return baseUrl + urlDinasLuar2;
   }
 
+  static String urlIzin(String start, String end) =>
+      'v2/personal-leave-requests?page=1&limit=500&start_date=$start&to_date=$end';
+
+  String getUrlIzin(String start, String end) {
+    final String urlIzin2 = urlIzin(start, end);
+    return baseUrl + urlIzin2;
+  }
+
+  static String urlTambahIzin() => 'v2/leave-requests';
+
+  String getUrlTambahIzin() {
+    final String urlTambahIzin2 = urlTambahIzin();
+    return baseUrl + urlTambahIzin2;
+  }
+
+  static String urlEditIzin(String id) => 'v2/leave-requests/$id';
+
+  String getUrlEditIzin(String id) {
+    final String urlEditIzin2 = urlEditIzin(id);
+    return baseUrl + urlEditIzin2;
+  }
+
   static String urlDinasLuarDetail(String id) => 'v2/dinas-luar/$id';
 
   String getUrlDinasLuarDetail(String id) {

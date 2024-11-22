@@ -16,6 +16,7 @@ import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../absensi/bloc/update_bloc/bloc.dart';
 
@@ -49,7 +50,11 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Data> tempData = [];
   late user.Data dataUser;
   bool isLoading = true;
+  bool isLoadingData = true;
+  late String name;
+  late String role;
   bool isReserved = false;
+
   List<String> filter = [
     'Semua',
     '7 hari terakhir',
@@ -146,6 +151,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (state is UpdateLoading) {}
                     if (state is UpdateLoaded) {
                       Navigator.pop(context);
+                      GeneralUtil().showSnackBarSuccess(
+                          context, 'Keterangan berhasil disimpan');
                     }
                     if (state is UpdateError) {
                       GeneralUtil().showSnackBarError(context, state.error!);
@@ -290,7 +297,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     listBloc.add(const ListAttempt(start: '', end: ''));
-
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
     super.initState();
   }
 
@@ -342,52 +357,55 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(
@@ -498,10 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         if (GeneralUtil().isWithinCheckInTime(
                                             dataUser.checkInRangeTime!
                                                 .startTime!)) {
-                                          Navigator.pushNamed(
-                                              context,
-                                              StringRouterUtil
-                                                  .absenKeluarScreenRoute,
+                                          Navigator.pushNamed(context,
+                                              StringRouterUtil.absenScreenRoute,
                                               arguments: dataUser);
                                         } else {
                                           GeneralUtil().showSnackBarError(
@@ -826,13 +842,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
               child: isLoading
-                  ? const Center(
-                      child: SizedBox(
-                        width: 45,
-                        height: 45,
-                        child: CircularProgressIndicator(),
-                      ),
-                    )
+                  ? Expanded(
+                      child: Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 16),
+                      child: GeneralUtil().loading3Data(10),
+                    ))
                   : mainContent(),
             )
           ],

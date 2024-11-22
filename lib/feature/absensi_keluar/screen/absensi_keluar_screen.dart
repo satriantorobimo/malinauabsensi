@@ -9,9 +9,11 @@ import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart';
+import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AbsesnsiKeluarScreen extends StatefulWidget {
   final Data dataUser;
@@ -30,6 +32,9 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
 
   String date = '';
   String time = '';
+  bool isLoadingData = true;
+  late String name;
+  late String role;
 
   Future<void> _fingerPrintDialog(BuildContext context) async {
     return showDialog(
@@ -119,6 +124,15 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
 
   @override
   void initState() {
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
     checkInternet().then((value) {
       setState(() {
         isInternet = value!;
@@ -189,52 +203,55 @@ class _AbsesnsiKeluarScreenState extends State<AbsesnsiKeluarScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(

@@ -15,6 +15,8 @@ import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan.dart
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan_v2.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_scan_v3.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/success_scan_screen.dart';
+import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart'
+    as izin;
 import 'package:malinau_absensi/feature/izin_detail/screen/izin_detail_screen.dart';
 import 'package:malinau_absensi/feature/login/screen/login_screen.dart';
 import 'package:malinau_absensi/feature/permohonan_aktifitas_detail/screen/permohonan_aktifitas_detail_screen.dart';
@@ -25,6 +27,7 @@ import 'package:malinau_absensi/feature/setting/setting_screen.dart';
 import 'package:malinau_absensi/feature/splash/splash_screen.dart';
 import 'package:malinau_absensi/feature/tab/screen/tab_screen.dart';
 import 'package:malinau_absensi/feature/tab/screen/tab_v2_screen.dart';
+import 'package:malinau_absensi/feature/tambah_izin/screen/edit_izin_screen.dart';
 import 'package:malinau_absensi/feature/tambah_izin/screen/tambah_izin_screen.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
@@ -157,8 +160,17 @@ class Routers {
                 FadeTransition(opacity: a, child: c));
 
       case StringRouterUtil.izinDetailScreenRoute:
+        final izin.Data dataIzin = settings.arguments as izin.Data;
         return PageRouteBuilder<dynamic>(
-            pageBuilder: (_, __, ___) => const IzinDetailScreen(),
+            pageBuilder: (_, __, ___) => IzinDetailScreen(data: dataIzin),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.editDetailScreenRoute:
+        final izin.Data dataIzin = settings.arguments as izin.Data;
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => EditIzinScreen(data: dataIzin),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

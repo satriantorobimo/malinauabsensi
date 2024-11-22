@@ -4,8 +4,10 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:shimmer/shimmer.dart';
 
 class QrScanScreen extends StatefulWidget {
   const QrScanScreen({super.key});
@@ -17,6 +19,9 @@ class QrScanScreen extends StatefulWidget {
 class _QrScanScreenState extends State<QrScanScreen> {
   late Timer _timer;
   int _start = 30;
+  bool isLoadingData = true;
+  late String name;
+  late String role;
 
   void startTimer() {
     const oneSec = Duration(seconds: 1);
@@ -39,6 +44,15 @@ class _QrScanScreenState extends State<QrScanScreen> {
   @override
   void initState() {
     startTimer();
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
     super.initState();
   }
 
@@ -96,52 +110,55 @@ class _QrScanScreenState extends State<QrScanScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FutureBuilder<String?>(
-                            future: SharedPrefUtil.getSharedString(
-                                'nama'), // Key for retrieval
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Container();
-                              } else if (snapshot.hasError) {
-                                return Text("Error: ${snapshot.error}");
-                              } else {
-                                final username =
-                                    snapshot.data ?? "No name found";
-                                return Text('Hi, $username',
+                      isLoadingData
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    width: 80,
+                                    height: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    width: 80,
+                                    height: 16,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Hi, $name',
                                     style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black,
-                                        fontWeight: FontWeight.w500));
-                              }
-                            },
-                          ),
-                          const SizedBox(height: 2),
-                          FutureBuilder<String?>(
-                            future: SharedPrefUtil.getSharedString(
-                                'role'), // Key for retrieval
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return Container();
-                              } else if (snapshot.hasError) {
-                                return Text("Error: ${snapshot.error}");
-                              } else {
-                                final role = snapshot.data ?? "No role found";
-                                return Text(role,
+                                        fontWeight: FontWeight.w500)),
+                                const SizedBox(height: 2),
+                                Text(role,
                                     style: const TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFF797979),
-                                        fontWeight: FontWeight.w400));
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+                                        fontWeight: FontWeight.w400))
+                              ],
+                            ),
                       const SizedBox(width: 8),
                       DropdownButtonHideUnderline(
                         child: DropdownButton2(

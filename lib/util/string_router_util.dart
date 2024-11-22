@@ -21,6 +21,7 @@ class StringRouterUtil {
   static const String dinasLuarDetailScreenRoute = 'dinas-luar-detail-route';
   static const String tambahIzinScreenRoute = 'tambah-izin-route';
   static const String izinDetailScreenRoute = 'izin-detail-route';
+  static const String editDetailScreenRoute = 'edit-detail-route';
   static const String permohonanIzinDetailScreenRoute =
       'permohonan-izin-detail-route';
   static const String permohonanAktifitasDetailScreenRoute =

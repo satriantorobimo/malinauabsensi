@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
+import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/feature/tab/provider/tab_provider.dart';
 import 'package:malinau_absensi/util/general_util.dart';
@@ -12,7 +13,9 @@ import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:community_charts_flutter/community_charts_flutter.dart'
     as chart;
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 import '../absensi/bloc/list_bloc/bloc.dart';
+import '../aktifitas/bloc/acara_list_bloc/bloc.dart';
 import '../aktifitas/bloc/dinas_luar_list_bloc/bloc.dart';
 
 class BerandaScreen extends StatefulWidget {
@@ -32,9 +35,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
     'Logout',
   ];
   bool isLoading = true;
+  bool isLoadingData = true;
+  late String name;
+  late String role;
   ListBloc listBloc = ListBloc(absenRepo: AbsenRepo());
   DinasLuarListBloc dinasLuarListBloc =
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
+  AcaraListBloc acaraListBloc = AcaraListBloc(aktifitasARepo: AktifitasARepo());
   int selectedFilter = 0;
   static List<chart.Series<OrdinalSales, String>> _createSampleData() {
     final data = [
@@ -111,12 +118,23 @@ class _BerandaScreenState extends State<BerandaScreen> {
 
   @override
   void initState() {
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
     Map<String, String> dateRange =
         GeneralUtil().getFormattedFirstAndLastDateOfLast3Days();
     listBloc.add(ListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
-    // dinasLuarListBloc.add(DinasLuarListAttempt(
-    //     end: dateRange['firstDate']!, start: dateRange['lastDate']!));
+    acaraListBloc.add(AcaraListAttempt(
+        end: dateRange['firstDate']!, start: dateRange['lastDate']!));
+    dinasLuarListBloc.add(DinasLuarListAttempt(
+        end: dateRange['firstDate']!, start: dateRange['lastDate']!));
     super.initState();
   }
 
@@ -168,52 +186,55 @@ class _BerandaScreenState extends State<BerandaScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(
@@ -713,13 +734,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                       itemCount: state
                                           .absenListResponseModel.data!.length);
                             }
-                            return const Center(
-                              child: SizedBox(
-                                width: 35,
-                                height: 35,
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
+                            return GeneralUtil().loading3Data(3);
                           })),
                   const SizedBox(height: 24),
                   Row(
@@ -749,347 +764,232 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ListView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context,
-                              StringRouterUtil.aktifitasDetailScreenRoute);
-                        },
-                        child: Container(
-                          height: 50,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  blurRadius: 3,
-                                  offset:
-                                      const Offset(-6, 4), // Shadow position
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: const Color(0xFFC2C2C2)
-                                      .withOpacity(0.1))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 35,
-                                decoration: const BoxDecoration(
-                                  color: yellowColor,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(6),
-                                    bottomLeft: Radius.circular(6),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text('01',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.4,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.23,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Judul',
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.3,
-                                            color: const Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Alamat',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.35,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Senin',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.3,
-                                          color: const Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                  Text('09:00 - 18:00',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
+                  BlocListener(
+                      bloc: acaraListBloc,
+                      listener: (_, AcaraListState state) async {
+                        if (state is AcaraListLoading) {}
+                        if (state is AcaraListLoaded) {}
+                        if (state is AcaraListError) {
+                          GeneralUtil()
+                              .showSnackBarError(context, state.error!);
+                        }
+                        if (state is AcaraListException) {
+                          _expDialog(context);
+                        }
+                      },
+                      child: BlocBuilder(
+                          bloc: acaraListBloc,
+                          builder: (_, AcaraListState state) {
+                            if (state is AcaraListLoaded) {
+                              List<Data> listAcara =
+                                  state.acaraListResponseModel.data!
+                                      .where(
+                                        (element) => element.status == true,
+                                      )
+                                      .toList();
+                              return state.acaraListResponseModel.data!.isEmpty
+                                  ? Center(
+                                      child: Text(
+                                          'Acara terdekat belum tersedia',
+                                          style: TextStyle(
+                                              backgroundColor: Colors.white,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
                                                   0.35,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500)),
-                                ],
-                              ),
-                              Text('Upacara',
-                                  style: TextStyle(
-                                      fontSize:
-                                          GeneralUtil.fontSize(context) * 0.3,
-                                      color: const Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6.0),
-                                child: SizedBox(
-                                  width: 60,
-                                  child: Text('Pending',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.35,
-                                          color: yellowColor,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context,
-                              StringRouterUtil.aktifitasDetailScreenRoute);
-                        },
-                        child: Container(
-                          height: 50,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  blurRadius: 3,
-                                  offset:
-                                      const Offset(-6, 4), // Shadow position
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: const Color(0xFFC2C2C2)
-                                      .withOpacity(0.1))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 35,
-                                decoration: const BoxDecoration(
-                                  color: yellowColor,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(6),
-                                    bottomLeft: Radius.circular(6),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text('01',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.4,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.23,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Judul',
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.3,
-                                            color: const Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Alamat',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.35,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Senin',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.3,
-                                          color: const Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                  Text('09:00 - 18:00',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.35,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500)),
-                                ],
-                              ),
-                              Text('Upacara',
-                                  style: TextStyle(
-                                      fontSize:
-                                          GeneralUtil.fontSize(context) * 0.3,
-                                      color: const Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6.0),
-                                child: SizedBox(
-                                  width: 60,
-                                  child: Text('Pending',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.35,
-                                          color: yellowColor,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context,
-                              StringRouterUtil.aktifitasDetailScreenRoute);
-                        },
-                        child: Container(
-                          height: 50,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  blurRadius: 3,
-                                  offset:
-                                      const Offset(-6, 4), // Shadow position
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: const Color(0xFFC2C2C2)
-                                      .withOpacity(0.1))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: 35,
-                                decoration: const BoxDecoration(
-                                  color: yellowColor,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(6),
-                                    bottomLeft: Radius.circular(6),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text('01',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.4,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.23,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Judul',
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.3,
-                                            color: const Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Alamat',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize:
-                                                GeneralUtil.fontSize(context) *
-                                                    0.35,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Senin',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.3,
-                                          color: const Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                  Text('09:00 - 18:00',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.35,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500)),
-                                ],
-                              ),
-                              Text('Upacara',
-                                  style: TextStyle(
-                                      fontSize:
-                                          GeneralUtil.fontSize(context) * 0.3,
-                                      color: const Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6.0),
-                                child: SizedBox(
-                                  width: 60,
-                                  child: Text('Pending',
-                                      style: TextStyle(
-                                          fontSize:
-                                              GeneralUtil.fontSize(context) *
-                                                  0.35,
-                                          color: yellowColor,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w500)),
+                                    )
+                                  : ListView.separated(
+                                      itemCount: listAcara.length,
+                                      separatorBuilder: (context, index) {
+                                        return const SizedBox(height: 10);
+                                      },
+                                      shrinkWrap: true,
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context,
+                                                StringRouterUtil
+                                                    .aktifitasDetailScreenRoute,
+                                                arguments: listAcara[index].id);
+                                          },
+                                          child: Container(
+                                            height: 50,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(-6,
+                                                        4), // Shadow position
+                                                  ),
+                                                ],
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFFC2C2C2)
+                                                            .withOpacity(0.1))),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Container(
+                                                  width: 35,
+                                                  decoration: BoxDecoration(
+                                                    color: listAcara[index]
+                                                                .status ==
+                                                            false
+                                                        ? yellowColor
+                                                        : greenColor,
+                                                    borderRadius:
+                                                        const BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(6),
+                                                      bottomLeft:
+                                                          Radius.circular(6),
+                                                    ),
+                                                  ),
+                                                  child: Center(
+                                                    child: Text('0${index + 1}',
+                                                        style: TextStyle(
+                                                            fontSize: GeneralUtil
+                                                                    .fontSize(
+                                                                        context) *
+                                                                0.4,
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width *
+                                                      0.2,
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                          listAcara[index]
+                                                              .name!,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.3,
+                                                              color: const Color(
+                                                                  0xFF797979),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400)),
+                                                      Text(
+                                                          listAcara[index]
+                                                              .address!,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.35,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        GeneralUtil.dayConv(
+                                                            listAcara[index]
+                                                                .day!
+                                                                .toString()),
+                                                        style: TextStyle(
+                                                            fontSize: GeneralUtil
+                                                                    .fontSize(
+                                                                        context) *
+                                                                0.3,
+                                                            color: const Color(
+                                                                0xFF797979),
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w400)),
+                                                    Text(
+                                                        '${listAcara[index].startTime!} - ${listAcara[index].endTime!}',
+                                                        style: TextStyle(
+                                                            fontSize: GeneralUtil
+                                                                    .fontSize(
+                                                                        context) *
+                                                                0.35,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w500)),
+                                                  ],
+                                                ),
+                                                Text(listAcara[index].kind!,
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            GeneralUtil.fontSize(
+                                                                    context) *
+                                                                0.3,
+                                                        color: const Color(
+                                                            0xFF797979),
+                                                        fontWeight:
+                                                            FontWeight.w400)),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 16),
+                                                  child: Text(
+                                                      listAcara[index].status ==
+                                                              false
+                                                          ? 'Tidak Aktif'
+                                                          : 'Aktif',
+                                                      style: TextStyle(
+                                                          fontSize: GeneralUtil
+                                                                  .fontSize(
+                                                                      context) *
+                                                              0.35,
+                                                          color: listAcara[
+                                                                          index]
+                                                                      .status ==
+                                                                  false
+                                                              ? yellowColor
+                                                              : greenColor,
+                                                          fontWeight:
+                                                              FontWeight.w500)),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    );
+                            }
+                            return GeneralUtil().loading3Data(3);
+                          })),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1156,8 +1056,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                       separatorBuilder: (context, index) {
                                         return const SizedBox(height: 10);
                                       },
-                                      padding: const EdgeInsets.only(
-                                          left: 16, right: 16, bottom: 40),
                                       shrinkWrap: true,
                                       physics:
                                           const NeverScrollableScrollPhysics(),
@@ -1330,13 +1228,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                       },
                                     );
                             }
-                            return const Center(
-                              child: SizedBox(
-                                width: 45,
-                                height: 45,
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
+                            return GeneralUtil().loading3Data(3);
                           })),
                   const SizedBox(height: 24),
                   Text('Tunjangan yang sudah dicapai',

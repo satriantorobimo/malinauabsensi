@@ -1,10 +1,13 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
-import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:shimmer/shimmer.dart';
 
 class IzinDetailScreen extends StatefulWidget {
-  const IzinDetailScreen({super.key});
+  const IzinDetailScreen({super.key, required this.data});
+  final Data data;
 
   @override
   State<IzinDetailScreen> createState() => _IzinDetailScreenState();
@@ -16,6 +19,23 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
     'Setting',
     'Logout',
   ];
+  bool isLoadingData = true;
+  late String name;
+  late String role;
+
+  @override
+  void initState() {
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,52 +85,55 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(
@@ -174,104 +197,121 @@ class _IzinDetailScreenState extends State<IzinDetailScreen> {
                       size: 24,
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
                     child: Text('Detail Izin',
                         style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF797979),
+                            fontSize: GeneralUtil.fontSize(context) * 0.35,
+                            color: const Color(0xFF797979),
                             fontWeight: FontWeight.w500)),
                   ),
                   Container()
                 ],
               ),
             ),
-            Padding(
-                padding: const EdgeInsets.only(
-                    top: 40.0, left: 16, right: 16.0, bottom: 32.0),
-                child: Container(
-                  padding: const EdgeInsets.all(16.0),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 3,
-                          offset: const Offset(-6, 4), // Shadow position
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Tanggal Izin',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        const Text('12/12/2020 - 12/12/2022',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 16),
-                        const Text('Jenis Izin',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        const Text('Sakit',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 16),
-                        const Text('Keterangan',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        const Text(
-                            'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 16),
-                        const Text('Bukti gambar',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 95,
-                          height: 95,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF797979),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('Status',
-                            style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF797979),
-                                fontWeight: FontWeight.w500)),
-                        const SizedBox(height: 8),
-                        const Text('Pending',
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: yellowColor,
-                                fontWeight: FontWeight.w500)),
-                      ]),
-                )),
+            Expanded(
+                child: ListView(
+              shrinkWrap: true,
+              children: [
+                Padding(
+                    padding: const EdgeInsets.only(
+                        top: 40.0, left: 16, right: 16.0, bottom: 32.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16.0),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.1),
+                              blurRadius: 3,
+                              offset: const Offset(-6, 4), // Shadow position
+                            ),
+                          ],
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                              color: const Color(0xFFC2C2C2).withOpacity(0.1))),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Tanggal Izin',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF797979),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Text(
+                                '${GeneralUtil.convertDate(widget.data.fromDate!)} - ${GeneralUtil.convertDate(widget.data.toDate!)}',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.45,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
+                            Text('Jenis Izin',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF797979),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Text(widget.data.type!,
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.45,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
+                            Text('Keterangan',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF797979),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Text(widget.data.remarks!,
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.45,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 16),
+                            Text('Bukti gambar',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF797979),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 95,
+                              height: 95,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF797979),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text('Status',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: const Color(0xFF797979),
+                                    fontWeight: FontWeight.w500)),
+                            const SizedBox(height: 8),
+                            Text(widget.data.status!,
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.45,
+                                    color: widget.data.status == 'Pending'
+                                        ? yellowColor
+                                        : greenColor,
+                                    fontWeight: FontWeight.w500)),
+                          ]),
+                    )),
+              ],
+            ))
           ],
         ),
       ),

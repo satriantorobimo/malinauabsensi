@@ -11,6 +11,7 @@ import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 class DinasLuarScreen extends StatefulWidget {
   const DinasLuarScreen({super.key});
@@ -37,7 +38,9 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
   String userType = '';
   bool isDataAktifitas = true;
   bool isReserved = false;
-
+  bool isLoadingData = true;
+  late String name;
+  late String role;
   List<Data> dataList = [];
   List<Data> dataListTemp = [];
 
@@ -101,6 +104,15 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
   void initState() {
     getUserType();
     dinasLuarListBloc.add(const DinasLuarListAttempt(start: '', end: ''));
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
     super.initState();
   }
 
@@ -117,329 +129,320 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: userType == ''
-            ? Container()
-            : Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 3,
+                      offset: const Offset(-6, 4), // Shadow position
+                    ),
+                  ],
+                  border: Border(
+                    bottom: BorderSide(
+                        width: 1, color: Colors.grey.withOpacity(0.1)),
+                  ),
+                ),
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.10,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Image.asset('assets/imgs/logo.png', width: 40),
+                    Row(
+                      children: [
+                        Container(
+                          height: 40,
+                          width: 40,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey,
                           ),
-                        ],
-                        border: Border(
-                          bottom: BorderSide(
-                              width: 1, color: Colors.grey.withOpacity(0.1)),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.person_2_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
-                      ),
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.10,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Image.asset('assets/imgs/logo.png', width: 40),
-                          Row(
-                            children: [
-                              Container(
-                                height: 40,
-                                width: 40,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey,
-                                ),
-                                alignment: Alignment.center,
-                                child: const Icon(
-                                  Icons.person_2_rounded,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
+                        const SizedBox(width: 8),
+                        isLoadingData
+                            ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  FutureBuilder<String?>(
-                                    future: SharedPrefUtil.getSharedString(
-                                        'nama'), // Key for retrieval
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return Container();
-                                      } else if (snapshot.hasError) {
-                                        return Text("Error: ${snapshot.error}");
-                                      } else {
-                                        final username =
-                                            snapshot.data ?? "No name found";
-                                        return Text('Hi, $username',
-                                            style: const TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w500));
-                                      }
-                                    },
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
                                   ),
                                   const SizedBox(height: 2),
-                                  FutureBuilder<String?>(
-                                    future: SharedPrefUtil.getSharedString(
-                                        'role'), // Key for retrieval
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return Container();
-                                      } else if (snapshot.hasError) {
-                                        return Text("Error: ${snapshot.error}");
-                                      } else {
-                                        final role =
-                                            snapshot.data ?? "No role found";
-                                        return Text(role,
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Color(0xFF797979),
-                                                fontWeight: FontWeight.w400));
-                                      }
-                                    },
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
                                   ),
                                 ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF797979),
+                                          fontWeight: FontWeight.w400))
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              DropdownButtonHideUnderline(
-                                child: DropdownButton2(
-                                  customButton: const Icon(
-                                    Icons.keyboard_arrow_down_rounded,
-                                    color: primaryColor,
-                                  ),
-                                  isExpanded: true,
-                                  buttonStyleData: ButtonStyleData(
-                                    // This is necessary for the ink response to match our customButton radius.
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(40),
-                                    ),
-                                  ),
-                                  dropdownStyleData: DropdownStyleData(
-                                    width: 160,
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 6),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(4),
-                                      color: Colors.white,
-                                    ),
-                                    offset: const Offset(40, -30),
-                                  ),
-                                  menuItemStyleData: MenuItemStyleData(
-                                    customHeights: [
-                                      ...List<double>.filled(
-                                          MenuItems.firstItems.length, 48),
-                                      8,
-                                      ...List<double>.filled(
-                                          MenuItems.secondItems.length, 48),
-                                    ],
-                                    padding: const EdgeInsets.only(
-                                        left: 16, right: 16),
-                                  ),
-                                  items: [
-                                    ...MenuItems.firstItems.map(
-                                      (item) => DropdownMenuItem<MenuItem>(
-                                        value: item,
-                                        child: MenuItems.buildItem(item),
-                                      ),
-                                    ),
-                                    const DropdownMenuItem<Divider>(
-                                        enabled: false, child: Divider()),
-                                    ...MenuItems.secondItems.map(
-                                      (item) => DropdownMenuItem<MenuItem>(
-                                        value: item,
-                                        child: MenuItems.buildItem(item),
-                                      ),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    var a = value as MenuItem;
-                                    if (a.text == 'Logout') {
-                                      SharedPrefUtil.clearSharedPref();
-                                      Navigator.pushNamedAndRemoveUntil(
-                                          context,
-                                          StringRouterUtil.loginScreenRoute,
-                                          (route) => false);
-                                    }
-                                  },
+                        const SizedBox(width: 8),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton2(
+                            customButton: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: primaryColor,
+                            ),
+                            isExpanded: true,
+                            buttonStyleData: ButtonStyleData(
+                              // This is necessary for the ink response to match our customButton radius.
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40),
+                              ),
+                            ),
+                            dropdownStyleData: DropdownStyleData(
+                              width: 160,
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.white,
+                              ),
+                              offset: const Offset(40, -30),
+                            ),
+                            menuItemStyleData: MenuItemStyleData(
+                              customHeights: [
+                                ...List<double>.filled(
+                                    MenuItems.firstItems.length, 48),
+                                8,
+                                ...List<double>.filled(
+                                    MenuItems.secondItems.length, 48),
+                              ],
+                              padding:
+                                  const EdgeInsets.only(left: 16, right: 16),
+                            ),
+                            items: [
+                              ...MenuItems.firstItems.map(
+                                (item) => DropdownMenuItem<MenuItem>(
+                                  value: item,
+                                  child: MenuItems.buildItem(item),
+                                ),
+                              ),
+                              const DropdownMenuItem<Divider>(
+                                  enabled: false, child: Divider()),
+                              ...MenuItems.secondItems.map(
+                                (item) => DropdownMenuItem<MenuItem>(
+                                  value: item,
+                                  child: MenuItems.buildItem(item),
                                 ),
                               ),
                             ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 16.0, top: 12.0, left: 16, right: 16),
-                    child: SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.03,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text('Daftar Dinas Luar',
-                            style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.5,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height * 0.055,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            height: MediaQuery.of(context).size.height * 0.055,
-                            child: ListView.separated(
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(width: 8);
-                                },
-                                scrollDirection: Axis.horizontal,
-                                shrinkWrap: true,
-                                itemCount: filter.length,
-                                padding: const EdgeInsets.only(right: 8),
-                                itemBuilder: (context, index) {
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        selectedFilter = index;
-                                      });
-                                      if (index == 0) {
-                                        dinasLuarListBloc.add(
-                                            const DinasLuarListAttempt(
-                                                start: '', end: ''));
-                                      } else if (index == 1) {
-                                        Map<String, String> dateRange =
-                                            GeneralUtil()
-                                                .getFormattedFirstAndLastDateOfLastSevenDays();
-                                        dinasLuarListBloc.add(
-                                            DinasLuarListAttempt(
-                                                start: dateRange['firstDate']!,
-                                                end: dateRange['lastDate']!));
-                                      } else if (index == 2) {
-                                        Map<String, String> dateRange =
-                                            GeneralUtil()
-                                                .getFormattedFirstAndLastDateOfCurrentMonth();
-                                        dinasLuarListBloc.add(
-                                            DinasLuarListAttempt(
-                                                start: dateRange['firstDate']!,
-                                                end: dateRange['lastDate']!));
-                                      } else {
-                                        Map<String, String> dateRange =
-                                            GeneralUtil()
-                                                .getFormattedFirstAndLastDateOfLastThreeMonths();
-                                        dinasLuarListBloc.add(
-                                            DinasLuarListAttempt(
-                                                start: dateRange['firstDate']!,
-                                                end: dateRange['lastDate']!));
-                                      }
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: selectedFilter == index
-                                            ? primaryColor
-                                            : const Color(0xFF9E9E9E),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      padding: const EdgeInsets.all(8),
-                                      child: Center(
-                                        child: Text(filter[index],
-                                            style: TextStyle(
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.4,
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w500)),
-                                      ),
-                                    ),
-                                  );
-                                }),
+                            onChanged: (value) {
+                              var a = value as MenuItem;
+                              if (a.text == 'Logout') {
+                                SharedPrefUtil.clearSharedPref();
+                                Navigator.pushNamedAndRemoveUntil(
+                                    context,
+                                    StringRouterUtil.loginScreenRoute,
+                                    (route) => false);
+                              }
+                            },
                           ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.1,
-                            child: InkWell(
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                  bottom: 16.0, top: 12.0, left: 16, right: 16),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.03,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Daftar Dinas Luar',
+                      style: TextStyle(
+                          fontSize: GeneralUtil.fontSize(context) * 0.5,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500)),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.055,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      height: MediaQuery.of(context).size.height * 0.055,
+                      child: ListView.separated(
+                          separatorBuilder: (context, index) {
+                            return const SizedBox(width: 8);
+                          },
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemCount: filter.length,
+                          padding: const EdgeInsets.only(right: 8),
+                          itemBuilder: (context, index) {
+                            return InkWell(
                               onTap: () {
                                 setState(() {
-                                  if (isReserved) {
-                                    isReserved = false;
-                                    dataList = dataListTemp;
-                                  } else {
-                                    isReserved = true;
-                                    dataList = dataListTemp.reversed.toList();
-                                  }
+                                  selectedFilter = index;
                                 });
+                                if (index == 0) {
+                                  dinasLuarListBloc.add(
+                                      const DinasLuarListAttempt(
+                                          start: '', end: ''));
+                                } else if (index == 1) {
+                                  Map<String, String> dateRange = GeneralUtil()
+                                      .getFormattedFirstAndLastDateOfLastSevenDays();
+                                  dinasLuarListBloc.add(DinasLuarListAttempt(
+                                      start: dateRange['firstDate']!,
+                                      end: dateRange['lastDate']!));
+                                } else if (index == 2) {
+                                  Map<String, String> dateRange = GeneralUtil()
+                                      .getFormattedFirstAndLastDateOfCurrentMonth();
+                                  dinasLuarListBloc.add(DinasLuarListAttempt(
+                                      start: dateRange['firstDate']!,
+                                      end: dateRange['lastDate']!));
+                                } else {
+                                  Map<String, String> dateRange = GeneralUtil()
+                                      .getFormattedFirstAndLastDateOfLastThreeMonths();
+                                  dinasLuarListBloc.add(DinasLuarListAttempt(
+                                      start: dateRange['firstDate']!,
+                                      end: dateRange['lastDate']!));
+                                }
                               },
-                              child: SvgPicture.asset(
-                                'assets/icons/filter.svg',
-                                colorFilter: const ColorFilter.mode(
-                                    primaryColor, BlendMode.srcIn),
-                                height: 32,
-                                width: 32,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: selectedFilter == index
+                                      ? primaryColor
+                                      : const Color(0xFF9E9E9E),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: Center(
+                                  child: Text(filter[index],
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.4,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500)),
+                                ),
                               ),
-                            ),
-                          )
-                        ],
-                      ),
+                            );
+                          }),
                     ),
-                  ),
-                  BlocListener(
-                      bloc: dinasLuarListBloc,
-                      listener: (_, DinasLuarListState state) async {
-                        if (state is DinasLuarListLoading) {
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.1,
+                      child: InkWell(
+                        onTap: () {
                           setState(() {
-                            isLoading = true;
+                            if (isReserved) {
+                              isReserved = false;
+                              dataList = dataListTemp;
+                            } else {
+                              isReserved = true;
+                              dataList = dataListTemp.reversed.toList();
+                            }
                           });
-                        }
-                        if (state is DinasLuarListLoaded) {
-                          setState(() {
-                            isLoading = false;
-                            dataList = state.dinasLuarListResponseModel.data!;
-                            dataListTemp = dataList;
-                          });
-                        }
-                        if (state is DinasLuarListError) {
-                          GeneralUtil()
-                              .showSnackBarError(context, state.error!);
-                          setState(() {
-                            isLoading = false;
-                          });
-                        }
-                        if (state is DinasLuarListException) {
-                          setState(() {
-                            isLoading = false;
-                          });
-                          _expDialog(context);
-                        }
-                      },
-                      child: BlocBuilder(
-                          bloc: dinasLuarListBloc,
-                          builder: (_, DinasLuarListState state) {
-                            return isLoading
-                                ? const Center(
-                                    child: SizedBox(
-                                      width: 45,
-                                      height: 45,
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  )
-                                : dinasLuarList();
-                          })),
-                ],
+                        },
+                        child: SvgPicture.asset(
+                          'assets/icons/filter.svg',
+                          colorFilter: const ColorFilter.mode(
+                              primaryColor, BlendMode.srcIn),
+                          height: 32,
+                          width: 32,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
+            ),
+            BlocListener(
+                bloc: dinasLuarListBloc,
+                listener: (_, DinasLuarListState state) async {
+                  if (state is DinasLuarListLoading) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                  }
+                  if (state is DinasLuarListLoaded) {
+                    setState(() {
+                      isLoading = false;
+                      dataList = state.dinasLuarListResponseModel.data!;
+                      dataListTemp = dataList;
+                    });
+                  }
+                  if (state is DinasLuarListError) {
+                    GeneralUtil().showSnackBarError(context, state.error!);
+                    setState(() {
+                      isLoading = false;
+                    });
+                  }
+                  if (state is DinasLuarListException) {
+                    setState(() {
+                      isLoading = false;
+                    });
+                    _expDialog(context);
+                  }
+                },
+                child: BlocBuilder(
+                    bloc: dinasLuarListBloc,
+                    builder: (_, DinasLuarListState state) {
+                      return isLoading
+                          ? Expanded(
+                              child: Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 16, right: 16),
+                              child: GeneralUtil().loading3Data(10),
+                            ))
+                          : dinasLuarList();
+                    })),
+          ],
+        ),
       ),
     );
   }

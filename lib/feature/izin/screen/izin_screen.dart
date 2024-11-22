@@ -1,12 +1,19 @@
+import 'dart:developer';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/izin/bloc/izin_list_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart';
+import 'package:malinau_absensi/feature/izin/domain/izin_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
 class IzinScreen extends StatefulWidget {
   const IzinScreen({super.key});
@@ -31,10 +38,27 @@ class _IzinScreenState extends State<IzinScreen> {
   bool isLoading = true;
   String? userType;
   bool isDataIzin = true;
+  bool isLoadingData = true;
+  late String name;
+  late String role;
+  IzinListBloc izinListBloc = IzinListBloc(izinRepo: IzinRepo());
+  List<Data> dataList = [];
+  List<Data> dataListTemp = [];
+  bool isReserved = false;
 
   @override
   void initState() {
     getUserType();
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
+    izinListBloc.add(const IzinListAttempt(start: '', end: ''));
     super.initState();
   }
 
@@ -44,6 +68,59 @@ class _IzinScreenState extends State<IzinScreen> {
     userType = type;
     isLoading = false;
     setState(() {});
+  }
+
+  Future<void> _expDialog(BuildContext context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(10.0))),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Center(
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    color: Colors.yellow,
+                    weight: 80,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text('Sesi Anda Telah Berakhir',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
+                const SizedBox(height: 24),
+                InkWell(
+                  onTap: () {
+                    SharedPrefUtil.clearSharedPref();
+                    Navigator.pushNamedAndRemoveUntil(context,
+                        StringRouterUtil.loginScreenRoute, (route) => false);
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.56,
+                    height: 41,
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: primaryColor)),
+                    child: const Center(
+                        child: Text('Login',
+                            style: TextStyle(
+                                fontSize: 15,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w600))),
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
   }
 
   @override
@@ -94,52 +171,55 @@ class _IzinScreenState extends State<IzinScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(
@@ -237,8 +317,16 @@ class _IzinScreenState extends State<IzinScreen> {
                               fontWeight: FontWeight.w500)),
                       InkWell(
                         onTap: () {
-                          Navigator.pushNamed(
-                              context, StringRouterUtil.tambahIzinScreenRoute);
+                          Navigator.pushNamed(context,
+                                  StringRouterUtil.tambahIzinScreenRoute)
+                              .then(
+                            (value) {
+                              if (value.toString() == 'true') {
+                                izinListBloc.add(
+                                    const IzinListAttempt(start: '', end: ''));
+                              }
+                            },
+                          );
                         },
                         child: Container(
                           padding: const EdgeInsets.all(12),
@@ -268,73 +356,6 @@ class _IzinScreenState extends State<IzinScreen> {
                       ),
                     ],
                   ),
-                  // const SizedBox(height: 16),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     InkWell(
-                  //       onTap: () {},
-                  //       child: Container(
-                  //         height: 45,
-                  //         padding: const EdgeInsets.all(12),
-                  //         decoration: BoxDecoration(
-                  //           color: primaryColor,
-                  //           borderRadius: BorderRadius.circular(8),
-                  //         ),
-                  //         child: Center(
-                  //             child: Row(
-                  //           children: [
-                  //             SvgPicture.asset(
-                  //               'assets/icons/sort.svg',
-                  //               colorFilter: const ColorFilter.mode(
-                  //                   Colors.white, BlendMode.srcIn),
-                  //               height: 20,
-                  //               width: 20,
-                  //             ),
-                  //             const SizedBox(width: 8),
-                  //             const Text('Permohonan izin',
-                  //                 style: TextStyle(
-                  //                     fontSize: 15,
-                  //                     color: Colors.white,
-                  //                     fontWeight: FontWeight.w600)),
-                  //           ],
-                  //         )),
-                  //       ),
-                  //     ),
-                  //     InkWell(
-                  //       onTap: () {
-                  //         Navigator.pushNamed(context,
-                  //             StringRouterUtil.tambahIzinScreenRoute);
-                  //       },
-                  //       child: Container(
-                  //         height: 45,
-                  //         padding: const EdgeInsets.all(12),
-                  //         decoration: BoxDecoration(
-                  //           color: primaryColor,
-                  //           borderRadius: BorderRadius.circular(8),
-                  //         ),
-                  //         child: Center(
-                  //             child: Row(
-                  //           children: [
-                  //             SvgPicture.asset(
-                  //               'assets/icons/plus.svg',
-                  //               colorFilter: const ColorFilter.mode(
-                  //                   Colors.white, BlendMode.srcIn),
-                  //               height: 20,
-                  //               width: 20,
-                  //             ),
-                  //             const SizedBox(width: 8),
-                  //             const Text('Tambah',
-                  //                 style: TextStyle(
-                  //                     fontSize: 15,
-                  //                     color: Colors.white,
-                  //                     fontWeight: FontWeight.w600)),
-                  //           ],
-                  //         )),
-                  //       ),
-                  //     ),
-                  //   ],
-                  // )
                 ],
               ),
             ),
@@ -364,6 +385,28 @@ class _IzinScreenState extends State<IzinScreen> {
                               setState(() {
                                 selectedFilter = index;
                               });
+                              if (index == 0) {
+                                izinListBloc.add(
+                                    const IzinListAttempt(start: '', end: ''));
+                              } else if (index == 1) {
+                                Map<String, String> dateRange = GeneralUtil()
+                                    .getFormattedFirstAndLastDateOfLastSevenDays();
+                                izinListBloc.add(IzinListAttempt(
+                                    start: dateRange['firstDate']!,
+                                    end: dateRange['lastDate']!));
+                              } else if (index == 2) {
+                                Map<String, String> dateRange = GeneralUtil()
+                                    .getFormattedFirstAndLastDateOfCurrentMonth();
+                                izinListBloc.add(IzinListAttempt(
+                                    start: dateRange['firstDate']!,
+                                    end: dateRange['lastDate']!));
+                              } else {
+                                Map<String, String> dateRange = GeneralUtil()
+                                    .getFormattedFirstAndLastDateOfLastThreeMonths();
+                                izinListBloc.add(IzinListAttempt(
+                                    start: dateRange['firstDate']!,
+                                    end: dateRange['lastDate']!));
+                              }
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -377,8 +420,7 @@ class _IzinScreenState extends State<IzinScreen> {
                                 child: Text(filter[index],
                                     style: TextStyle(
                                         fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.35,
+                                            GeneralUtil.fontSize(context) * 0.4,
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500)),
                               ),
@@ -388,1172 +430,298 @@ class _IzinScreenState extends State<IzinScreen> {
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.1,
-                    child: SvgPicture.asset(
-                      'assets/icons/filter.svg',
-                      colorFilter:
-                          const ColorFilter.mode(primaryColor, BlendMode.srcIn),
-                      height: 32,
-                      width: 32,
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 40),
-              shrinkWrap: true,
-              children: [
-                InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(
-                        context, StringRouterUtil.izinDetailScreenRoute);
-                  },
-                  child: Container(
-                    height: 50,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFFC2C2C2).withOpacity(0.1))),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 35,
-                              decoration: const BoxDecoration(
-                                color: yellowColor,
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(6),
-                                  bottomLeft: Radius.circular(6),
-                                ),
-                              ),
-                              child: Center(
-                                child: Text('01',
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.45,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500)),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Aktifitas',
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) * 0.3,
-                                        color: const Color(0xFF797979),
-                                        fontWeight: FontWeight.w400)),
-                                Text('12/03/22 - 12/03/22',
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.35,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                            const SizedBox(width: 16),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Izin',
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) * 0.3,
-                                        color: const Color(0xFF797979),
-                                        fontWeight: FontWeight.w400)),
-                                Text('Cuti',
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.35,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w500)),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16.0),
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                child: Text('Pending',
-                                    textAlign: TextAlign.right,
-                                    style: TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.35,
-                                        color: yellowColor,
-                                        fontWeight: FontWeight.w500)),
-                              ),
-                              const SizedBox(width: 18),
-                              InkWell(
-                                onTap: () {},
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Center(
-                                    child: SvgPicture.asset(
-                                      'assets/icons/edit.svg',
-                                      colorFilter: const ColorFilter.mode(
-                                          Colors.white, BlendMode.srcIn),
-                                      height: 16,
-                                      width: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget kadivWidget() {
-    return Expanded(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0, top: 12.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.1,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(isDataIzin ? 'Daftar Izin' : 'Data Permohonan Izin',
-                      style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          if (isDataIzin) {
-                            isDataIzin = false;
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          if (isReserved) {
+                            isReserved = false;
+                            dataList = dataListTemp;
                           } else {
-                            isDataIzin = true;
+                            isReserved = true;
+                            dataList = dataListTemp.reversed.toList();
                           }
-                          setState(() {});
-                        },
-                        child: Container(
-                          height: 45,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                              child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                'assets/icons/sort.svg',
-                                colorFilter: const ColorFilter.mode(
-                                    Colors.white, BlendMode.srcIn),
-                                height: 20,
-                                width: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(isDataIzin ? 'Permohonan izin' : 'Data Izin',
-                                  style: const TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600)),
-                            ],
-                          )),
-                        ),
+                        });
+                      },
+                      child: SvgPicture.asset(
+                        'assets/icons/filter.svg',
+                        colorFilter: const ColorFilter.mode(
+                            primaryColor, BlendMode.srcIn),
+                        height: 32,
+                        width: 32,
                       ),
-                      isDataIzin
-                          ? InkWell(
-                              onTap: () {
-                                Navigator.pushNamed(context,
-                                    StringRouterUtil.tambahIzinScreenRoute);
-                              },
-                              child: Container(
-                                height: 45,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: primaryColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                    child: Row(
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/icons/plus.svg',
-                                      colorFilter: const ColorFilter.mode(
-                                          Colors.white, BlendMode.srcIn),
-                                      height: 20,
-                                      width: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text('Tambah',
-                                        style: TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600)),
-                                  ],
-                                )),
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.05,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 0.045,
-                    child: ListView.separated(
-                        separatorBuilder: (context, index) {
-                          return const SizedBox(width: 8);
-                        },
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemCount: filter.length,
-                        padding: const EdgeInsets.only(right: 8),
-                        itemBuilder: (context, index) {
-                          return InkWell(
-                            onTap: () {
-                              setState(() {
-                                selectedFilter = index;
-                              });
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: selectedFilter == index
-                                    ? primaryColor
-                                    : const Color(0xFF9E9E9E),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              child: Center(
-                                child: Text(filter[index],
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500)),
-                              ),
-                            ),
-                          );
-                        }),
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.1,
-                    child: SvgPicture.asset(
-                      'assets/icons/filter.svg',
-                      colorFilter:
-                          const ColorFilter.mode(primaryColor, BlendMode.srcIn),
-                      height: 32,
-                      width: 32,
                     ),
                   )
                 ],
               ),
             ),
           ),
-          isDataIzin
-              ? Expanded(
-                  child: ListView(
-                    padding:
-                        const EdgeInsets.only(left: 16, right: 16, bottom: 40),
-                    shrinkWrap: true,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(
-                              context, StringRouterUtil.izinDetailScreenRoute);
-                        },
-                        child: Container(
-                          height: 50,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  blurRadius: 3,
-                                  offset:
-                                      const Offset(-6, 4), // Shadow position
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: const Color(0xFFC2C2C2)
-                                      .withOpacity(0.1))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 35,
-                                    decoration: const BoxDecoration(
-                                      color: yellowColor,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(6),
-                                        bottomLeft: Radius.circular(6),
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: Text('01',
-                                          style: TextStyle(
-                                              fontSize: 16,
+          BlocListener(
+              bloc: izinListBloc,
+              listener: (_, IzinListState state) async {
+                if (state is IzinListLoading) {
+                  setState(() {
+                    isLoading = true;
+                  });
+                }
+                if (state is IzinListLoaded) {
+                  setState(() {
+                    isLoading = false;
+                    dataList = state.izinListResponseModel.data!;
+                    dataListTemp = dataList;
+                  });
+                }
+                if (state is IzinListError) {
+                  GeneralUtil().showSnackBarError(context, state.error!);
+                  setState(() {
+                    isLoading = false;
+                  });
+                }
+                if (state is IzinListException) {
+                  setState(() {
+                    isLoading = false;
+                  });
+                  _expDialog(context);
+                }
+              },
+              child: BlocBuilder(
+                  bloc: izinListBloc,
+                  builder: (_, IzinListState state) {
+                    return isLoading
+                        ? Expanded(
+                            child: Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16),
+                            child: GeneralUtil().loading3Data(10),
+                          ))
+                        : Expanded(
+                            child: ListView.separated(
+                                itemCount: dataList.length,
+                                separatorBuilder: (context, index) {
+                                  return const SizedBox(height: 10);
+                                },
+                                padding: const EdgeInsets.only(
+                                    left: 16, right: 16, bottom: 40),
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  return Stack(
+                                    children: [
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .izinDetailScreenRoute,
+                                              arguments: dataList[index]);
+                                        },
+                                        child: Container(
+                                          height: 50,
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
                                               color: Colors.white,
-                                              fontWeight: FontWeight.w500)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Aktifitas',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400)),
-                                      Text('12/03/22 - 12/03/22',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 16),
-                                  const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Izin',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400)),
-                                      Text('Cuti',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 16.0),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 60,
-                                      child: Text('Pending',
-                                          textAlign: TextAlign.right,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: yellowColor,
-                                              fontWeight: FontWeight.w500)),
-                                    ),
-                                    const SizedBox(width: 18),
-                                    InkWell(
-                                      onTap: () {},
-                                      child: Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Center(
-                                          child: SvgPicture.asset(
-                                            'assets/icons/edit.svg',
-                                            colorFilter: const ColorFilter.mode(
-                                                Colors.white, BlendMode.srcIn),
-                                            height: 16,
-                                            width: 16,
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey
+                                                      .withOpacity(0.1),
+                                                  blurRadius: 3,
+                                                  offset: const Offset(
+                                                      -6, 4), // Shadow position
+                                                ),
+                                              ],
+                                              border: Border.all(
+                                                  color: const Color(0xFFC2C2C2)
+                                                      .withOpacity(0.1))),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                    width: 35,
+                                                    decoration: BoxDecoration(
+                                                      color: dataList[index]
+                                                                  .status ==
+                                                              'Pending'
+                                                          ? yellowColor
+                                                          : greenColor,
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .only(
+                                                        topLeft:
+                                                            Radius.circular(6),
+                                                        bottomLeft:
+                                                            Radius.circular(6),
+                                                      ),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                          '0${index + 1}',
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.45,
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 10),
+                                                  Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text('Tanggal',
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.3,
+                                                              color: const Color(
+                                                                  0xFF797979),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400)),
+                                                      Text(
+                                                          '${GeneralUtil.convertDate(dataList[index].fromDate!)} - ${GeneralUtil.convertDate(dataList[index].toDate!)}',
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.35,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(width: 32),
+                                                  Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text('Izin',
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.3,
+                                                              color: const Color(
+                                                                  0xFF797979),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400)),
+                                                      Text(
+                                                          dataList[index].type!,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.35,
+                                                              color:
+                                                                  Colors.black,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 52.0),
+                                                child: Row(
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 60,
+                                                      child: Text(
+                                                          dataList[index]
+                                                              .status!,
+                                                          textAlign: TextAlign
+                                                              .right,
+                                                          style: TextStyle(
+                                                              fontSize: GeneralUtil
+                                                                      .fontSize(
+                                                                          context) *
+                                                                  0.35,
+                                                              color: dataList[index]
+                                                                          .status ==
+                                                                      'Pending'
+                                                                  ? yellowColor
+                                                                  : greenColor,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500)),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.1))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 35,
-                                  decoration: const BoxDecoration(
-                                    color: redColor,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      bottomLeft: Radius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text('02',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Aktifitas',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('12/03/22 - 12/03/22',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Izin',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Cuti',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 60,
-                                    child: Text('Not Approved',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: redColor,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  const SizedBox(width: 18),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/edit.svg',
-                                          colorFilter: const ColorFilter.mode(
-                                              Colors.white, BlendMode.srcIn),
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.1))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 35,
-                                  decoration: const BoxDecoration(
-                                    color: greenColor,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      bottomLeft: Radius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text('03',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Aktifitas',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('12/03/22 - 12/03/22',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Izin',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Cuti',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 60,
-                                    child: Text('Approved',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: greenColor,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  const SizedBox(width: 18),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/edit.svg',
-                                          colorFilter: const ColorFilter.mode(
-                                              Colors.white, BlendMode.srcIn),
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.1))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 35,
-                                  decoration: const BoxDecoration(
-                                    color: yellowColor,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      bottomLeft: Radius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text('04',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Aktifitas',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('12/03/22 - 12/03/22',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Izin',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Cuti',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 60,
-                                    child: Text('Pending',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: yellowColor,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  const SizedBox(width: 18),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/edit.svg',
-                                          colorFilter: const ColorFilter.mode(
-                                              Colors.white, BlendMode.srcIn),
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.1))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 35,
-                                  decoration: const BoxDecoration(
-                                    color: redColor,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      bottomLeft: Radius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text('05',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Aktifitas',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('12/03/22 - 12/03/22',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Izin',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Cuti',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 60,
-                                    child: Text('Not Approved',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: redColor,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  const SizedBox(width: 18),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/edit.svg',
-                                          colorFilter: const ColorFilter.mode(
-                                              Colors.white, BlendMode.srcIn),
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.1))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 35,
-                                  decoration: const BoxDecoration(
-                                    color: greenColor,
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(6),
-                                      bottomLeft: Radius.circular(6),
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Text('06',
-                                        style: TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Aktifitas',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('12/03/22 - 12/03/22',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                                const SizedBox(width: 16),
-                                const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('Izin',
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: Color(0xFF797979),
-                                            fontWeight: FontWeight.w400)),
-                                    Text('Cuti',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16.0),
-                              child: Row(
-                                children: [
-                                  const SizedBox(
-                                    width: 60,
-                                    child: Text('Approved',
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: yellowColor,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  const SizedBox(width: 18),
-                                  InkWell(
-                                    onTap: () {},
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: greenColor,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Center(
-                                        child: SvgPicture.asset(
-                                          'assets/icons/edit.svg',
-                                          colorFilter: const ColorFilter.mode(
-                                              Colors.white, BlendMode.srcIn),
-                                          height: 16,
-                                          width: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ),
-                )
-              : Expanded(
-                  child: ListView.separated(
-                    itemCount: 9,
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const SizedBox(height: 10);
-                    },
-                    padding:
-                        const EdgeInsets.only(left: 16, right: 16, bottom: 40),
-                    shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.pushNamed(context,
-                              StringRouterUtil.permohonanIzinDetailScreenRoute);
-                        },
-                        child: Container(
-                          height: 50,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.1),
-                                  blurRadius: 3,
-                                  offset:
-                                      const Offset(-6, 4), // Shadow position
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: const Color(0xFFC2C2C2)
-                                      .withOpacity(0.1))),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 35,
-                                    decoration: const BoxDecoration(
-                                      color: yellowColor,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(6),
-                                        bottomLeft: Radius.circular(6),
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text('0${index + 1}',
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Aktifitas',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400)),
-                                      Text('12/03/22 - 12/03/22',
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                  const SizedBox(width: 16),
-                                  const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Izin',
-                                          style: TextStyle(
-                                              fontSize: 12,
-                                              color: Color(0xFF797979),
-                                              fontWeight: FontWeight.w400)),
-                                      Text('Cuti',
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 16.0),
-                                child: Row(
-                                  children: [
-                                    const SizedBox(
-                                      width: 60,
-                                      child: Text('Pending',
-                                          textAlign: TextAlign.right,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: yellowColor,
-                                              fontWeight: FontWeight.w500)),
-                                    ),
-                                    const SizedBox(width: 18),
-                                    InkWell(
-                                      onTap: () {},
-                                      child: Container(
-                                        width: 24,
-                                        height: 24,
-                                        decoration: BoxDecoration(
-                                          color: primaryColor,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Center(
-                                          child: SvgPicture.asset(
-                                            'assets/icons/edit.svg',
-                                            colorFilter: const ColorFilter.mode(
-                                                Colors.white, BlendMode.srcIn),
-                                            height: 16,
-                                            width: 16,
+                                      Positioned(
+                                        top: 12,
+                                        right: 16,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                    context,
+                                                    StringRouterUtil
+                                                        .editDetailScreenRoute,
+                                                    arguments: dataList[index])
+                                                .then(
+                                              (value) {
+                                                if (value.toString() ==
+                                                    'true') {
+                                                  izinListBloc.add(
+                                                      const IzinListAttempt(
+                                                          start: '', end: ''));
+                                                }
+                                              },
+                                            );
+                                          },
+                                          child: Container(
+                                            width: 24,
+                                            height: 24,
+                                            decoration: BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Center(
+                                              child: SvgPicture.asset(
+                                                'assets/icons/edit.svg',
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                        Colors.white,
+                                                        BlendMode.srcIn),
+                                                height: 16,
+                                                width: 16,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                )
+                                      )
+                                    ],
+                                  );
+                                }),
+                          );
+                  })),
         ],
       ),
     );

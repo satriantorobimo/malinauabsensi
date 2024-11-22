@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:shimmer/shimmer.dart';
 
 class GeneralUtil {
   void showSnackBarError(BuildContext context, String msg) {
@@ -146,6 +148,24 @@ class GeneralUtil {
     return outputDate;
   }
 
+  static String convertDate(String data) {
+    DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
+    var inputDate = DateTime.parse(parseDate.toString());
+    var outputFormat = DateFormat('dd/MM/yy');
+    var outputDate = outputFormat.format(inputDate);
+
+    return outputDate;
+  }
+
+  static String convertDateSend(String data) {
+    DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
+    var inputDate = DateTime.parse(parseDate.toString());
+    var outputFormat = DateFormat('yyyy-MM-dd');
+    var outputDate = outputFormat.format(inputDate);
+
+    return outputDate;
+  }
+
   static String monthCheck(String data) {
     DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
     var inputDate = DateTime.parse(parseDate.toString());
@@ -194,6 +214,15 @@ class GeneralUtil {
     };
   }
 
+  Future<Map<String, String>> getDataUser() async {
+    final String? name = await SharedPrefUtil.getSharedString('nama');
+    final String? role = await SharedPrefUtil.getSharedString('role');
+    return {
+      'name': name!,
+      'role': role!,
+    };
+  }
+
   Map<String, String> getFormattedFirstAndLastDateOfLast3Days() {
     DateTime now = DateTime.now();
     DateTime firstDate = now.subtract(const Duration(days: 3));
@@ -233,5 +262,29 @@ class GeneralUtil {
       'firstDate': formattedFirstDate,
       'lastDate': formattedLastDate,
     };
+  }
+
+  Widget loading3Data(int data) {
+    return ListView.separated(
+        itemCount: data,
+        separatorBuilder: (context, index) {
+          return const SizedBox(height: 10);
+        },
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemBuilder: (context, index) {
+          return Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.grey.shade300,
+              ),
+              height: 50,
+              width: double.infinity,
+            ),
+          );
+        });
   }
 }

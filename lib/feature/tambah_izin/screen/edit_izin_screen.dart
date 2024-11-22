@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/izin/bloc/tambah_izin_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart';
 import 'package:malinau_absensi/feature/izin/data/tambah_izin_request_model.dart';
 import 'package:malinau_absensi/feature/izin/domain/izin_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
@@ -12,14 +13,15 @@ import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shimmer/shimmer.dart';
 
-class TambahIzinScreen extends StatefulWidget {
-  const TambahIzinScreen({super.key});
+class EditIzinScreen extends StatefulWidget {
+  const EditIzinScreen({super.key, required this.data});
+  final Data data;
 
   @override
-  State<TambahIzinScreen> createState() => _TambahIzinScreenState();
+  State<EditIzinScreen> createState() => _EditIzinScreenState();
 }
 
-class _TambahIzinScreenState extends State<TambahIzinScreen> {
+class _EditIzinScreenState extends State<EditIzinScreen> {
   String? selectedValue;
   final List<String> items = [
     'Setting',
@@ -55,7 +57,19 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
         });
       },
     );
+    _getData();
     super.initState();
+  }
+
+  void _getData() {
+    setState(() {
+      fromDate = GeneralUtil.convertDate(widget.data.fromDate!);
+      fromDateSend = GeneralUtil.convertDateSend(widget.data.fromDate!);
+      toDate = GeneralUtil.convertDate(widget.data.toDate!);
+      toDateSend = GeneralUtil.convertDateSend(widget.data.toDate!);
+      selectedValue = widget.data.type;
+      _keteranganController.text = widget.data.remarks!;
+    });
   }
 
   Future<void> _hapusDialog(BuildContext context) async {
@@ -187,12 +201,14 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
   }
 
   void _startDatePicker() {
+    DateTime parseDate =
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(widget.data.fromDate!);
     showDatePicker(
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             context: context,
-            initialDate: DateTime.now(),
+            initialDate: parseDate,
             lastDate: DateTime.now().add(const Duration(days: 15000)),
-            firstDate: DateTime.now())
+            firstDate: parseDate)
         .then((pickedDate) {
       if (pickedDate == null) {
         return;
@@ -207,12 +223,14 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
   }
 
   void _endDatePicker() {
+    DateTime parseDate =
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(widget.data.toDate!);
     showDatePicker(
             initialEntryMode: DatePickerEntryMode.calendarOnly,
             context: context,
-            initialDate: DateTime.now(),
+            initialDate: parseDate,
             lastDate: DateTime.now().add(const Duration(days: 15000)),
-            firstDate: DateTime.now())
+            firstDate: parseDate)
         .then((pickedDate) {
       if (pickedDate == null) {
         return;
@@ -409,7 +427,7 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
-                    child: Text('Tambah Permohonan Izin',
+                    child: Text('Edit Permohonan Izin',
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.35,
                             color: const Color(0xFF797979),
@@ -698,7 +716,6 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                 ],
                               ),
                               const SizedBox(height: 24),
-
                               MultiBlocListener(
                                 listeners: [
                                   BlocListener(
@@ -709,15 +726,21 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                           isLoading = true;
                                         });
                                       }
-                                      if (state is TambahIzinLoaded) {
-                                        setState(() {
-                                          isLoading = false;
-                                        });
+                                      if (state is EditIzinLoaded) {
                                         GeneralUtil().showSnackBarSuccess(
                                             context,
                                             state
                                                 .generalResponseModel.message!);
-                                        Navigator.pop(context, true);
+                                        Future.delayed(
+                                            const Duration(milliseconds: 700),
+                                            () {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                          if (context.mounted) {
+                                            Navigator.pop(context, true);
+                                          }
+                                        });
                                       }
                                       if (state is TambahIzinError) {
                                         GeneralUtil().showSnackBarError(
@@ -745,7 +768,7 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                       )
                                     : InkWell(
                                         onTap: () {
-                                          tambahIzinBloc.add(TambahIzinAttempt(
+                                          tambahIzinBloc.add(EditIzinAttempt(
                                               tambahIzinRequestModel:
                                                   TambahIzinRequestModel(
                                                       fromDate: fromDateSend,
@@ -753,7 +776,8 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                                       remarks:
                                                           _keteranganController
                                                               .text,
-                                                      type: selectedValue)));
+                                                      type: selectedValue,
+                                                      id: widget.data.id)));
                                         },
                                         child: Container(
                                           width: double.infinity,
@@ -775,31 +799,27 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                                           FontWeight.w600))),
                                         ),
                                       ),
-                              )
-
-                              //  InkWell(
-                              //           onTap: () {},
-                              //           child: Container(
-                              //             width: double.infinity,
-                              //             height: 45,
-                              //             decoration: BoxDecoration(
-                              //                 color: Colors.white,
-                              //                 borderRadius:
-                              //                     BorderRadius.circular(8),
-                              //                 border: Border.all(
-                              //                     color: primaryColor)),
-                              //             child: Center(
-                              //                 child: Text('Hapus',
-                              //                     style: TextStyle(
-                              //                         fontSize:
-                              //                             GeneralUtil.fontSize(
-                              //                                     context) *
-                              //                                 0.4,
-                              //                         color: primaryColor,
-                              //                         fontWeight:
-                              //                             FontWeight.w600))),
-                              //           ),
-                              //         ),
+                              ),
+                              const SizedBox(height: 16),
+                              InkWell(
+                                onTap: () {},
+                                child: Container(
+                                  width: double.infinity,
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: primaryColor)),
+                                  child: Center(
+                                      child: Text('Hapus',
+                                          style: TextStyle(
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.4,
+                                              color: primaryColor,
+                                              fontWeight: FontWeight.w600))),
+                                ),
+                              ),
                             ]),
                       )),
                 ],
