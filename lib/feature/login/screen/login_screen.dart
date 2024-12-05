@@ -201,22 +201,42 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          isNik = !isNik;
-                        });
-                      },
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          isNik ? 'Masuk dengan Email' : 'Masuk dengan NIP',
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: primaryColor),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isNik = !isNik;
+                            });
+                          },
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              isNik ? 'Masuk dengan Email' : 'Masuk dengan NIP',
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: primaryColor),
+                            ),
+                          ),
                         ),
-                      ),
+                        GestureDetector(
+                          onTap: () {
+                            GeneralUtil().showSnackBarWarning(context, 'Harap menghubungi admin untuk melakukan reset password');
+                          },
+                          child: const Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              'Lupa Password',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: primaryColor),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     MultiBlocListener(
@@ -232,6 +252,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (state is LoginLoaded) {
                                   final SharedPreferences prefs =
                                       await SharedPreferences.getInstance();
+                                  GeneralUtil()
+                                      .saveMenuActionsToSharedPreferences(state
+                                          .loginResponseModel
+                                          .data!
+                                          .menuActions!);
                                   if (_emailCtrl.text
                                       .toLowerCase()
                                       .contains('staff')) {
@@ -274,13 +299,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   });
                                   SharedPrefUtil.saveSharedString(
                                       'nama',
-                                      state
-                                          .userDetailResponseModel.data!.name!);
+                                      state.userDetailResponseModel.data!
+                                          .userName!);
 
                                   SharedPrefUtil.saveSharedString(
                                       'role',
-                                      state
-                                          .userDetailResponseModel.data!.role!);
+                                      state.userDetailResponseModel.data!
+                                          .roleName!);
 
                                   if (!context.mounted) return;
                                   Navigator.pushNamedAndRemoveUntil(

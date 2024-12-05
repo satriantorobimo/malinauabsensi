@@ -94,13 +94,25 @@ class MenuActions {
   String? roleID;
   String? menuID;
   String? actionID;
+  String? menuURL;
+  String? menuName;
+  String? groupName;
 
-  MenuActions({this.roleID, this.menuID, this.actionID});
+  MenuActions(
+      {this.roleID,
+      this.menuID,
+      this.actionID,
+      this.menuURL,
+      this.menuName,
+      this.groupName});
 
   MenuActions.fromJson(Map<String, dynamic> json) {
     roleID = json['RoleID'];
     menuID = json['MenuID'];
     actionID = json['ActionID'];
+    menuURL = json['MenuURL'];
+    menuName = json['MenuName'];
+    groupName = json['GroupName'];
   }
 
   Map<String, dynamic> toJson() {
@@ -108,6 +120,9 @@ class MenuActions {
     data['RoleID'] = roleID;
     data['MenuID'] = menuID;
     data['ActionID'] = actionID;
+    data['MenuURL'] = menuURL;
+    data['MenuName'] = menuName;
+    data['GroupName'] = groupName;
     return data;
   }
 }

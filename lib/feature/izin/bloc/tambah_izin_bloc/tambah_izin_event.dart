@@ -20,3 +20,11 @@ class EditIzinAttempt extends TambahIzinEvent {
   @override
   List<Object> get props => [tambahIzinRequestModel];
 }
+
+class DeleteIzinAttempt extends TambahIzinEvent {
+  const DeleteIzinAttempt({required this.id});
+  final String id;
+
+  @override
+  List<Object> get props => [id];
+}

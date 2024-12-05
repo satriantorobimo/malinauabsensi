@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
@@ -7,11 +11,17 @@ import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/izin/bloc/tambah_izin_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart';
 import 'package:malinau_absensi/feature/izin/data/tambah_izin_request_model.dart';
+import 'package:malinau_absensi/feature/izin/data/upload_file_izin_request_model.dart';
 import 'package:malinau_absensi/feature/izin/domain/izin_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:file_picker/file_picker.dart';
+
+import '../../izin/bloc/upload_data_bloc/bloc.dart';
 
 class EditIzinScreen extends StatefulWidget {
   const EditIzinScreen({super.key, required this.data});
@@ -34,10 +44,13 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
   ];
   bool isEdit = false;
   bool isLoading = false;
+  bool isLoadingDelete = false;
   bool isLoadingData = true;
   late String name;
   late String role;
-
+  late Uint8List fileData;
+  String fileName = '';
+  String fileType = '';
   String fromDate = '';
   String toDate = '';
   String fromDateSend = '';
@@ -45,6 +58,7 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
   int dateOb = 0;
   final TextEditingController _keteranganController = TextEditingController();
   TambahIzinBloc tambahIzinBloc = TambahIzinBloc(izinRepo: IzinRepo());
+  UploadDataBloc uploadDataBloc = UploadDataBloc(izinRepo: IzinRepo());
 
   @override
   void initState() {
@@ -123,6 +137,8 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                     InkWell(
                       onTap: () {
                         Navigator.pop(context);
+                        tambahIzinBloc
+                            .add(DeleteIzinAttempt(id: widget.data.id!));
                       },
                       child: Container(
                         width: MediaQuery.of(context).size.width * 0.26,
@@ -242,6 +258,136 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
         });
       });
     });
+  }
+
+  Future<void> _showBottomAttachment(BuildContext context) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Container(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const Padding(
+                  padding: EdgeInsets.only(top: 24.0, left: 16, right: 16),
+                  child: Text(
+                    'Select Options',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
+                    child: InkWell(
+                      onTap: () {
+                        pickImage().then((value) {
+                          if (value == 'big') {
+                            GeneralUtil()
+                                .showSnackBarError(context, 'Size Maximal 2MB');
+                          }
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: const Text(
+                        'Gallery',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    )),
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
+                    child: InkWell(
+                      onTap: () {
+                        pickFile().then((value) {
+                          if (value == 'big') {
+                            GeneralUtil()
+                                .showSnackBarError(context, 'Size Maximal 2MB');
+                          }
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: const Text(
+                        'File Explorer',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    )),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<String> pickFile() async {
+    var maxFileSizeInBytes = 2 * 1048576;
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'pdf', 'png'],
+    );
+
+    if (result != null) {
+      var fileSize = result.files.first.size;
+      if (fileSize <= maxFileSizeInBytes) {
+        String filePath = result.files.single.path!;
+        String basename = path.basename(filePath);
+        final ext = path.extension(basename);
+
+        setState(() {
+          fileData = result.files.first.bytes!;
+          fileName = basename;
+          fileType = ext;
+        });
+      } else {
+        return 'big';
+      }
+      return 'yes';
+    } else {
+      return 'notselect';
+    }
+  }
+
+  Future<String> pickImage() async {
+    try {
+      var maxFileSizeInBytes = 2 * 1048576;
+      ImagePicker imagePicker = ImagePicker();
+      XFile? pickedImage = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 90,
+      );
+      if (pickedImage == null) return 'notselect';
+
+      var imagePath = await pickedImage.readAsBytes();
+      var fileSize = imagePath.length; // Get the file size in bytes
+      if (fileSize <= maxFileSizeInBytes) {
+        String basename = path.basename(pickedImage.path);
+        final ext = path.extension(basename);
+        setState(() {
+          fileData = imagePath;
+          fileName = basename;
+          fileType = ext;
+        });
+      } else {
+        return 'big';
+      }
+
+      return 'yes';
+    } on PlatformException catch (e) {
+      log('Failed to pick image: $e');
+      return 'notselect';
+    }
   }
 
   @override
@@ -691,26 +837,31 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                               fontWeight: FontWeight.w500)),
                                     ),
                                   ),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.2,
-                                    height: 45,
-                                    decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: const BorderRadius.only(
-                                          topRight: Radius.circular(4),
-                                          bottomRight: Radius.circular(4),
-                                        ),
-                                        border:
-                                            Border.all(color: primaryColor)),
-                                    child: Center(
-                                      child: Text('File',
-                                          style: TextStyle(
-                                              fontSize: GeneralUtil.fontSize(
-                                                      context) *
-                                                  0.35,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500)),
+                                  InkWell(
+                                    onTap: () {
+                                      _showBottomAttachment(context);
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.2,
+                                      height: 45,
+                                      decoration: BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: const BorderRadius.only(
+                                            topRight: Radius.circular(4),
+                                            bottomRight: Radius.circular(4),
+                                          ),
+                                          border:
+                                              Border.all(color: primaryColor)),
+                                      child: Center(
+                                        child: Text('File',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500)),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -724,6 +875,11 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                       if (state is TambahIzinLoading) {
                                         setState(() {
                                           isLoading = true;
+                                        });
+                                      }
+                                      if (state is DeleteIzinLoading) {
+                                        setState(() {
+                                          isLoadingDelete = true;
                                         });
                                       }
                                       if (state is EditIzinLoaded) {
@@ -742,18 +898,84 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                           }
                                         });
                                       }
+
+                                      if (state is DeleteIzinLoaded) {
+                                        GeneralUtil().showSnackBarSuccess(
+                                            context,
+                                            state
+                                                .generalResponseModel.message!);
+                                        Future.delayed(
+                                            const Duration(milliseconds: 700),
+                                            () {
+                                          setState(() {
+                                            isLoadingDelete = false;
+                                          });
+                                          if (context.mounted) {
+                                            Navigator.pop(context, true);
+                                          }
+                                        });
+                                      }
                                       if (state is TambahIzinError) {
-                                        GeneralUtil().showSnackBarError(
-                                            context, state.error!);
                                         setState(() {
                                           isLoading = false;
+                                          isLoadingDelete = false;
                                         });
+                                        if (state.error! ==
+                                            'Token is expired') {
+                                          _expDialog(context);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context, state.error!);
+                                        }
                                       }
                                       if (state is TambahIzinException) {
                                         setState(() {
                                           isLoading = false;
+                                          isLoadingDelete = false;
                                         });
-                                        _expDialog(context);
+                                        GeneralUtil().showSnackBarError(
+                                            context, state.error);
+                                      }
+                                    },
+                                  ),
+                                  BlocListener(
+                                    bloc: uploadDataBloc,
+                                    listener: (_, UploadDataState state) async {
+                                      if (state is UploadDataLoading) {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                      }
+                                      if (state is UploadDataLoaded) {
+                                        tambahIzinBloc.add(EditIzinAttempt(
+                                            tambahIzinRequestModel:
+                                                TambahIzinRequestModel(
+                                                    fromDate: fromDateSend,
+                                                    toDate: toDateSend,
+                                                    remarks:
+                                                        _keteranganController
+                                                            .text,
+                                                    type: selectedValue,
+                                                    id: widget.data.id)));
+                                      }
+                                      if (state is UploadDataError) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        if (state.error! ==
+                                            'Token is expired') {
+                                          _expDialog(context);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context, state.error!);
+                                        }
+                                      }
+                                      if (state is UploadDataException) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        GeneralUtil().showSnackBarError(
+                                            context, state.error);
                                       }
                                     },
                                   )
@@ -767,23 +989,40 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                         ),
                                       )
                                     : InkWell(
-                                        onTap: () {
-                                          tambahIzinBloc.add(EditIzinAttempt(
-                                              tambahIzinRequestModel:
-                                                  TambahIzinRequestModel(
-                                                      fromDate: fromDateSend,
-                                                      toDate: toDateSend,
-                                                      remarks:
-                                                          _keteranganController
-                                                              .text,
-                                                      type: selectedValue,
-                                                      id: widget.data.id)));
-                                        },
+                                        onTap: isLoadingDelete
+                                            ? null
+                                            : () {
+                                                if (fileName == '') {
+                                                  tambahIzinBloc.add(EditIzinAttempt(
+                                                      tambahIzinRequestModel:
+                                                          TambahIzinRequestModel(
+                                                              fromDate:
+                                                                  fromDateSend,
+                                                              toDate:
+                                                                  toDateSend,
+                                                              remarks:
+                                                                  _keteranganController
+                                                                      .text,
+                                                              type:
+                                                                  selectedValue,
+                                                              id: widget
+                                                                  .data.id)));
+                                                } else {
+                                                  uploadDataBloc.add(UploadDataAttempt(
+                                                      uploadFileIzinRequestModel:
+                                                          UploadFileIzinRequestModel(
+                                                              fileData,
+                                                              fileName,
+                                                              fileType)));
+                                                }
+                                              },
                                         child: Container(
                                           width: double.infinity,
                                           height: 45,
                                           decoration: BoxDecoration(
-                                            color: primaryColor,
+                                            color: isLoadingDelete
+                                                ? Colors.grey
+                                                : primaryColor,
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
@@ -801,25 +1040,45 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                       ),
                               ),
                               const SizedBox(height: 16),
-                              InkWell(
-                                onTap: () {},
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 45,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: primaryColor)),
-                                  child: Center(
-                                      child: Text('Hapus',
-                                          style: TextStyle(
-                                              fontSize: GeneralUtil.fontSize(
-                                                      context) *
-                                                  0.4,
-                                              color: primaryColor,
-                                              fontWeight: FontWeight.w600))),
-                                ),
-                              ),
+                              isLoadingDelete
+                                  ? const Center(
+                                      child: SizedBox(
+                                        width: 45,
+                                        height: 45,
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    )
+                                  : InkWell(
+                                      onTap: isLoadingDelete
+                                          ? null
+                                          : () {
+                                              _hapusDialog(context);
+                                            },
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: 45,
+                                        decoration: BoxDecoration(
+                                            color: isLoading
+                                                ? Colors.grey
+                                                : Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                                color: primaryColor)),
+                                        child: Center(
+                                            child: Text('Hapus',
+                                                style: TextStyle(
+                                                    fontSize:
+                                                        GeneralUtil.fontSize(
+                                                                context) *
+                                                            0.4,
+                                                    color: isLoading
+                                                        ? Colors.grey
+                                                        : primaryColor,
+                                                    fontWeight:
+                                                        FontWeight.w600))),
+                                      ),
+                                    ),
                             ]),
                       )),
                 ],

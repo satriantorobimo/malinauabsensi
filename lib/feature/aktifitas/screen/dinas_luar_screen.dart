@@ -292,16 +292,13 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
             Padding(
               padding: const EdgeInsets.only(
                   bottom: 16.0, top: 12.0, left: 16, right: 16),
-              child: SizedBox(
-                height: MediaQuery.of(context).size.height * 0.03,
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text('Daftar Dinas Luar',
-                      style: TextStyle(
-                          fontSize: GeneralUtil.fontSize(context) * 0.5,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500)),
-                ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Daftar Dinas Luar',
+                    style: TextStyle(
+                        fontSize: GeneralUtil.fontSize(context) * 0.6,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500)),
               ),
             ),
             Padding(
@@ -417,16 +414,20 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                     });
                   }
                   if (state is DinasLuarListError) {
-                    GeneralUtil().showSnackBarError(context, state.error!);
                     setState(() {
                       isLoading = false;
                     });
+                    if (state.error! == 'Token is expired') {
+                      _expDialog(context);
+                    } else {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
                   }
                   if (state is DinasLuarListException) {
                     setState(() {
                       isLoading = false;
                     });
-                    _expDialog(context);
+                    GeneralUtil().showSnackBarError(context, state.error);
                   }
                 },
                 child: BlocBuilder(
@@ -439,7 +440,21 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                                   const EdgeInsets.only(left: 16, right: 16),
                               child: GeneralUtil().loading3Data(10),
                             ))
-                          : dinasLuarList();
+                          : dataList.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 24.0),
+                                  child: Center(
+                                    child: Text(
+                                        'Data dinas luar belum tersedia',
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.45,
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                )
+                              : dinasLuarList();
                     })),
           ],
         ),
@@ -495,21 +510,21 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                     child: Center(
                       child: Text('0${index + 1}',
                           style: TextStyle(
-                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              fontSize: GeneralUtil.fontSize(context) * 0.35,
                               color: Colors.white,
                               fontWeight: FontWeight.w500)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.55,
+                    width: MediaQuery.of(context).size.width * 0.58,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(dataList[index].name!,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.4,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500)),
                         Text(dataList[index].address!,
@@ -535,7 +550,7 @@ class _DinasLuarScreenState extends State<DinasLuarScreen> {
                       children: [
                         Text(dataList[index].statusPengajuan!,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                fontSize: GeneralUtil.fontSize(context) * 0.3,
                                 color:
                                     dataList[index].statusPengajuan == 'Pending'
                                         ? yellowColor

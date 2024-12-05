@@ -413,16 +413,20 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                     });
                   }
                   if (state is AcaraListError) {
-                    GeneralUtil().showSnackBarError(context, state.error!);
                     setState(() {
                       isLoading = false;
                     });
+                    if (state.error! == 'Token is expired') {
+                      _expDialog(context);
+                    } else {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
                   }
                   if (state is AcaraListException) {
                     setState(() {
                       isLoading = false;
                     });
-                    _expDialog(context);
+                    GeneralUtil().showSnackBarError(context, state.error);
                   }
                 },
                 child: BlocBuilder(
@@ -435,7 +439,20 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                                   const EdgeInsets.only(left: 16, right: 16),
                               child: GeneralUtil().loading3Data(10),
                             ))
-                          : aktifitasStaff();
+                          : dataList.isEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.only(top: 24.0),
+                                  child: Center(
+                                    child: Text('Data acara belum tersedia',
+                                        style: TextStyle(
+                                            fontSize:
+                                                GeneralUtil.fontSize(context) *
+                                                    0.45,
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                )
+                              : aktifitasStaff();
                     })),
           ],
         ),
@@ -444,9 +461,14 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
   }
 
   Widget aktifitasStaff() {
+    List<Data> listAcara = dataList
+        .where(
+          (element) => element.status == true,
+        )
+        .toList();
     return Expanded(
       child: ListView.separated(
-        itemCount: dataList.length,
+        itemCount: listAcara.length,
         separatorBuilder: (context, index) {
           return const SizedBox(height: 10);
         },
@@ -457,7 +479,7 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
             onTap: () {
               Navigator.pushNamed(
                   context, StringRouterUtil.aktifitasDetailScreenRoute,
-                  arguments: dataList[index].id);
+                  arguments: listAcara[index].id);
             },
             child: Container(
               height: 50,
@@ -480,7 +502,7 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                   Container(
                     width: 35,
                     decoration: BoxDecoration(
-                      color: dataList[index].status == false
+                      color: listAcara[index].status == false
                           ? yellowColor
                           : greenColor,
                       borderRadius: const BorderRadius.only(
@@ -491,26 +513,27 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                     child: Center(
                       child: Text('0${index + 1}',
                           style: TextStyle(
-                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              fontSize: GeneralUtil.fontSize(context) * 0.35,
                               color: Colors.white,
                               fontWeight: FontWeight.w500)),
                     ),
                   ),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.23,
+                    width: MediaQuery.of(context).size.width * 0.3,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(dataList[index].name!,
+                        Text(listAcara[index].name!,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: GeneralUtil.fontSize(context) * 0.3,
                                 color: const Color(0xFF797979),
                                 fontWeight: FontWeight.w400)),
-                        Text(dataList[index].address!,
+                        Text(listAcara[index].address!,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                fontSize: GeneralUtil.fontSize(context) * 0.3,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w500)),
                       ],
@@ -520,33 +543,34 @@ class _AktifitasScreenState extends State<AktifitasScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(GeneralUtil.dayConv(dataList[index].day!.toString()),
+                      Text(
+                          GeneralUtil.dayConv(listAcara[index].day!.toString()),
                           style: TextStyle(
                               fontSize: GeneralUtil.fontSize(context) * 0.3,
                               color: const Color(0xFF797979),
                               fontWeight: FontWeight.w400)),
                       Text(
-                          '${dataList[index].startTime!} - ${dataList[index].endTime!}',
+                          '${GeneralUtil.timeConvert(listAcara[index].startTime! == "" ? "00:00:00" : listAcara[index].startTime!)} - ${GeneralUtil.timeConvert(listAcara[index].endTime! == "" ? "00:00:00" : listAcara[index].endTime!)}',
                           style: TextStyle(
-                              fontSize: GeneralUtil.fontSize(context) * 0.35,
+                              fontSize: GeneralUtil.fontSize(context) * 0.3,
                               color: Colors.black,
                               fontWeight: FontWeight.w500)),
                     ],
                   ),
-                  Text(dataList[index].kind!,
+                  Text(listAcara[index].kind!,
                       style: TextStyle(
                           fontSize: GeneralUtil.fontSize(context) * 0.3,
                           color: const Color(0xFF797979),
                           fontWeight: FontWeight.w400)),
                   Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
+                    padding: const EdgeInsets.only(right: 16),
                     child: Text(
-                        dataList[index].status == false
+                        listAcara[index].status == false
                             ? 'Tidak Aktif'
                             : 'Aktif',
                         style: TextStyle(
                             fontSize: GeneralUtil.fontSize(context) * 0.35,
-                            color: dataList[index].status == false
+                            color: listAcara[index].status == false
                                 ? yellowColor
                                 : greenColor,
                             fontWeight: FontWeight.w500)),

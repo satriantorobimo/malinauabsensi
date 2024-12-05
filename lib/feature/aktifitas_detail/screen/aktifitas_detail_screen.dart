@@ -288,16 +288,20 @@ class _AktifitasDetailScreenState extends State<AktifitasDetailScreen> {
                     });
                   }
                   if (state is AcaraDetailError) {
-                    GeneralUtil().showSnackBarError(context, state.error!);
                     setState(() {
                       isLoading = false;
                     });
+                    if (state.error! == 'Token is expired') {
+                      _expDialog(context);
+                    } else {
+                      GeneralUtil().showSnackBarError(context, state.error!);
+                    }
                   }
                   if (state is AcaraDetailException) {
                     setState(() {
                       isLoading = false;
                     });
-                    _expDialog(context);
+                    GeneralUtil().showSnackBarError(context, state.error);
                   }
                 },
                 child: BlocBuilder(

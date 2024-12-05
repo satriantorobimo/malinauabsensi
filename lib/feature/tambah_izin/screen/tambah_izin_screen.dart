@@ -1,16 +1,24 @@
+import 'dart:developer';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/izin/bloc/tambah_izin_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/izin/bloc/upload_data_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/izin/data/tambah_izin_request_model.dart';
+import 'package:malinau_absensi/feature/izin/data/upload_file_izin_request_model.dart';
 import 'package:malinau_absensi/feature/izin/domain/izin_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:file_picker/file_picker.dart';
 
 class TambahIzinScreen extends StatefulWidget {
   const TambahIzinScreen({super.key});
@@ -35,7 +43,9 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
   bool isLoadingData = true;
   late String name;
   late String role;
-
+  late Uint8List fileData;
+  String fileName = '';
+  String fileType = '';
   String fromDate = '';
   String toDate = '';
   String fromDateSend = '';
@@ -43,6 +53,7 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
   int dateOb = 0;
   final TextEditingController _keteranganController = TextEditingController();
   TambahIzinBloc tambahIzinBloc = TambahIzinBloc(izinRepo: IzinRepo());
+  UploadDataBloc uploadDataBloc = UploadDataBloc(izinRepo: IzinRepo());
 
   @override
   void initState() {
@@ -224,6 +235,135 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
         });
       });
     });
+  }
+
+  Future<void> _showBottomAttachment(BuildContext context) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(top: 24.0, left: 16, right: 16),
+                  child: Text(
+                    'Select Options',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: GeneralUtil.fontSize(context) * 0.4,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
+                    child: InkWell(
+                      onTap: () {
+                        pickImage().then((value) {
+                          if (value == 'big') {
+                            GeneralUtil()
+                                .showSnackBarError(context, 'Size Maximal 2MB');
+                          }
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: Text(
+                        'Gallery',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: GeneralUtil.fontSize(context) * 0.4,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    )),
+                Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
+                    child: InkWell(
+                      onTap: () {
+                        pickFile().then((value) {
+                          if (value == 'big') {
+                            GeneralUtil()
+                                .showSnackBarError(context, 'Size Maximal 2MB');
+                          }
+                          Navigator.pop(context);
+                        });
+                      },
+                      child: Text(
+                        'File Explorer',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: GeneralUtil.fontSize(context) * 0.4,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    )),
+                const SizedBox(height: 24),
+              ],
+            ),
+          );
+        });
+  }
+
+  Future<String> pickFile() async {
+    var maxFileSizeInBytes = 3 * 1048576;
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'png'],
+    );
+
+    if (result != null) {
+      var fileSize = result.files.first.size;
+      if (fileSize <= maxFileSizeInBytes) {
+        String filePath = result.files.single.path!;
+        String basename = path.basename(filePath);
+        final ext = path.extension(basename);
+
+        setState(() {
+          fileData = result.files.single.bytes!;
+          fileName = basename;
+          fileType = ext;
+        });
+      } else {
+        return 'big';
+      }
+      return 'yes';
+    } else {
+      return 'notselect';
+    }
+  }
+
+  Future<String> pickImage() async {
+    try {
+      var maxFileSizeInBytes = 3 * 1048576;
+      ImagePicker imagePicker = ImagePicker();
+      XFile? pickedImage = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 90,
+      );
+      if (pickedImage == null) return 'notselect';
+
+      var imagePath = await pickedImage.readAsBytes();
+      var fileSize = imagePath.length; // Get the file size in bytes
+      if (fileSize <= maxFileSizeInBytes) {
+        String basename = path.basename(pickedImage.path);
+        final ext = path.extension(basename);
+        setState(() {
+          fileData = imagePath;
+          fileName = basename;
+          fileType = ext;
+        });
+      } else {
+        return 'big';
+      }
+
+      return 'yes';
+    } on PlatformException catch (e) {
+      log('Failed to pick image: $e');
+      return 'notselect';
+    }
   }
 
   @override
@@ -664,7 +804,10 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                             color: const Color(0xFF9E9E9E))),
                                     child: Align(
                                       alignment: Alignment.centerLeft,
-                                      child: Text('Pilih file',
+                                      child: Text(
+                                          fileName != ''
+                                              ? fileName
+                                              : 'Pilih file',
                                           style: TextStyle(
                                               fontSize: GeneralUtil.fontSize(
                                                       context) *
@@ -673,26 +816,31 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                               fontWeight: FontWeight.w500)),
                                     ),
                                   ),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.2,
-                                    height: 45,
-                                    decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: const BorderRadius.only(
-                                          topRight: Radius.circular(4),
-                                          bottomRight: Radius.circular(4),
-                                        ),
-                                        border:
-                                            Border.all(color: primaryColor)),
-                                    child: Center(
-                                      child: Text('File',
-                                          style: TextStyle(
-                                              fontSize: GeneralUtil.fontSize(
-                                                      context) *
-                                                  0.35,
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w500)),
+                                  InkWell(
+                                    onTap: () {
+                                      _showBottomAttachment(context);
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.2,
+                                      height: 45,
+                                      decoration: BoxDecoration(
+                                          color: primaryColor,
+                                          borderRadius: const BorderRadius.only(
+                                            topRight: Radius.circular(4),
+                                            bottomRight: Radius.circular(4),
+                                          ),
+                                          border:
+                                              Border.all(color: primaryColor)),
+                                      child: Center(
+                                        child: Text('File',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500)),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -710,23 +858,69 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                         });
                                       }
                                       if (state is TambahIzinLoaded) {
-                                        setState(() {
-                                          isLoading = false;
-                                        });
                                         GeneralUtil().showSnackBarSuccess(
                                             context,
                                             state
                                                 .generalResponseModel.message!);
-                                        Navigator.pop(context, true);
+                                        Future.delayed(
+                                            const Duration(milliseconds: 700),
+                                            () {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                          if (context.mounted) {
+                                            Navigator.pop(context, true);
+                                          }
+                                        });
                                       }
                                       if (state is TambahIzinError) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        if (state.error! ==
+                                            'Token is expired') {
+                                          _expDialog(context);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context, state.error!);
+                                        }
+                                      }
+                                      if (state is TambahIzinException) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        GeneralUtil().showSnackBarError(
+                                            context, state.error);
+                                      }
+                                    },
+                                  ),
+                                  BlocListener(
+                                    bloc: uploadDataBloc,
+                                    listener: (_, UploadDataState state) async {
+                                      if (state is UploadDataLoading) {
+                                        setState(() {
+                                          isLoading = true;
+                                        });
+                                      }
+                                      if (state is UploadDataLoaded) {
+                                        tambahIzinBloc.add(TambahIzinAttempt(
+                                            tambahIzinRequestModel:
+                                                TambahIzinRequestModel(
+                                                    fromDate: fromDateSend,
+                                                    toDate: toDateSend,
+                                                    remarks:
+                                                        _keteranganController
+                                                            .text,
+                                                    type: selectedValue)));
+                                      }
+                                      if (state is UploadDataError) {
                                         GeneralUtil().showSnackBarError(
                                             context, state.error!);
                                         setState(() {
                                           isLoading = false;
                                         });
                                       }
-                                      if (state is TambahIzinException) {
+                                      if (state is UploadDataException) {
                                         setState(() {
                                           isLoading = false;
                                         });
@@ -745,15 +939,24 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
                                       )
                                     : InkWell(
                                         onTap: () {
-                                          tambahIzinBloc.add(TambahIzinAttempt(
-                                              tambahIzinRequestModel:
-                                                  TambahIzinRequestModel(
-                                                      fromDate: fromDateSend,
-                                                      toDate: toDateSend,
-                                                      remarks:
-                                                          _keteranganController
-                                                              .text,
-                                                      type: selectedValue)));
+                                          if (fileName == '') {
+                                            tambahIzinBloc.add(TambahIzinAttempt(
+                                                tambahIzinRequestModel:
+                                                    TambahIzinRequestModel(
+                                                        fromDate: fromDateSend,
+                                                        toDate: toDateSend,
+                                                        remarks:
+                                                            _keteranganController
+                                                                .text,
+                                                        type: selectedValue)));
+                                          } else {
+                                            uploadDataBloc.add(UploadDataAttempt(
+                                                uploadFileIzinRequestModel:
+                                                    UploadFileIzinRequestModel(
+                                                        fileData,
+                                                        fileName,
+                                                        fileType)));
+                                          }
                                         },
                                         child: Container(
                                           width: double.infinity,

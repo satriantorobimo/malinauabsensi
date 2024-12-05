@@ -40,7 +40,7 @@ class LoginApi {
         return loginResponseModel;
       } else {
         loginResponseModel = LoginResponseModel.fromJson(jsonDecode(res.body));
-        throw loginResponseModel.message!;
+        return loginResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -60,10 +60,14 @@ class LoginApi {
         userDetailResponseModel =
             UserDetailResponseModel.fromJson(jsonDecode(res.body));
         return userDetailResponseModel;
+      } else if (res.statusCode == 401) {
+        userDetailResponseModel =
+            UserDetailResponseModel.fromJson(jsonDecode(res.body));
+        return userDetailResponseModel;
       } else {
         userDetailResponseModel =
             UserDetailResponseModel.fromJson(jsonDecode(res.body));
-        throw userDetailResponseModel.message!;
+        return userDetailResponseModel;
       }
     } catch (ex) {
       throw ex.toString();

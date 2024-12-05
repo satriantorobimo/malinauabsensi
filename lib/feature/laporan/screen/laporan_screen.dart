@@ -1,10 +1,12 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
-import 'package:malinau_absensi/components/menu_item.dart';
-import 'package:malinau_absensi/util/shared_pref_util.dart';
-import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:malinau_absensi/feature/beranda/beranda_screen.dart';
+import 'package:malinau_absensi/util/general_util.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:community_charts_flutter/community_charts_flutter.dart'
+    as chart;
 
 class LaporanScreen extends StatefulWidget {
   const LaporanScreen({super.key});
@@ -14,13 +16,94 @@ class LaporanScreen extends StatefulWidget {
 }
 
 class _LaporanScreenState extends State<LaporanScreen> {
-  List<String> filter = ['Semua', 'Izin', 'Aktifitas', 'Absensi'];
+  int selectedFilter = 0;
+
   final List<String> items = [
     'Setting',
     'Logout',
   ];
-  bool laporan = true;
-  int selectedFilter = 0;
+  bool isLoadingData = true;
+  late String name;
+  late String role;
+  List<String> filter = ['7 hari terakhir', 'Bulan ini', '3 Bulan Terakhir'];
+
+  static List<chart.Series<OrdinalSales, String>> _createSampleData() {
+    final data = [
+      OrdinalSales('Mon', 5),
+      OrdinalSales('Tue', 25),
+      OrdinalSales('Wed', 25),
+      OrdinalSales('Thu', 100),
+      OrdinalSales('Fri', 75),
+    ];
+
+    return [
+      chart.Series<OrdinalSales, String>(
+        id: 'Weekly',
+        colorFn: (_, __) => chart.MaterialPalette.blue.shadeDefault,
+        domainFn: (OrdinalSales sales, _) => sales.year,
+        measureFn: (OrdinalSales sales, _) => sales.sales,
+        data: data,
+        fillColorFn: (OrdinalSales ordinalSales, _) =>
+            chart.ColorUtil.fromDartColor(primaryColor),
+      )
+    ];
+  }
+
+  static List<chart.Series<OrdinalSales, String>> _createSampleData2() {
+    final data = [
+      OrdinalSales('Week 1', 75),
+      OrdinalSales('Week 2', 30),
+      OrdinalSales('Week 3', 100),
+      OrdinalSales('Week 4', 100),
+    ];
+
+    return [
+      chart.Series<OrdinalSales, String>(
+        id: 'Monthly',
+        colorFn: (_, __) => chart.MaterialPalette.blue.shadeDefault,
+        domainFn: (OrdinalSales sales, _) => sales.year,
+        measureFn: (OrdinalSales sales, _) => sales.sales,
+        data: data,
+        fillColorFn: (OrdinalSales ordinalSales, _) =>
+            chart.ColorUtil.fromDartColor(primaryColor),
+      )
+    ];
+  }
+
+  static List<chart.Series<OrdinalSales, String>> _createSampleData3() {
+    final data = [
+      OrdinalSales('Oct', 80),
+      OrdinalSales('Nov', 100),
+      OrdinalSales('Dec', 5),
+    ];
+
+    return [
+      chart.Series<OrdinalSales, String>(
+        id: '3 Monthly',
+        colorFn: (_, __) => chart.MaterialPalette.blue.shadeDefault,
+        domainFn: (OrdinalSales sales, _) => sales.year,
+        measureFn: (OrdinalSales sales, _) => sales.sales,
+        data: data,
+        fillColorFn: (OrdinalSales ordinalSales, _) =>
+            chart.ColorUtil.fromDartColor(primaryColor),
+      )
+    ];
+  }
+
+  @override
+  void initState() {
+    GeneralUtil().getDataUser().then(
+      (value) {
+        setState(() {
+          name = value['name']!;
+          role = value['role']!;
+          isLoadingData = false;
+        });
+      },
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -69,52 +152,55 @@ class _LaporanScreenState extends State<LaporanScreen> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'nama'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final username =
-                                      snapshot.data ?? "No name found";
-                                  return Text('Hi, $username',
+                        isLoadingData
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Shimmer.fromColors(
+                                    baseColor: Colors.grey.shade300,
+                                    highlightColor: Colors.grey.shade100,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(2),
+                                        color: Colors.grey.shade300,
+                                      ),
+                                      width: 80,
+                                      height: 16,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Hi, $name',
                                       style: const TextStyle(
                                           fontSize: 14,
                                           color: Colors.black,
-                                          fontWeight: FontWeight.w500));
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 2),
-                            FutureBuilder<String?>(
-                              future: SharedPrefUtil.getSharedString(
-                                  'role'), // Key for retrieval
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Container();
-                                } else if (snapshot.hasError) {
-                                  return Text("Error: ${snapshot.error}");
-                                } else {
-                                  final role = snapshot.data ?? "No role found";
-                                  return Text(role,
+                                          fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 2),
+                                  Text(role,
                                       style: const TextStyle(
                                           fontSize: 12,
                                           color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400));
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                                          fontWeight: FontWeight.w400))
+                                ],
+                              ),
                         const SizedBox(width: 8),
                         DropdownButtonHideUnderline(
                           child: DropdownButton2(
@@ -124,57 +210,36 @@ class _LaporanScreenState extends State<LaporanScreen> {
                             ),
                             isExpanded: true,
                             buttonStyleData: ButtonStyleData(
-                              // This is necessary for the ink response to match our customButton radius.
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
-                            ),
-                            dropdownStyleData: DropdownStyleData(
+                              height: 40,
                               width: 160,
-                              padding: const EdgeInsets.symmetric(vertical: 6),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(4),
                                 color: Colors.white,
                               ),
-                              offset: const Offset(40, -30),
                             ),
-                            menuItemStyleData: MenuItemStyleData(
-                              customHeights: [
-                                ...List<double>.filled(
-                                    MenuItems.firstItems.length, 48),
-                                8,
-                                ...List<double>.filled(
-                                    MenuItems.secondItems.length, 48),
-                              ],
-                              padding:
-                                  const EdgeInsets.only(left: 16, right: 16),
+                            dropdownStyleData: DropdownStyleData(
+                              maxHeight: 200,
+                              width: 200,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                                color: Colors.white,
+                              ),
+                              offset: const Offset(-140, -30),
                             ),
-                            items: [
-                              ...MenuItems.firstItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
-                                ),
-                              ),
-                              const DropdownMenuItem<Divider>(
-                                  enabled: false, child: Divider()),
-                              ...MenuItems.secondItems.map(
-                                (item) => DropdownMenuItem<MenuItem>(
-                                  value: item,
-                                  child: MenuItems.buildItem(item),
-                                ),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              var a = value as MenuItem;
-                              if (a.text == 'Logout') {
-                                SharedPrefUtil.clearSharedPref();
-                                Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    StringRouterUtil.loginScreenRoute,
-                                    (route) => false);
-                              }
-                            },
+                            items: items
+                                .map((String item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Center(
+                                        child: Text(
+                                          item,
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {},
                           ),
                         ),
                       ],
@@ -184,415 +249,130 @@ class _LaporanScreenState extends State<LaporanScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.23,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              laporan ? 'Laporan' : 'Laporan Tunjangan Kinerja',
-                              style: const TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w500)),
-                          InkWell(
-                            onTap: () {
-                              setState(() {
-                                laporan = !laporan;
-                              });
-                            },
-                            child: Container(
-                              height: 45,
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                  child: Text(
-                                      laporan
-                                          ? 'Laporan Tunjangan Kinerja'
-                                          : 'laporan',
-                                      style: const TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600))),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width * 0.38,
-                                height: 45,
-                                padding: const EdgeInsets.only(left: 8.0),
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                        color: const Color(0xFF9E9E9E)
-                                            .withOpacity(0.6))),
-                                child: const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text('mm/dd/yy',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFFBBBBBB),
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                              Container(
-                                width: 45,
-                                height: 45,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: primaryColor,
-                                ),
-                                child: const Center(
-                                  child: Text('s/d',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                              Container(
-                                width: MediaQuery.of(context).size.width * 0.38,
-                                height: 45,
-                                padding: const EdgeInsets.only(left: 8.0),
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                        color: const Color(0xFF9E9E9E)
-                                            .withOpacity(0.6))),
-                                child: const Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text('mm/dd/yy',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFFBBBBBB),
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              )
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          InkWell(
-                            onTap: () {},
-                            child: Container(
-                              width: double.infinity,
-                              height: 45,
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Center(
-                                  child: Text('Cari',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600))),
-                            ),
-                          ),
-                        ],
-                      )
-                    ]),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.05,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.height * 0.045,
-                      child: ListView.separated(
-                          separatorBuilder: (context, index) {
-                            return const SizedBox(width: 8);
-                          },
-                          scrollDirection: Axis.horizontal,
-                          shrinkWrap: true,
-                          itemCount: filter.length,
-                          padding: const EdgeInsets.only(right: 8),
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  selectedFilter = index;
-                                });
-                              },
-                              child: Container(
-                                width: 75,
-                                decoration: BoxDecoration(
-                                  color: selectedFilter == index
-                                      ? primaryColor
-                                      : const Color(0xFFEEEDF7),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.all(8),
-                                child: Center(
-                                  child: Text(filter[index],
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: selectedFilter == index
-                                              ? Colors.white
-                                              : const Color(0xFF797979),
-                                          fontWeight: FontWeight.w500)),
-                                ),
-                              ),
-                            );
-                          }),
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: primaryColor,
+                      size: 24,
                     ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.1,
-                      child: SvgPicture.asset(
-                        'assets/icons/filter.svg',
-                        colorFilter: const ColorFilter.mode(
-                            primaryColor, BlendMode.srcIn),
-                        height: 32,
-                        width: 32,
-                      ),
-                    )
-                  ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text('Laporan',
+                        style: TextStyle(
+                            fontSize: GeneralUtil.fontSize(context) * 0.35,
+                            color: const Color(0xFF797979),
+                            fontWeight: FontWeight.w500)),
+                  ),
+                  Container()
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0, top: 24.0),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.055,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height * 0.055,
+                  child: ListView.separated(
+                      separatorBuilder: (context, index) {
+                        return const SizedBox(width: 8);
+                      },
+                      scrollDirection: Axis.horizontal,
+                      shrinkWrap: true,
+                      itemCount: filter.length,
+                      padding: const EdgeInsets.only(right: 8),
+                      itemBuilder: (context, index) {
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              selectedFilter = index;
+                            });
+                            // if (index == 0) {
+                            //   acaraListBloc.add(const AcaraListAttempt(
+                            //       start: '', end: ''));
+                            // } else if (index == 1) {
+                            //   Map<String, String> dateRange = GeneralUtil()
+                            //       .getFormattedFirstAndLastDateOfLastSevenDays();
+                            //   acaraListBloc.add(AcaraListAttempt(
+                            //       start: dateRange['firstDate']!,
+                            //       end: dateRange['lastDate']!));
+                            // } else if (index == 2) {
+                            //   Map<String, String> dateRange = GeneralUtil()
+                            //       .getFormattedFirstAndLastDateOfCurrentMonth();
+                            //   acaraListBloc.add(AcaraListAttempt(
+                            //       start: dateRange['firstDate']!,
+                            //       end: dateRange['lastDate']!));
+                            // } else {
+                            //   Map<String, String> dateRange = GeneralUtil()
+                            //       .getFormattedFirstAndLastDateOfLastThreeMonths();
+                            //   acaraListBloc.add(AcaraListAttempt(
+                            //       start: dateRange['firstDate']!,
+                            //       end: dateRange['lastDate']!));
+                            // }
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: selectedFilter == index
+                                  ? primaryColor
+                                  : const Color(0xFF9E9E9E),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Center(
+                              child: Text(filter[index],
+                                  style: TextStyle(
+                                      fontSize:
+                                          GeneralUtil.fontSize(context) * 0.4,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                          ),
+                        );
+                      }),
                 ),
               ),
             ),
-            Expanded(
-                child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.only(left: 16, bottom: 40, right: 16),
-              children: [
-                Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFF9E9E9E).withOpacity(0.1))),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text('Laporan Izin',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            Row(
-                              children: [
-                                Image.asset(
-                                  'assets/icons/pdf.png',
-                                  height: 24,
-                                  width: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                SvgPicture.asset(
-                                  'assets/icons/sort-ascending.svg',
-                                  height: 24,
-                                  width: 24,
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.08,
-                              padding: const EdgeInsets.only(top: 4, bottom: 4),
-                              child: const Text('#',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.5,
-                              padding: const EdgeInsets.only(top: 4, bottom: 4),
-                              child: const Text('Name',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.25,
-                              padding: const EdgeInsets.only(top: 4, bottom: 4),
-                              child: const Text('Date',
-                                  textAlign: TextAlign.end,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF797979),
-                                      fontWeight: FontWeight.w400)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          width: double.infinity,
-                          height: 2,
-                          color: const Color(0xFFEAF1F8),
-                        ),
-                        const SizedBox(height: 4),
-                        Expanded(
-                            child: ListView.separated(
-                          itemBuilder: (context, index) {
-                            return Row(
-                              children: [
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.08,
-                                  padding:
-                                      const EdgeInsets.only(top: 4, bottom: 4),
-                                  child: Text('0${index + 1}',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                ),
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.5,
-                                  padding:
-                                      const EdgeInsets.only(top: 4, bottom: 4),
-                                  child: const Text('I  Putu John Doe',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                ),
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.25,
-                                  padding:
-                                      const EdgeInsets.only(top: 4, bottom: 4),
-                                  child: const Text('20/01/2024',
-                                      textAlign: TextAlign.end,
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: Color(0xFF797979),
-                                          fontWeight: FontWeight.w400)),
-                                ),
-                              ],
-                            );
-                          },
-                          physics: const NeverScrollableScrollPhysics(),
-                          separatorBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 4, bottom: 4),
-                              child: Container(
-                                width: double.infinity,
-                                height: 1,
-                                color: const Color(0xFFEAF1F8),
-                              ),
-                            );
-                          },
-                          itemCount: 5,
-                          shrinkWrap: true,
-                        )),
-                        const SizedBox(height: 8),
-                        const Center(
-                          child: Text('View more',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                      ],
-                    )),
-                const SizedBox(height: 24),
-                Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.4,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFF9E9E9E).withOpacity(0.1))),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Text('Laporan Aktifitas',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            Row(
-                              children: [
-                                Image.asset(
-                                  'assets/icons/pdf.png',
-                                  height: 24,
-                                  width: 24,
-                                ),
-                                const SizedBox(width: 8),
-                                SvgPicture.asset(
-                                  'assets/icons/sort-ascending.svg',
-                                  height: 24,
-                                  width: 24,
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ],
-                    )),
-                const SizedBox(height: 24),
-                Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height * 0.35,
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            blurRadius: 3,
-                            offset: const Offset(-6, 4), // Shadow position
-                          ),
-                        ],
-                        border: Border.all(
-                            color: const Color(0xFF9E9E9E).withOpacity(0.1))),
-                    child: const Column()),
-              ],
-            ))
+            Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Rp 4.000.000',
+                      style: TextStyle(
+                          backgroundColor: Colors.white,
+                          fontSize: GeneralUtil.fontSize(context) * 0.7,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.25,
+                      child: chart.BarChart(
+                        selectedFilter == 0
+                            ? _createSampleData()
+                            : selectedFilter == 1
+                                ? _createSampleData2()
+                                : _createSampleData3(),
+                        animate: false,
+                        defaultInteractions: true,
+                        defaultRenderer: chart.BarLaneRendererConfig(
+                            cornerStrategy: const chart.ConstCornerStrategy(8)),
+                      ))
+                ],
+              ),
+            )
           ],
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -98,9 +99,11 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
     try {
       final result = await InternetAddress.lookup('google.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        log('is internet');
         return true;
       }
     } on SocketException catch (_) {
+      log('is not internet');
       return false;
     }
 

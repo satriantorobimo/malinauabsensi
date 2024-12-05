@@ -309,10 +309,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (state is UserDetailLoading) {}
                       if (state is UserDetailLoaded) {}
                       if (state is UserDetailError) {
-                        GeneralUtil().showSnackBarError(context, state.error!);
+                        if (state.error! == 'Token is expired') {
+                          _expDialog(context);
+                        } else {
+                          GeneralUtil()
+                              .showSnackBarError(context, state.error!);
+                        }
                       }
                       if (state is UserDetailException) {
-                        _expDialog(context);
+                        GeneralUtil().showSnackBarError(context, state.error);
                       }
                     },
                     child: BlocBuilder(
@@ -360,7 +365,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .name!,
+                                                .userName!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -392,7 +397,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .email!,
+                                                .userEmail!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -424,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .birthdate!,
+                                                .userBirthdate!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -456,7 +461,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .nik!,
+                                                .userNik!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -488,7 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .nip!,
+                                                .userNip!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -520,7 +525,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .role!,
+                                                .roleName!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *
@@ -552,7 +557,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                             state.userDetailResponseModel.data!
-                                                .eselon!,
+                                                .eselonName!,
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *

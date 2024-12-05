@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
@@ -6,6 +8,7 @@ import 'package:malinau_absensi/feature/aktifitas/screen/dinas_luar_screen.dart'
 import 'package:malinau_absensi/feature/beranda/beranda_screen.dart';
 import 'package:malinau_absensi/feature/home/screen/home_screen.dart';
 import 'package:malinau_absensi/feature/izin/screen/izin_screen.dart';
+import 'package:malinau_absensi/feature/login/data/login_response_model.dart';
 import 'package:malinau_absensi/feature/tab/provider/tab_provider.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:provider/provider.dart';
@@ -18,22 +21,35 @@ class CustomBottomNavBar extends StatefulWidget {
 }
 
 class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
-  final List<Map<String, dynamic>> _tabs = [
-    {'label': 'Home', 'icon': 'assets/icons/home.svg'},
-    {'label': 'Izin', 'icon': 'assets/icons/izin.svg'},
-    {
-      'label': 'Absensi',
-      'icon': 'assets/icons/absen.svg',
-      'isHighlighted': true
-    },
-    {'label': 'Dinas Luar', 'icon': 'assets/icons/activity.svg'},
-    {'label': 'Acara', 'icon': 'assets/icons/izin.svg'},
-  ];
+  List<Map<String, dynamic>> _tabs = [];
 
   void _onTabTapped(int index) {
     var bottomBarProvider = Provider.of<TabProvider>(context, listen: false);
     bottomBarProvider.setPage(index);
     bottomBarProvider.setTab(index);
+  }
+
+  Future<void> _getMenuActions() async {
+    List<MenuActions> retrievedActions =
+        await GeneralUtil().getMenuActionsFromSharedPreferences();
+    for (var action in retrievedActions) {
+      if (action.menuName == 'All Mobile') {
+        setState(() {
+          _tabs = [
+            {'label': 'Home', 'icon': 'assets/icons/home.svg'},
+            {'label': 'Izin', 'icon': 'assets/icons/izin.svg'},
+            {
+              'label': 'Absensi',
+              'icon': 'assets/icons/absen.svg',
+              'isHighlighted': true
+            },
+            {'label': 'Dinas Luar', 'icon': 'assets/icons/activity.svg'},
+            {'label': 'Acara', 'icon': 'assets/icons/izin.svg'},
+          ];
+        });
+      }
+      log('RoleID: ${action.roleID}, MenuID: ${action.menuID}, ActionID: ${action.actionID}');
+    }
   }
 
   Widget _getPage(int index) {
@@ -54,6 +70,12 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
     }
 
     return const BerandaScreen();
+  }
+
+  @override
+  void initState() {
+    _getMenuActions();
+    super.initState();
   }
 
   @override
@@ -103,7 +125,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.only(top: 4.0, bottom: 8),
                             child: SvgPicture.asset(
                               tab['icon'],
                               colorFilter: ColorFilter.mode(
@@ -132,8 +154,8 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                 }).toList(),
               ),
               Positioned(
-                top: -45, // Move this up
-                left: MediaQuery.of(context).size.width / 2 - 50,
+                top: -25, // Move this up
+                left: MediaQuery.of(context).size.width / 2 - 47,
                 child: InkWell(
                   splashColor: Colors.transparent, // Remove splash effect
                   highlightColor: Colors.transparent, // Remove highlight effect
@@ -142,8 +164,8 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 70,
-                        height: 70,
+                        width: 55,
+                        height: 55,
                         padding: const EdgeInsets.all(10),
                         decoration: const BoxDecoration(
                           color: primaryColor,
@@ -157,7 +179,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                           height: 24,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 6),
                       Text(
                         'Absensi',
                         style: TextStyle(

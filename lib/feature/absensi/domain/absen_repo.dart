@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_detail_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_list_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_summary_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/general_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/update_absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart';
@@ -16,8 +18,8 @@ class AbsenRepo {
       absenApi.attemptAbsenIn(absenRequestModel);
 
   Future<AbsenResponseModel?> attemptAbsenOut(
-          AbsenRequestModel absenRequestModel) =>
-      absenApi.attemptAbsenOut(absenRequestModel);
+          AbsenOutRequestModel absenOutRequestModel) =>
+      absenApi.attemptAbsenOut(absenOutRequestModel);
 
   Future<AbsenListResponseModel?> attemptAbsenList(String start, String end) =>
       absenApi.attemptAbsenList(start, end);
@@ -25,7 +27,8 @@ class AbsenRepo {
   Future<AbsenDetailResponseModel?> attemptAbsenDetail(String id) =>
       absenApi.attemptAbsenDetail(id);
 
-  Future<String?> attemptRegister(Map<String, Uint8List> capturedImages) =>
+  Future<GeneralResponseModel?> attemptRegister(
+          Map<String, Uint8List> capturedImages) =>
       absenApi.attemptRegister(capturedImages);
 
   Future<GeneralResponseModel?> attemptUpdateAbsen(
@@ -34,4 +37,7 @@ class AbsenRepo {
 
   Future<UserAvailabilityResponseModel?> attemptUserAvailability() =>
       absenApi.attemptUserAvailability();
+
+  Future<AbsenSummaryResponseModel?> attemptAbsenSummary() =>
+      absenApi.attemptAbsenSummary();
 }

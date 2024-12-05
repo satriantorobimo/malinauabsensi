@@ -23,74 +23,70 @@ class UserDetailResponseModel {
 }
 
 class Data {
-  String? userID;
-  String? email;
-  String? nip;
-  String? nik;
-  String? name;
-  String? birthdate;
-  String? eselon;
-  String? opd;
-  String? unitKerja;
-  String? role;
-  String? roleID;
-  String? eselonID;
-  String? unitKerjaIndukID;
-  String? unitkerjaID;
-  String? seksi;
+  String? userId;
+  String? userNip;
+  String? userNik;
+  String? userBirthdate;
+  String? userName;
+  String? userEmail;
+  String? roleId;
+  String? roleName;
+  String? eselonId;
+  String? eselonName;
+  String? unitKerjaIndukId;
+  String? unitKerjaIndukName;
+  String? unitKerjaId;
+  String? unitKerjaName;
 
   Data(
-      {this.userID,
-      this.email,
-      this.nip,
-      this.nik,
-      this.name,
-      this.birthdate,
-      this.eselon,
-      this.opd,
-      this.unitKerja,
-      this.role,
-      this.roleID,
-      this.eselonID,
-      this.unitKerjaIndukID,
-      this.unitkerjaID,
-      this.seksi});
+      {this.userId,
+      this.userNip,
+      this.userNik,
+      this.userBirthdate,
+      this.userName,
+      this.userEmail,
+      this.roleId,
+      this.roleName,
+      this.eselonId,
+      this.eselonName,
+      this.unitKerjaIndukId,
+      this.unitKerjaIndukName,
+      this.unitKerjaId,
+      this.unitKerjaName});
 
   Data.fromJson(Map<String, dynamic> json) {
-    userID = json['userID'];
-    email = json['email'];
-    nip = json['nip'];
-    nik = json['nik'];
-    name = json['name'];
-    birthdate = json['birthdate'];
-    eselon = json['eselon'];
-    opd = json['opd'];
-    unitKerja = json['unitKerja'];
-    role = json['role'];
-    roleID = json['roleID'];
-    eselonID = json['eselonID'];
-    unitKerjaIndukID = json['unitKerjaIndukID'];
-    unitkerjaID = json['unitkerjaID'];
-    seksi = json['seksi'];
+    userId = json['user_id'];
+    userNip = json['user_nip'];
+    userNik = json['user_nik'];
+    userBirthdate = json['user_birthdate'];
+    userName = json['user_name'];
+    userEmail = json['user_email'];
+    roleId = json['role_id'];
+    roleName = json['role_name'];
+    eselonId = json['eselon_id'];
+    eselonName = json['eselon_name'];
+    unitKerjaIndukId = json['unit_kerja_induk_id'];
+    unitKerjaIndukName = json['unit_kerja_induk_name'];
+    unitKerjaId = json['unit_kerja_id'];
+    unitKerjaName = json['unit_kerja_name'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['userID'] = userID;
-    data['email'] = email;
-    data['nip'] = nip;
-    data['nik'] = nik;
-    data['name'] = name;
-    data['birthdate'] = birthdate;
-    data['eselon'] = eselon;
-    data['opd'] = opd;
-    data['unitKerja'] = unitKerja;
-    data['role'] = role;
-    data['roleID'] = roleID;
-    data['eselonID'] = eselonID;
-    data['unitKerjaIndukID'] = unitKerjaIndukID;
-    data['unitkerjaID'] = unitkerjaID;
-    data['seksi'] = seksi;
+    data['user_id'] = userId;
+    data['user_nip'] = userNip;
+    data['user_nik'] = userNik;
+    data['user_birthdate'] = userBirthdate;
+    data['user_name'] = userName;
+    data['user_email'] = userEmail;
+    data['role_id'] = roleId;
+    data['role_name'] = roleName;
+    data['eselon_id'] = eselonId;
+    data['eselon_name'] = eselonName;
+    data['unit_kerja_induk_id'] = unitKerjaIndukId;
+    data['unit_kerja_induk_name'] = unitKerjaIndukName;
+    data['unit_kerja_id'] = unitKerjaId;
+    data['unit_kerja_name'] = unitKerjaName;
     return data;
   }
 }

@@ -12,6 +12,8 @@ class TambahIzinTambahIzinitial extends TambahIzinState {}
 
 class TambahIzinLoading extends TambahIzinState {}
 
+class DeleteIzinLoading extends TambahIzinState {}
+
 class TambahIzinLoaded extends TambahIzinState {
   const TambahIzinLoaded({required this.generalResponseModel});
   final GeneralResponseModel generalResponseModel;
@@ -21,6 +23,13 @@ class TambahIzinLoaded extends TambahIzinState {
 
 class EditIzinLoaded extends TambahIzinState {
   const EditIzinLoaded({required this.generalResponseModel});
+  final GeneralResponseModel generalResponseModel;
+  @override
+  List<Object> get props => [generalResponseModel];
+}
+
+class DeleteIzinLoaded extends TambahIzinState {
+  const DeleteIzinLoaded({required this.generalResponseModel});
   final GeneralResponseModel generalResponseModel;
   @override
   List<Object> get props => [generalResponseModel];

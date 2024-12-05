@@ -11,6 +11,7 @@ import 'package:google_ml_vision/google_ml_vision.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
 import 'package:malinau_absensi/feature/absensi/bloc/in_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
@@ -159,8 +160,10 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
 
           String cvrt = base64Encode(utf8.encode(json));
           inBloc.add(InAttempt(
-              absenRequestModel:
-                  AbsenRequestModel(qrContent: cvrt, requestType: 'in')));
+              absenRequestModel: AbsenRequestModel(
+                  qrContent: cvrt,
+                  requestType: 'in',
+                  location: Location(lat: 0.0, long: 0.0))));
         } else {
           final Map mapData = {};
           mapData['user_id'] = userid;
@@ -169,8 +172,8 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
 
           String cvrt = base64Encode(utf8.encode(json));
           outBloc.add(OutAttempt(
-              absenRequestModel:
-                  AbsenRequestModel(qrContent: cvrt, requestType: 'out')));
+              absenOutRequestModel:
+                  AbsenOutRequestModel(qrContent: cvrt, requestType: 'out')));
         }
       } else {
         setState(() {
@@ -259,17 +262,22 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                     (route) => false);
                               }
                               if (state is InError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                if (state.error! == 'Token is expired') {
+                                  _expDialog(context);
+                                } else {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                }
                               }
                               if (state is InException) {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                _expDialog(context);
+                                GeneralUtil()
+                                    .showSnackBarError(context, state.error);
                               }
                             }),
                         BlocListener(
@@ -292,17 +300,22 @@ class _FaceScanScreenState extends State<FaceScanScreen> {
                                     (route) => false);
                               }
                               if (state is OutError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                if (state.error! == 'Token is expired') {
+                                  _expDialog(context);
+                                } else {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                }
                               }
                               if (state is OutException) {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                _expDialog(context);
+                                GeneralUtil()
+                                    .showSnackBarError(context, state.error);
                               }
                             }),
                       ],

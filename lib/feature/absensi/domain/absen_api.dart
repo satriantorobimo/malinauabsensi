@@ -1,10 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_detail_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_list_response_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_summary_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/general_response_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/update_absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/user_availability_response_model.dart';
@@ -20,6 +22,8 @@ class AbsenApi {
   GeneralResponseModel generalResponseModel = GeneralResponseModel();
   UserAvailabilityResponseModel userAvailabilityResponseModel =
       UserAvailabilityResponseModel();
+  AbsenSummaryResponseModel absenSummaryResponseModel =
+      AbsenSummaryResponseModel();
 
   UrlUtil urlUtil = UrlUtil();
 
@@ -29,9 +33,11 @@ class AbsenApi {
     final String? userid = await SharedPrefUtil.getSharedString('userid');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserId(token!);
+
     final Map mapData = {};
     mapData['qr_content'] = absenRequestModel.qrContent;
     mapData['request_type'] = absenRequestModel.requestType;
+    mapData['location'] = absenRequestModel.location;
     final json = jsonEncode(mapData);
 
     try {
@@ -40,9 +46,12 @@ class AbsenApi {
       if (res.statusCode == 200) {
         absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
         return absenResponseModel;
+      } else if (res.statusCode == 401) {
+        absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
+        return absenResponseModel;
       } else {
         absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
-        throw absenResponseModel.message!;
+        return absenResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -50,14 +59,14 @@ class AbsenApi {
   }
 
   Future<AbsenResponseModel> attemptAbsenOut(
-      AbsenRequestModel absenRequestModel) async {
+      AbsenOutRequestModel absenOutRequestModel) async {
     final String? token = await SharedPrefUtil.getSharedString('token');
     final String? userid = await SharedPrefUtil.getSharedString('userid');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserId(token!);
     final Map mapData = {};
-    mapData['qr_content'] = absenRequestModel.qrContent;
-    mapData['request_type'] = absenRequestModel.requestType;
+    mapData['qr_content'] = absenOutRequestModel.qrContent;
+    mapData['request_type'] = absenOutRequestModel.requestType;
     final json = jsonEncode(mapData);
 
     try {
@@ -66,9 +75,12 @@ class AbsenApi {
       if (res.statusCode == 200) {
         absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
         return absenResponseModel;
+      } else if (res.statusCode == 401) {
+        absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
+        return absenResponseModel;
       } else {
         absenResponseModel = AbsenResponseModel.fromJson(jsonDecode(res.body));
-        throw absenResponseModel.message!;
+        return absenResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -90,10 +102,14 @@ class AbsenApi {
         absenListResponseModel =
             AbsenListResponseModel.fromJson(jsonDecode(res.body));
         return absenListResponseModel;
+      } else if (res.statusCode == 401) {
+        absenListResponseModel =
+            AbsenListResponseModel.fromJson(jsonDecode(res.body));
+        return absenListResponseModel;
       } else {
         absenListResponseModel =
             AbsenListResponseModel.fromJson(jsonDecode(res.body));
-        throw absenListResponseModel.message!;
+        return absenListResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -112,17 +128,22 @@ class AbsenApi {
         absenDetailResponseModel =
             AbsenDetailResponseModel.fromJson(jsonDecode(res.body));
         return absenDetailResponseModel;
+      } else if (res.statusCode == 401) {
+        absenDetailResponseModel =
+            AbsenDetailResponseModel.fromJson(jsonDecode(res.body));
+        return absenDetailResponseModel;
       } else {
         absenDetailResponseModel =
             AbsenDetailResponseModel.fromJson(jsonDecode(res.body));
-        throw absenDetailResponseModel.message!;
+        return absenDetailResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
     }
   }
 
-  Future<String> attemptRegister(Map<String, Uint8List> capturedImages) async {
+  Future<GeneralResponseModel> attemptRegister(
+      Map<String, Uint8List> capturedImages) async {
     final String? userid = await SharedPrefUtil.getSharedString('userid');
 
     try {
@@ -148,9 +169,13 @@ class AbsenApi {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
-        return response.body;
+        generalResponseModel =
+            GeneralResponseModel.fromJson(jsonDecode(response.body));
+        return generalResponseModel;
       } else {
-        throw response.body;
+        generalResponseModel =
+            GeneralResponseModel.fromJson(jsonDecode(response.body));
+        return generalResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -178,10 +203,14 @@ class AbsenApi {
         generalResponseModel =
             GeneralResponseModel.fromJson(jsonDecode(res.body));
         return generalResponseModel;
+      } else if (res.statusCode == 401) {
+        generalResponseModel =
+            GeneralResponseModel.fromJson(jsonDecode(res.body));
+        return generalResponseModel;
       } else {
         generalResponseModel =
             GeneralResponseModel.fromJson(jsonDecode(res.body));
-        throw generalResponseModel.message!;
+        return generalResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -201,10 +230,42 @@ class AbsenApi {
         userAvailabilityResponseModel =
             UserAvailabilityResponseModel.fromJson(jsonDecode(res.body));
         return userAvailabilityResponseModel;
+      } else if (res.statusCode == 401) {
+        userAvailabilityResponseModel =
+            UserAvailabilityResponseModel.fromJson(jsonDecode(res.body));
+        return userAvailabilityResponseModel;
       } else {
         userAvailabilityResponseModel =
             UserAvailabilityResponseModel.fromJson(jsonDecode(res.body));
-        throw userAvailabilityResponseModel.message!;
+        return userAvailabilityResponseModel;
+      }
+    } catch (ex) {
+      throw ex.toString();
+    }
+  }
+
+  Future<AbsenSummaryResponseModel> attemptAbsenSummary() async {
+    final String? token = await SharedPrefUtil.getSharedString('token');
+    final String? userid = await SharedPrefUtil.getSharedString('userid');
+    final Map<String, String> header =
+        urlUtil.getHeaderTypeWithTokenNoUserId(token!);
+
+    try {
+      final res = await http.get(
+          Uri.parse(urlUtil.getUrlAbsensiSummary(userid!)),
+          headers: header);
+      if (res.statusCode == 200) {
+        absenSummaryResponseModel =
+            AbsenSummaryResponseModel.fromJson(jsonDecode(res.body));
+        return absenSummaryResponseModel;
+      } else if (res.statusCode == 401) {
+        absenSummaryResponseModel =
+            AbsenSummaryResponseModel.fromJson(jsonDecode(res.body));
+        return absenSummaryResponseModel;
+      } else {
+        absenSummaryResponseModel =
+            AbsenSummaryResponseModel.fromJson(jsonDecode(res.body));
+        return absenSummaryResponseModel;
       }
     } catch (ex) {
       throw ex.toString();

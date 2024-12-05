@@ -494,14 +494,13 @@ class _RegisterFaceScanV3State extends State<RegisterFaceScanV3> {
                                     setState(() {
                                       isError = true;
                                     });
-                                    GeneralUtil().showSnackBarError(
-                                        context, state.error!);
                                   }
                                   if (state is RegisterException) {
                                     setState(() {
                                       isError = true;
                                     });
-                                    _expDialog(context);
+                                    GeneralUtil().showSnackBarError(
+                                        context, state.error);
                                   }
                                 },
                                 child: BlocBuilder(

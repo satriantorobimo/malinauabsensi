@@ -11,7 +11,7 @@ class OutBloc extends Bloc<OutEvent, OutState> {
         try {
           emit(OutLoading());
           final absenResponseModel =
-              await absenRepo.attemptAbsenOut(event.absenRequestModel);
+              await absenRepo.attemptAbsenOut(event.absenOutRequestModel);
           if (absenResponseModel!.status == '200') {
             emit(OutLoaded(absenResponseModel: absenResponseModel));
           } else {

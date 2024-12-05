@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/bloc/summary_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
@@ -38,10 +39,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
   bool isLoadingData = true;
   late String name;
   late String role;
+  int telat = 0;
+  int tepatWaktu = 0;
   ListBloc listBloc = ListBloc(absenRepo: AbsenRepo());
   DinasLuarListBloc dinasLuarListBloc =
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
   AcaraListBloc acaraListBloc = AcaraListBloc(aktifitasARepo: AktifitasARepo());
+  SummaryBloc summaryBloc = SummaryBloc(absenRepo: AbsenRepo());
   int selectedFilter = 0;
   static List<chart.Series<OrdinalSales, String>> _createSampleData() {
     final data = [
@@ -59,9 +63,13 @@ class _BerandaScreenState extends State<BerandaScreen> {
         domainFn: (OrdinalSales sales, _) => sales.year,
         measureFn: (OrdinalSales sales, _) => sales.sales,
         data: data,
+        fillColorFn: (OrdinalSales ordinalSales, _) =>
+            chart.ColorUtil.fromDartColor(primaryColor),
       )
     ];
   }
+
+  Color? color = primaryColor;
 
   Future<void> _expDialog(BuildContext context) async {
     return showDialog(
@@ -129,6 +137,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     );
     Map<String, String> dateRange =
         GeneralUtil().getFormattedFirstAndLastDateOfLast3Days();
+    summaryBloc.add(SummaryAttempt());
     listBloc.add(ListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
     acaraListBloc.add(AcaraListAttempt(
@@ -327,143 +336,216 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.3,
-                        height: MediaQuery.of(context).size.width * 0.25,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.2))),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: greenColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Tepat waktu',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.35,
-                                    color: const Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            const SizedBox(height: 12),
-                            Text('20 hari',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.4,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.3,
-                        height: MediaQuery.of(context).size.width * 0.25,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.2))),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: redColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Telat',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.35,
-                                    color: const Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            const SizedBox(height: 12),
-                            Text('2 hari',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.4,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.3,
-                        height: MediaQuery.of(context).size.width * 0.25,
-                        decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                blurRadius: 3,
-                                offset: const Offset(-6, 4), // Shadow position
-                              ),
-                            ],
-                            border: Border.all(
-                                color:
-                                    const Color(0xFFC2C2C2).withOpacity(0.2))),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 50,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Jam kerja',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.35,
-                                    color: const Color(0xFF797979),
-                                    fontWeight: FontWeight.w400)),
-                            const SizedBox(height: 12),
-                            Text('20 jam',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.4,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  BlocListener(
+                      bloc: summaryBloc,
+                      listener: (_, SummaryState state) async {
+                        if (state is SummaryLoading) {}
+                        if (state is SummaryLoaded) {
+                          if (state.absenSummaryResponseModel.data!.summary!
+                              .isNotEmpty) {
+                            for (int i = 0;
+                                i <
+                                    state.absenSummaryResponseModel.data!
+                                        .summary!.length;
+                                i++) {
+                              if (state.absenSummaryResponseModel.data!
+                                      .summary![i].status ==
+                                  'Terlambat') {
+                                setState(() {
+                                  telat = state.absenSummaryResponseModel.data!
+                                      .summary![i].count!;
+                                });
+                              }
+                              if (state.absenSummaryResponseModel.data!
+                                      .summary![i].status ==
+                                  'Tepat Waktu') {
+                                setState(() {
+                                  tepatWaktu = state.absenSummaryResponseModel
+                                      .data!.summary![i].count!;
+                                });
+                              }
+                            }
+                          }
+                        }
+                        if (state is SummaryError) {
+                          if (state.error! == 'Token is expired') {
+                            _expDialog(context);
+                          } else {
+                            GeneralUtil()
+                                .showSnackBarError(context, state.error!);
+                          }
+                        }
+                        if (state is SummaryException) {
+                          GeneralUtil().showSnackBarError(context, state.error);
+                        }
+                      },
+                      child: BlocBuilder(
+                          bloc: summaryBloc,
+                          builder: (_, SummaryState state) {
+                            if (state is SummaryLoaded) {
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    height: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.1),
+                                            blurRadius: 3,
+                                            offset: const Offset(
+                                                -6, 4), // Shadow position
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                            color: const Color(0xFFC2C2C2)
+                                                .withOpacity(0.2))),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 50,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: greenColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text('Tepat waktu',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: const Color(0xFF797979),
+                                                fontWeight: FontWeight.w400)),
+                                        const SizedBox(height: 12),
+                                        Text('$tepatWaktu hari',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.4,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    height: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.1),
+                                            blurRadius: 3,
+                                            offset: const Offset(
+                                                -6, 4), // Shadow position
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                            color: const Color(0xFFC2C2C2)
+                                                .withOpacity(0.2))),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 50,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: redColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text('Telat',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: const Color(0xFF797979),
+                                                fontWeight: FontWeight.w400)),
+                                        const SizedBox(height: 12),
+                                        Text('$telat hari',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.4,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.3,
+                                    height: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(0.1),
+                                            blurRadius: 3,
+                                            offset: const Offset(
+                                                -6, 4), // Shadow position
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                            color: const Color(0xFFC2C2C2)
+                                                .withOpacity(0.2))),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 50,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text('Jam kerja',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: const Color(0xFF797979),
+                                                fontWeight: FontWeight.w400)),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                            '${state.absenSummaryResponseModel.data!.workingHour.toString()} jam',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.4,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                            return GeneralUtil().loadingRow(context);
+                          })),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -497,12 +579,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       listener: (_, ListState state) async {
                         if (state is ListLoading) {}
                         if (state is ListLoaded) {}
-                        if (state is ListError) {
-                          GeneralUtil()
-                              .showSnackBarError(context, state.error!);
-                        }
+                        if (state is ListError) {}
                         if (state is ListException) {
-                          _expDialog(context);
+                          GeneralUtil().showSnackBarError(context, state.error);
                         }
                       },
                       child: BlocBuilder(
@@ -604,7 +683,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                   fontSize:
                                                                       GeneralUtil.fontSize(
                                                                               context) *
-                                                                          0.4,
+                                                                          0.35,
                                                                   color: const Color(
                                                                       0xFF797979),
                                                                   fontWeight:
@@ -622,7 +701,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                 fontSize: GeneralUtil
                                                                         .fontSize(
                                                                             context) *
-                                                                    0.4,
+                                                                    0.35,
                                                                 color: Colors
                                                                     .black,
                                                                 fontWeight:
@@ -648,7 +727,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                 fontSize: GeneralUtil
                                                                         .fontSize(
                                                                             context) *
-                                                                    0.4,
+                                                                    0.35,
                                                                 color: Colors
                                                                     .black,
                                                                 fontWeight:
@@ -663,7 +742,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                 fontSize: GeneralUtil
                                                                         .fontSize(
                                                                             context) *
-                                                                    0.35,
+                                                                    0.3,
                                                                 color: state
                                                                             .absenListResponseModel
                                                                             .data![
@@ -686,12 +765,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                   child: Row(
                                                     children: [
                                                       Text(
-                                                          '${state.absenListResponseModel.data![index].checkInTime!.string} - ${state.absenListResponseModel.data![index].checkOutTime!.string}',
+                                                          '${GeneralUtil.timeConvert(state.absenListResponseModel.data![index].checkInTime!.string!)} - ${GeneralUtil.timeConvert(state.absenListResponseModel.data![index].checkOutTime!.string! == "" ? '00:00:00' : state.absenListResponseModel.data![index].checkOutTime!.string!)}',
                                                           style: TextStyle(
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
                                                                           context) *
-                                                                  0.4,
+                                                                  0.35,
                                                               color:
                                                                   Colors.black,
                                                               fontWeight:
@@ -769,12 +848,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       listener: (_, AcaraListState state) async {
                         if (state is AcaraListLoading) {}
                         if (state is AcaraListLoaded) {}
-                        if (state is AcaraListError) {
-                          GeneralUtil()
-                              .showSnackBarError(context, state.error!);
-                        }
+                        if (state is AcaraListError) {}
                         if (state is AcaraListException) {
-                          _expDialog(context);
+                          GeneralUtil().showSnackBarError(context, state.error);
                         }
                       },
                       child: BlocBuilder(
@@ -863,7 +939,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                             fontSize: GeneralUtil
                                                                     .fontSize(
                                                                         context) *
-                                                                0.4,
+                                                                0.35,
                                                             color: Colors.white,
                                                             fontWeight:
                                                                 FontWeight
@@ -874,7 +950,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                   width: MediaQuery.of(context)
                                                           .size
                                                           .width *
-                                                      0.2,
+                                                      0.3,
                                                   child: Column(
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
@@ -886,6 +962,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                       Text(
                                                           listAcara[index]
                                                               .name!,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
                                                           style: TextStyle(
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
@@ -905,7 +983,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
                                                                           context) *
-                                                                  0.35,
+                                                                  0.3,
                                                               color:
                                                                   Colors.black,
                                                               fontWeight:
@@ -936,12 +1014,12 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                                 FontWeight
                                                                     .w400)),
                                                     Text(
-                                                        '${listAcara[index].startTime!} - ${listAcara[index].endTime!}',
+                                                        '${GeneralUtil.timeConvert(listAcara[index].startTime! == "" ? "00:00:00" : listAcara[index].startTime!)} - ${GeneralUtil.timeConvert(listAcara[index].endTime! == "" ? "00:00:00" : listAcara[index].endTime!)}',
                                                         style: TextStyle(
                                                             fontSize: GeneralUtil
                                                                     .fontSize(
                                                                         context) *
-                                                                0.35,
+                                                                0.3,
                                                             color: Colors.black,
                                                             fontWeight:
                                                                 FontWeight
@@ -1023,12 +1101,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
                       listener: (_, DinasLuarListState state) async {
                         if (state is DinasLuarListLoading) {}
                         if (state is DinasLuarListLoaded) {}
-                        if (state is DinasLuarListError) {
-                          GeneralUtil()
-                              .showSnackBarError(context, state.error!);
-                        }
+                        if (state is DinasLuarListError) {}
                         if (state is DinasLuarListException) {
-                          _expDialog(context);
+                          GeneralUtil().showSnackBarError(context, state.error);
                         }
                       },
                       child: BlocBuilder(
@@ -1120,7 +1195,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                             fontSize: GeneralUtil
                                                                     .fontSize(
                                                                         context) *
-                                                                0.4,
+                                                                0.35,
                                                             color: Colors.white,
                                                             fontWeight:
                                                                 FontWeight
@@ -1132,7 +1207,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                   width: MediaQuery.of(context)
                                                           .size
                                                           .width *
-                                                      0.55,
+                                                      0.58,
                                                   child: Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -1149,7 +1224,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
                                                                           context) *
-                                                                  0.4,
+                                                                  0.35,
                                                               color:
                                                                   Colors.black,
                                                               fontWeight:
@@ -1205,7 +1280,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                                                               fontSize: GeneralUtil
                                                                       .fontSize(
                                                                           context) *
-                                                                  0.35,
+                                                                  0.3,
                                                               color: state
                                                                           .dinasLuarListResponseModel
                                                                           .data![
@@ -1231,17 +1306,47 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             return GeneralUtil().loading3Data(3);
                           })),
                   const SizedBox(height: 24),
-                  Text('Tunjangan yang sudah dicapai',
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text('Tunjangan yang sudah dicapai',
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600)),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, StringRouterUtil.laporanScreenRoute);
+                        },
+                        child: Text('Selengkapnya',
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Rp 4.000.000',
                       style: TextStyle(
                           backgroundColor: Colors.white,
-                          fontSize: GeneralUtil.fontSize(context) * 0.4,
+                          fontSize: GeneralUtil.fontSize(context) * 0.5,
                           color: Colors.black,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 16),
+                          fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
                   SizedBox(
                       width: double.infinity,
                       height: MediaQuery.of(context).size.height * 0.25,
-                      child: chart.BarChart(_createSampleData()))
+                      child: chart.BarChart(
+                        _createSampleData(),
+                        defaultInteractions: true,
+                        defaultRenderer: chart.BarLaneRendererConfig(
+                            cornerStrategy: const chart.ConstCornerStrategy(8)),
+                      ))
                 ],
               ),
             ),

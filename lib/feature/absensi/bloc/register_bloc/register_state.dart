@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:malinau_absensi/feature/absensi/data/general_response_model.dart';
 
 abstract class RegisterState extends Equatable {
   const RegisterState();
@@ -12,10 +13,10 @@ class RegisterRegisteritial extends RegisterState {}
 class RegisterLoading extends RegisterState {}
 
 class RegisterLoaded extends RegisterState {
-  const RegisterLoaded({required this.result});
-  final String result;
+  const RegisterLoaded({required this.generalResponseModel});
+  final GeneralResponseModel generalResponseModel;
   @override
-  List<Object> get props => [result];
+  List<Object> get props => [generalResponseModel];
 }
 
 class RegisterError extends RegisterState {

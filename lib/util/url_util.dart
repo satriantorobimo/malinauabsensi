@@ -164,14 +164,21 @@ class UrlUtil {
     return baseUrl + urlAbsensiDetail2;
   }
 
-  static String urlAbsensiAvail(String id) => 'v2/user/$id//availability';
+  static String urlAbsensiAvail(String id) => 'v2/user/$id/availability';
 
   String getUrlAbsensiAvail(String id) {
     final String urlAbsensiAvail2 = urlAbsensiAvail(id);
     return baseUrl + urlAbsensiAvail2;
   }
 
-  static String urlUserDetail(String id) => 'v1/user/$id';
+  static String urlAbsensiSummary(String id) => 'v2/attendance/$id/summary';
+
+  String getUrlAbsensiSummary(String id) {
+    final String urlAbsensiSummary2 = urlAbsensiSummary(id);
+    return baseUrl + urlAbsensiSummary2;
+  }
+
+  static String urlUserDetail(String id) => 'v3/user/$id';
 
   String getUrlUserDetail(String id) {
     final String urlUserDetail2 = urlUserDetail(id);
@@ -183,5 +190,13 @@ class UrlUtil {
 
   String getUrlRegisterFace(String id) {
     return urlRegisterFace(id);
+  }
+
+  static String urlUploadFileIzin(String id) =>
+      'v2/leave-requests/$id/upload-supporting-file';
+
+  String getUrlUploadFileIzin(String id) {
+    final String urlUploadFileIzin2 = urlUploadFileIzin(id);
+    return baseUrl + urlUploadFileIzin2;
   }
 }

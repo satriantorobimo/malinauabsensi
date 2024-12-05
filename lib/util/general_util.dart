@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:malinau_absensi/feature/login/data/login_response_model.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 
 class GeneralUtil {
@@ -22,10 +26,28 @@ class GeneralUtil {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  void showSnackBarWarning(BuildContext context, String msg) {
+    final snackBar = SnackBar(
+      content: Text(msg),
+      backgroundColor: Colors.orange,
+      behavior: SnackBarBehavior.floating,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   static String dateConvert(String data) {
     DateTime parseDate = DateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(data);
     var inputDate = DateTime.parse(parseDate.toString());
     var outputFormat = DateFormat('dd/MM/yy');
+    var outputDate = outputFormat.format(inputDate);
+
+    return outputDate;
+  }
+
+  static String timeConvert(String data) {
+    DateTime parseDate = DateFormat("HH:mm:ss").parse(data);
+    var inputDate = DateTime.parse(parseDate.toString());
+    var outputFormat = DateFormat('HH:mm');
     var outputDate = outputFormat.format(inputDate);
 
     return outputDate;
@@ -223,6 +245,33 @@ class GeneralUtil {
     };
   }
 
+  Future<void> saveMenuActionsToSharedPreferences(
+      List<MenuActions> menuActions) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Convert the list of MenuActions to JSON string
+    String jsonString =
+        jsonEncode(menuActions.map((action) => action.toJson()).toList());
+
+    // Store the JSON string
+    await prefs.setString('menu_actions', jsonString);
+  }
+
+  Future<List<MenuActions>> getMenuActionsFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Retrieve the JSON string
+    String? jsonString = prefs.getString('menu_actions');
+
+    if (jsonString != null) {
+      // Decode the JSON string and map it to a list of MenuActions
+      List<dynamic> jsonList = jsonDecode(jsonString);
+      return jsonList.map((json) => MenuActions.fromJson(json)).toList();
+    }
+
+    return [];
+  }
+
   Map<String, String> getFormattedFirstAndLastDateOfLast3Days() {
     DateTime now = DateTime.now();
     DateTime firstDate = now.subtract(const Duration(days: 3));
@@ -286,5 +335,49 @@ class GeneralUtil {
             ),
           );
         });
+  }
+
+  Widget loadingRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey.shade300,
+            ),
+            width: MediaQuery.of(context).size.width * 0.3,
+            height: MediaQuery.of(context).size.width * 0.25,
+          ),
+        ),
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey.shade300,
+            ),
+            width: MediaQuery.of(context).size.width * 0.3,
+            height: MediaQuery.of(context).size.width * 0.25,
+          ),
+        ),
+        Shimmer.fromColors(
+          baseColor: Colors.grey.shade300,
+          highlightColor: Colors.grey.shade100,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey.shade300,
+            ),
+            width: MediaQuery.of(context).size.width * 0.3,
+            height: MediaQuery.of(context).size.width * 0.25,
+          ),
+        )
+      ],
+    );
   }
 }

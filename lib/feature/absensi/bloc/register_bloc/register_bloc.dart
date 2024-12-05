@@ -10,12 +10,12 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       if (event is RegisterAttempt) {
         try {
           emit(RegisterLoading());
-          String? result =
+          final generalResponseModel =
               await absenRepo.attemptRegister(event.capturedImages);
-          if (result == 'Successfully uploaded image') {
-            emit(RegisterLoaded(result: result!));
+          if (generalResponseModel!.status == 'success') {
+            emit(RegisterLoaded(generalResponseModel: generalResponseModel));
           } else {
-            emit(RegisterError(result));
+            emit(RegisterError(generalResponseModel.message));
           }
         } catch (e) {
           emit(RegisterException(e.toString()));

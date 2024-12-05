@@ -37,6 +37,21 @@ class TambahIzinBloc extends Bloc<TambahIzinEvent, TambahIzinState> {
           emit(TambahIzinException(e.toString()));
         }
       }
+
+      if (event is DeleteIzinAttempt) {
+        try {
+          emit(DeleteIzinLoading());
+          final generalResponseModel =
+              await izinRepo.attemptDeleteIzin(event.id);
+          if (generalResponseModel!.status == 'success') {
+            emit(DeleteIzinLoaded(generalResponseModel: generalResponseModel));
+          } else {
+            emit(TambahIzinError(generalResponseModel.message));
+          }
+        } catch (e) {
+          emit(TambahIzinException(e.toString()));
+        }
+      }
     });
   }
 }

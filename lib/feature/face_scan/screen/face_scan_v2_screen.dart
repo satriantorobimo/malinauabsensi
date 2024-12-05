@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
@@ -14,6 +15,7 @@ import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../absensi/bloc/in_bloc/bloc.dart';
 import '../../absensi/bloc/out_bloc/bloc.dart';
@@ -33,6 +35,8 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
   bool isScan = false;
   WebSocketChannel? channel;
   String feedback = "";
+  double lat = 0.0;
+  double long = 0.0;
   bool isPresent = false;
   bool isWebcamReady = false;
   bool _isCapturing = false;
@@ -53,7 +57,16 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
         });
       },
     );
-    _initializeCamera();
+
+    determinePosition().then(
+      (value) {
+        setState(() {
+          lat = value.latitude;
+          long = value.longitude;
+        });
+        _initializeCamera();
+      },
+    );
   }
 
   @override
@@ -61,6 +74,43 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
     channel?.sink.close();
     _controller?.dispose();
     super.dispose();
+  }
+
+  Future<Position> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 
   Future<void> _initializeCamera() async {
@@ -146,12 +196,14 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
         String cvrt = base64Encode(utf8.encode(json));
         if (widget.argumentAbsenModel.isIn) {
           inBloc.add(InAttempt(
-              absenRequestModel:
-                  AbsenRequestModel(qrContent: cvrt, requestType: 'in')));
+              absenRequestModel: AbsenRequestModel(
+                  qrContent: cvrt,
+                  requestType: 'in',
+                  location: Location(lat: lat, long: long))));
         } else {
           outBloc.add(OutAttempt(
-              absenRequestModel:
-                  AbsenRequestModel(qrContent: cvrt, requestType: 'out')));
+              absenOutRequestModel:
+                  AbsenOutRequestModel(qrContent: cvrt, requestType: 'out')));
         }
       });
     } else {
@@ -278,17 +330,22 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                     (route) => false);
                               }
                               if (state is InError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                if (state.error! == 'Token is expired') {
+                                  _expDialog(context);
+                                } else {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                }
                               }
                               if (state is InException) {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                _expDialog(context);
+                                GeneralUtil()
+                                    .showSnackBarError(context, state.error);
                               }
                             }),
                         BlocListener(
@@ -311,17 +368,22 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                     (route) => false);
                               }
                               if (state is OutError) {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
                                 setState(() {
                                   isLoading = false;
                                 });
+                                if (state.error! == 'Token is expired') {
+                                  _expDialog(context);
+                                } else {
+                                  GeneralUtil()
+                                      .showSnackBarError(context, state.error!);
+                                }
                               }
                               if (state is OutException) {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                _expDialog(context);
+                                GeneralUtil()
+                                    .showSnackBarError(context, state.error);
                               }
                             }),
                       ],

@@ -34,10 +34,14 @@ class AktifitasApi {
         dinasLuarListResponseModel =
             DinasLuarListResponseModel.fromJson(jsonDecode(res.body));
         return dinasLuarListResponseModel;
+      } else if (res.statusCode == 401) {
+        dinasLuarListResponseModel =
+            DinasLuarListResponseModel.fromJson(jsonDecode(res.body));
+        return dinasLuarListResponseModel;
       } else {
         dinasLuarListResponseModel =
             DinasLuarListResponseModel.fromJson(jsonDecode(res.body));
-        throw dinasLuarListResponseModel.message!;
+        return dinasLuarListResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -56,10 +60,14 @@ class AktifitasApi {
         dinasLuarDetailResponseModel =
             DinasLuarDetailResponseModel.fromJson(jsonDecode(res.body));
         return dinasLuarDetailResponseModel;
+      } else if (res.statusCode == 401) {
+        dinasLuarDetailResponseModel =
+            DinasLuarDetailResponseModel.fromJson(jsonDecode(res.body));
+        return dinasLuarDetailResponseModel;
       } else {
         dinasLuarDetailResponseModel =
             DinasLuarDetailResponseModel.fromJson(jsonDecode(res.body));
-        throw dinasLuarDetailResponseModel.message!;
+        return dinasLuarDetailResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -79,10 +87,14 @@ class AktifitasApi {
         acaraListResponseModel =
             AcaraListResponseModel.fromJson(jsonDecode(res.body));
         return acaraListResponseModel;
+      } else if (res.statusCode == 401) {
+        acaraListResponseModel =
+            AcaraListResponseModel.fromJson(jsonDecode(res.body));
+        return acaraListResponseModel;
       } else {
         acaraListResponseModel =
             AcaraListResponseModel.fromJson(jsonDecode(res.body));
-        throw acaraListResponseModel.message!;
+        return acaraListResponseModel;
       }
     } catch (ex) {
       throw ex.toString();
@@ -101,10 +113,14 @@ class AktifitasApi {
         acaraDetailResponseModel =
             AcaraDetailResponseModel.fromJson(jsonDecode(res.body));
         return acaraDetailResponseModel;
+      } else if (res.statusCode == 401) {
+        acaraDetailResponseModel =
+            AcaraDetailResponseModel.fromJson(jsonDecode(res.body));
+        return acaraDetailResponseModel;
       } else {
         acaraDetailResponseModel =
             AcaraDetailResponseModel.fromJson(jsonDecode(res.body));
-        throw acaraDetailResponseModel.message!;
+        return acaraDetailResponseModel;
       }
     } catch (ex) {
       throw ex.toString();

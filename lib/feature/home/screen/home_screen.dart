@@ -155,10 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           context, 'Keterangan berhasil disimpan');
                     }
                     if (state is UpdateError) {
-                      GeneralUtil().showSnackBarError(context, state.error!);
+                      if (state.error! == 'Token is expired') {
+                        _expDialog(context);
+                      } else {
+                        GeneralUtil().showSnackBarError(context, state.error!);
+                      }
                     }
                     if (state is UpdateException) {
-                      _expDialog(context);
+                      GeneralUtil().showSnackBarError(context, state.error);
                     }
                   },
                   child: BlocBuilder(
@@ -475,80 +479,86 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 18.0),
+              padding: const EdgeInsets.only(bottom: 8.0, top: 12.0),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.11,
+                height: MediaQuery.of(context).size.height * 0.07,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Daftar Absensi',
-                                style: TextStyle(
-                                    fontSize:
-                                        GeneralUtil.fontSize(context) * 0.5,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w500)),
-                            isLoading
-                                ? Container()
-                                : InkWell(
-                                    onTap: () {
-                                      if (dataUser.isAvailableToCheckIn!) {
-                                        if (GeneralUtil().isWithinCheckInTime(
-                                            dataUser.checkOutRangeTime!
-                                                .startTime!)) {
-                                          Navigator.pushNamed(
-                                              context,
-                                              StringRouterUtil
-                                                  .absenKeluarScreenRoute,
-                                              arguments: true);
-                                        } else {
-                                          GeneralUtil().showSnackBarError(
-                                              context,
-                                              'Absen keluar start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
-                                        }
-                                      } else {
-                                        if (GeneralUtil().isWithinCheckInTime(
-                                            dataUser.checkInRangeTime!
-                                                .startTime!)) {
-                                          Navigator.pushNamed(context,
-                                              StringRouterUtil.absenScreenRoute,
-                                              arguments: dataUser);
-                                        } else {
-                                          GeneralUtil().showSnackBarError(
-                                              context,
-                                              'Absen masuk start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
-                                        }
-                                      }
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: primaryColor,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      padding: const EdgeInsets.all(12),
-                                      child: Center(
-                                          child: Text(
-                                              dataUser.isAvailableToCheckIn!
-                                                  ? 'Absen Keluar'
-                                                  : 'Absen Masuk',
-                                              style: TextStyle(
-                                                  fontSize:
-                                                      GeneralUtil.fontSize(
-                                                              context) *
-                                                          0.35,
-                                                  color: Colors.white,
-                                                  fontWeight:
-                                                      FontWeight.w600))),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('Daftar Absensi',
+                              style: TextStyle(
+                                  fontSize: GeneralUtil.fontSize(context) * 0.6,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w500)),
+                          isLoading
+                              ? Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.grey.shade300,
                                     ),
+                                    width: MediaQuery.of(context).size.width *
+                                        0.25,
+                                    height: MediaQuery.of(context).size.height *
+                                        0.05,
                                   ),
-                          ],
-                        ),
+                                )
+                              : InkWell(
+                                  onTap: () {
+                                    if (dataUser.isAvailableToCheckIn!) {
+                                      if (GeneralUtil().isWithinCheckInTime(
+                                          dataUser
+                                              .checkInRangeTime!.startTime!)) {
+                                        Navigator.pushNamed(context,
+                                            StringRouterUtil.absenScreenRoute,
+                                            arguments: dataUser);
+                                      } else {
+                                        GeneralUtil().showSnackBarError(context,
+                                            'Absen masuk start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                      }
+                                    } else {
+                                      if (GeneralUtil().isWithinCheckInTime(
+                                          dataUser
+                                              .checkOutRangeTime!.startTime!)) {
+                                        Navigator.pushNamed(
+                                            context,
+                                            StringRouterUtil
+                                                .absenKeluarScreenRoute,
+                                            arguments: true);
+                                      } else {
+                                        GeneralUtil().showSnackBarError(context,
+                                            'Absen keluar start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Center(
+                                        child: Text(
+                                            dataUser.isAvailableToCheckIn!
+                                                ? 'Absen Masuk'
+                                                : 'Absen Keluar',
+                                            style: TextStyle(
+                                                fontSize: GeneralUtil.fontSize(
+                                                        context) *
+                                                    0.35,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600))),
+                                  ),
+                                ),
+                        ],
                       ),
                       // const SizedBox(height: 16),
                       // Row(
@@ -692,13 +702,13 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.05,
+                height: MediaQuery.of(context).size.height * 0.055,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.height * 0.05,
+                      height: MediaQuery.of(context).size.height * 0.055,
                       child: ListView.separated(
                           separatorBuilder: (context, index) {
                             return const SizedBox(width: 8);
@@ -743,7 +753,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       : const Color(0xFF9E9E9E),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                padding: const EdgeInsets.all(6),
+                                padding: const EdgeInsets.all(8),
                                 child: Center(
                                   child: AutoSizeText(filter[index],
                                       style: TextStyle(
@@ -802,16 +812,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       });
                     }
                     if (state is ListError) {
-                      GeneralUtil().showSnackBarError(context, state.error!);
                       setState(() {
                         isLoading = false;
                       });
+                      if (state.error! == 'Token is expired') {
+                        _expDialog(context);
+                      } else {
+                        GeneralUtil().showSnackBarError(context, state.error!);
+                      }
                     }
                     if (state is ListException) {
                       setState(() {
                         isLoading = false;
                       });
-                      _expDialog(context);
+                      GeneralUtil().showSnackBarError(context, state.error);
                     }
                   },
                 ),
@@ -830,13 +844,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         isLoading = false;
                       });
-                      GeneralUtil().showSnackBarError(context, state.error!);
+                      if (state.error! == 'Token is expired') {
+                        _expDialog(context);
+                      } else {
+                        GeneralUtil().showSnackBarError(context, state.error!);
+                      }
                     }
-                    if (state is ListException) {
+                    if (state is AvailException) {
                       setState(() {
                         isLoading = false;
                       });
-                      _expDialog(context);
+                      GeneralUtil().showSnackBarError(context, state.error);
                     }
                   },
                 ),
@@ -847,7 +865,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.only(left: 16, right: 16),
                       child: GeneralUtil().loading3Data(10),
                     ))
-                  : mainContent(),
+                  : data.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 24.0),
+                          child: Center(
+                            child: Text('Data absensi belum tersedia',
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.45,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                        )
+                      : mainContent(),
             )
           ],
         ),
@@ -910,19 +940,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                       data[index].createdAt!),
                                   style: TextStyle(
                                       fontSize:
-                                          GeneralUtil.fontSize(context) * 0.4,
+                                          GeneralUtil.fontSize(context) * 0.35,
                                       color: const Color(0xFF797979),
                                       fontWeight: FontWeight.w400)),
                             ),
                             Text(
                                 GeneralUtil.dateDayCheck(
                                     data[index].createdAt!),
-                                style:
-                                    TextStyle(
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) * 0.4,
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.w400)),
+                                style: TextStyle(
+                                    fontSize:
+                                        GeneralUtil.fontSize(context) * 0.35,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w400)),
                           ],
                         ),
                         const SizedBox(width: 18),
@@ -933,13 +962,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             Text(GeneralUtil.dayCheck(data[index].createdAt!),
                                 style: TextStyle(
                                     fontSize:
-                                        GeneralUtil.fontSize(context) * 0.4,
+                                        GeneralUtil.fontSize(context) * 0.35,
                                     color: Colors.black,
                                     fontWeight: FontWeight.w500)),
                             Text(data[index].status!,
                                 style: TextStyle(
                                     fontSize:
-                                        GeneralUtil.fontSize(context) * 0.35,
+                                        GeneralUtil.fontSize(context) * 0.3,
                                     color: data[index].status! == 'Masuk'
                                         ? greenColor
                                         : redColor,
@@ -953,9 +982,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Row(
                         children: [
                           Text(
-                              '${data[index].checkInTime!.string} - ${data[index].checkOutTime!.string}',
+                              '${GeneralUtil.timeConvert(data[index].checkInTime!.string!)} - ${GeneralUtil.timeConvert(data[index].checkOutTime!.string! == "" ? '00:00:00' : data[index].checkOutTime!.string!)}',
                               style: TextStyle(
-                                  fontSize: GeneralUtil.fontSize(context) * 0.4,
+                                  fontSize:
+                                      GeneralUtil.fontSize(context) * 0.35,
                                   color: Colors.black,
                                   fontWeight: FontWeight.w500)),
                           const SizedBox(width: 18),

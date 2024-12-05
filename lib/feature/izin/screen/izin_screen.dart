@@ -1,7 +1,6 @@
-import 'dart:developer';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
@@ -303,7 +302,7 @@ class _IzinScreenState extends State<IzinScreen> {
             padding: const EdgeInsets.only(bottom: 8.0, top: 12.0),
             child: Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.1,
+              height: MediaQuery.of(context).size.height * 0.07,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
@@ -341,13 +340,13 @@ class _IzinScreenState extends State<IzinScreen> {
                                 'assets/icons/plus.svg',
                                 colorFilter: const ColorFilter.mode(
                                     Colors.white, BlendMode.srcIn),
-                                height: 20,
-                                width: 20,
+                                height: 18,
+                                width: 18,
                               ),
                               Text('Tambah',
                                   style: TextStyle(
                                       fontSize:
-                                          GeneralUtil.fontSize(context) * 0.45,
+                                          GeneralUtil.fontSize(context) * 0.35,
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600)),
                             ],
@@ -492,235 +491,266 @@ class _IzinScreenState extends State<IzinScreen> {
                             padding: const EdgeInsets.only(left: 16, right: 16),
                             child: GeneralUtil().loading3Data(10),
                           ))
-                        : Expanded(
-                            child: ListView.separated(
-                                itemCount: dataList.length,
-                                separatorBuilder: (context, index) {
-                                  return const SizedBox(height: 10);
-                                },
-                                padding: const EdgeInsets.only(
-                                    left: 16, right: 16, bottom: 40),
-                                shrinkWrap: true,
-                                itemBuilder: (context, index) {
-                                  return Stack(
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context,
-                                              StringRouterUtil
-                                                  .izinDetailScreenRoute,
-                                              arguments: dataList[index]);
-                                        },
-                                        child: Container(
-                                          height: 50,
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.grey
-                                                      .withOpacity(0.1),
-                                                  blurRadius: 3,
-                                                  offset: const Offset(
-                                                      -6, 4), // Shadow position
-                                                ),
-                                              ],
-                                              border: Border.all(
-                                                  color: const Color(0xFFC2C2C2)
-                                                      .withOpacity(0.1))),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
+                        : dataList.isEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 24.0),
+                                child: Center(
+                                  child: Text('Data izin belum tersedia',
+                                      style: TextStyle(
+                                          fontSize:
+                                              GeneralUtil.fontSize(context) *
+                                                  0.45,
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              )
+                            : Expanded(
+                                child: ListView.separated(
+                                    itemCount: dataList.length,
+                                    separatorBuilder: (context, index) {
+                                      return const SizedBox(height: 10);
+                                    },
+                                    padding: const EdgeInsets.only(
+                                        left: 16, right: 16, bottom: 40),
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      return Stack(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              Navigator.pushNamed(
+                                                  context,
+                                                  StringRouterUtil
+                                                      .izinDetailScreenRoute,
+                                                  arguments: dataList[index]);
+                                            },
+                                            child: Container(
+                                              height: 50,
+                                              width: double.infinity,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.1),
+                                                      blurRadius: 3,
+                                                      offset: const Offset(-6,
+                                                          4), // Shadow position
+                                                    ),
+                                                  ],
+                                                  border: Border.all(
+                                                      color: const Color(
+                                                              0xFFC2C2C2)
+                                                          .withOpacity(0.1))),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
                                                 children: [
-                                                  Container(
-                                                    width: 35,
-                                                    decoration: BoxDecoration(
-                                                      color: dataList[index]
-                                                                  .status ==
-                                                              'Pending'
-                                                          ? yellowColor
-                                                          : greenColor,
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .only(
-                                                        topLeft:
-                                                            Radius.circular(6),
-                                                        bottomLeft:
-                                                            Radius.circular(6),
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        width: 35,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color: dataList[index]
+                                                                      .status ==
+                                                                  'Pending'
+                                                              ? yellowColor
+                                                              : dataList[index]
+                                                                          .status ==
+                                                                      'Reject'
+                                                                  ? redColor
+                                                                  : greenColor,
+                                                          borderRadius:
+                                                              const BorderRadius
+                                                                  .only(
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                    6),
+                                                            bottomLeft:
+                                                                Radius.circular(
+                                                                    6),
+                                                          ),
+                                                        ),
+                                                        child: Center(
+                                                          child: Text(
+                                                              '0${index + 1}',
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.45,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500)),
+                                                        ),
                                                       ),
-                                                    ),
-                                                    child: Center(
-                                                      child: Text(
-                                                          '0${index + 1}',
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.45,
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text('Tanggal',
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.3,
-                                                              color: const Color(
-                                                                  0xFF797979),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400)),
-                                                      Text(
-                                                          '${GeneralUtil.convertDate(dataList[index].fromDate!)} - ${GeneralUtil.convertDate(dataList[index].toDate!)}',
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.35,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)),
+                                                      const SizedBox(width: 10),
+                                                      Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text('Tanggal',
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.3,
+                                                                  color: const Color(
+                                                                      0xFF797979),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400)),
+                                                          Text(
+                                                              '${GeneralUtil.convertDate(dataList[index].fromDate!)} - ${GeneralUtil.convertDate(dataList[index].toDate!)}',
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.35,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500)),
+                                                        ],
+                                                      ),
+                                                      const SizedBox(width: 32),
+                                                      Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text('Izin',
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.3,
+                                                                  color: const Color(
+                                                                      0xFF797979),
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400)),
+                                                          Text(
+                                                              dataList[index]
+                                                                  .type!,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.35,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500)),
+                                                        ],
+                                                      ),
                                                     ],
                                                   ),
-                                                  const SizedBox(width: 32),
-                                                  Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text('Izin',
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.3,
-                                                              color: const Color(
-                                                                  0xFF797979),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400)),
-                                                      Text(
-                                                          dataList[index].type!,
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.35,
-                                                              color:
-                                                                  Colors.black,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ],
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            right: 52.0),
+                                                    child: Row(
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 60,
+                                                          child: Text(
+                                                              dataList[index]
+                                                                  .status!,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .right,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.35,
+                                                                  color: dataList[index]
+                                                                              .status ==
+                                                                          'Pending'
+                                                                      ? yellowColor
+                                                                      : dataList[index].status ==
+                                                                              'Reject'
+                                                                          ? redColor
+                                                                          : greenColor,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500)),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ],
                                               ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(
-                                                    right: 52.0),
-                                                child: Row(
-                                                  children: [
-                                                    SizedBox(
-                                                      width: 60,
-                                                      child: Text(
-                                                          dataList[index]
-                                                              .status!,
-                                                          textAlign: TextAlign
-                                                              .right,
-                                                          style: TextStyle(
-                                                              fontSize: GeneralUtil
-                                                                      .fontSize(
-                                                                          context) *
-                                                                  0.35,
-                                                              color: dataList[index]
-                                                                          .status ==
-                                                                      'Pending'
-                                                                  ? yellowColor
-                                                                  : greenColor,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500)),
-                                                    ),
-                                                  ],
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 12,
+                                            right: 16,
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                Navigator.pushNamed(
+                                                        context,
+                                                        StringRouterUtil
+                                                            .editDetailScreenRoute,
+                                                        arguments:
+                                                            dataList[index])
+                                                    .then(
+                                                  (value) {
+                                                    if (value.toString() ==
+                                                        'true') {
+                                                      izinListBloc.add(
+                                                          const IzinListAttempt(
+                                                              start: '',
+                                                              end: ''));
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                              child: Container(
+                                                width: 24,
+                                                height: 24,
+                                                decoration: BoxDecoration(
+                                                  color: primaryColor,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                                child: Center(
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/edit.svg',
+                                                    colorFilter:
+                                                        const ColorFilter.mode(
+                                                            Colors.white,
+                                                            BlendMode.srcIn),
+                                                    height: 16,
+                                                    width: 16,
+                                                  ),
                                                 ),
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        top: 12,
-                                        right: 16,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            Navigator.pushNamed(
-                                                    context,
-                                                    StringRouterUtil
-                                                        .editDetailScreenRoute,
-                                                    arguments: dataList[index])
-                                                .then(
-                                              (value) {
-                                                if (value.toString() ==
-                                                    'true') {
-                                                  izinListBloc.add(
-                                                      const IzinListAttempt(
-                                                          start: '', end: ''));
-                                                }
-                                              },
-                                            );
-                                          },
-                                          child: Container(
-                                            width: 24,
-                                            height: 24,
-                                            decoration: BoxDecoration(
-                                              color: primaryColor,
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
                                             ),
-                                            child: Center(
-                                              child: SvgPicture.asset(
-                                                'assets/icons/edit.svg',
-                                                colorFilter:
-                                                    const ColorFilter.mode(
-                                                        Colors.white,
-                                                        BlendMode.srcIn),
-                                                height: 16,
-                                                width: 16,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  );
-                                }),
-                          );
+                                          )
+                                        ],
+                                      );
+                                    }),
+                              );
                   })),
         ],
       ),

@@ -1,3 +1,3 @@
-export 'detail_bloc.dart';
-export 'detail_event.dart';
-export 'detail_state.dart';
+export 'avail_bloc.dart';
+export 'avail_event.dart';
+export 'avail_state.dart';
