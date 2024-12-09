@@ -9,10 +9,11 @@ class MenuItem {
 }
 
 class MenuItems {
-  static const List<MenuItem> firstItems = [profile];
+  static const List<MenuItem> firstItems = [profile, ubahPassword];
   static const List<MenuItem> secondItems = [setting, logout];
 
   static const profile = MenuItem(text: 'Profile');
+  static const ubahPassword = MenuItem(text: 'Ubah Password');
   static const setting = MenuItem(text: 'Setting');
   static const logout = MenuItem(text: 'Logout');
 

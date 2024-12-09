@@ -29,4 +29,5 @@ class StringRouterUtil {
       'permohonan-aktifitas-detail-route';
   static const String settingScreenRoute = 'setting-route';
   static const String profileScreenRoute = 'profile-route';
+  static const String ubahPasswordScreenRoute = 'ubah-password-route';
 }

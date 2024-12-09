@@ -20,10 +20,7 @@ class SettingScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<SettingScreen> {
-  final List<String> items = [
-    'Setting',
-    'Logout',
-  ];
+
   bool isLoadingData = true;
   late String name;
   late String role;
@@ -251,7 +248,16 @@ class _SettingScreenState extends State<SettingScreen> {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     StringRouterUtil.loginScreenRoute,
-                                    (route) => false);
+                                        (route) => false);
+                              } else if (a.text == 'Setting') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.settingScreenRoute);
+                              } else if (a.text == 'Profile') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.profileScreenRoute);
+                              } else if (a.text == 'Ubah Password') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.ubahPasswordScreenRoute);
                               }
                             },
                           ),

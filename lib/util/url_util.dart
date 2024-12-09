@@ -76,14 +76,14 @@ class UrlUtil {
     return baseUrl + getUrlLoginNip2;
   }
 
-  static String urlCheckIn(String data) => 'v1/user/$data/in';
+  static String urlCheckIn(String data) => 'v2/user/$data/in';
 
   String getUrlCheckIn(String data) {
     final String urlCheckIn2 = urlCheckIn(data);
     return baseUrl + urlCheckIn2;
   }
 
-  static String urlCheckOut(String data) => 'v1/user/$data/out';
+  static String urlCheckOut(String data) => 'v2/user/$data/out';
 
   String getUrlCheckOut(String data) {
     final String urlCheckOut2 = urlCheckOut(data);
@@ -128,11 +128,34 @@ class UrlUtil {
     return baseUrl + urlIzin2;
   }
 
+  static String urlListKinerja(String start, String end) =>
+      'v2/tunjangan-kinerja-pegawai/list??page=1&limit=500&start_date=$start&to_date=$end';
+
+  String getUrlListKinerja(String start, String end) {
+    final String urlListKinerja2 = urlListKinerja(start, end);
+    return baseUrl + urlListKinerja2;
+  }
+
+  static String urlDetailKinerja(String id) =>
+      'v2/tunjangan-kinerja-pegawai/detail/$id';
+
+  String getUrlDetailKinerja(String id) {
+    final String urlDetailKinerja2 = urlDetailKinerja(id);
+    return baseUrl + urlDetailKinerja2;
+  }
+
   static String urlTambahIzin() => 'v2/leave-requests';
 
   String getUrlTambahIzin() {
     final String urlTambahIzin2 = urlTambahIzin();
     return baseUrl + urlTambahIzin2;
+  }
+
+  static String urlUbahPassword(String id) => 'v2/user/$id/change-password';
+
+  String getUrlUbahPassowrd(String id) {
+    final String urlUbahPassword2 = urlUbahPassword(id);
+    return baseUrl + urlUbahPassword2;
   }
 
   static String urlEditIzin(String id) => 'v2/leave-requests/$id';

@@ -30,6 +30,7 @@ import 'package:malinau_absensi/feature/splash/splash_screen.dart';
 import 'package:malinau_absensi/feature/tab/screen/tab_v2_screen.dart';
 import 'package:malinau_absensi/feature/tambah_izin/screen/edit_izin_screen.dart';
 import 'package:malinau_absensi/feature/tambah_izin/screen/tambah_izin_screen.dart';
+import 'package:malinau_absensi/feature/ubah_password/ubah_password_screen.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
 
 class Routers {
@@ -207,6 +208,12 @@ class Routers {
       case StringRouterUtil.profileScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const ProfileScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+      case StringRouterUtil.ubahPasswordScreenRoute:
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => const UbahPasswordScreen(),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

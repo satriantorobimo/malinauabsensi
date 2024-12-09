@@ -632,7 +632,16 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                           Navigator.pushNamedAndRemoveUntil(
                                               context,
                                               StringRouterUtil.loginScreenRoute,
-                                              (route) => false);
+                                                  (route) => false);
+                                        } else if (a.text == 'Setting') {
+                                          Navigator.pushNamed(context,
+                                              StringRouterUtil.settingScreenRoute);
+                                        } else if (a.text == 'Profile') {
+                                          Navigator.pushNamed(context,
+                                              StringRouterUtil.profileScreenRoute);
+                                        } else if (a.text == 'Ubah Password') {
+                                          Navigator.pushNamed(context,
+                                              StringRouterUtil.ubahPasswordScreenRoute);
                                         }
                                       },
                                     ),

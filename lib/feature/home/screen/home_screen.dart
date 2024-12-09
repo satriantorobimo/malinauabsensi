@@ -468,6 +468,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     context,
                                     StringRouterUtil.loginScreenRoute,
                                     (route) => false);
+                              } else if (a.text == 'Setting') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.settingScreenRoute);
+                              } else if (a.text == 'Profile') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.profileScreenRoute);
+                              } else if (a.text == 'Ubah Password') {
+                                Navigator.pushNamed(context,
+                                    StringRouterUtil.ubahPasswordScreenRoute);
                               }
                             },
                           ),
@@ -920,7 +929,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           width: 16,
                           decoration: BoxDecoration(
-                            color: data[index].status! == 'Masuk'
+                            color: data[index].status! == 'Tepat Waktu'
                                 ? greenColor
                                 : redColor,
                             borderRadius: const BorderRadius.only(
@@ -969,7 +978,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                     fontSize:
                                         GeneralUtil.fontSize(context) * 0.3,
-                                    color: data[index].status! == 'Masuk'
+                                    color: data[index].status! == 'Tepat Waktu'
                                         ? greenColor
                                         : redColor,
                                     fontWeight: FontWeight.w400)),
