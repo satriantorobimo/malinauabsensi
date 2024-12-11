@@ -5,9 +5,8 @@ import 'package:malinau_absensi/feature/laporan/domain/tunjangan_kinerja_api.dar
 class TunjanganKinerjaRepo {
   final TunjanganKinerjaApi tunjanganKinerjaApi = TunjanganKinerjaApi();
 
-  Future<TunjanganKinerjaListResponseModel?> attemptListTunjangan(
-          String start, String end) =>
-      tunjanganKinerjaApi.attemptListTunjangan(start, end);
+  Future<TunjanganKinerjaListResponseModel?> attemptListTunjangan() =>
+      tunjanganKinerjaApi.attemptListTunjangan();
 
   Future<TunjanganKinerjaDetailResponseModel?> attemptDetailTunjangan(
           String id) =>

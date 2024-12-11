@@ -264,9 +264,8 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
     return showModalBottomSheet(
         context: context,
         builder: (context) {
-          return Container(
-            constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.6),
+          return SizedBox(
+            width: MediaQuery.of(context).size.width,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,7 +543,7 @@ class _EditIzinScreenState extends State<EditIzinScreen> {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     StringRouterUtil.loginScreenRoute,
-                                        (route) => false);
+                                    (route) => false);
                               } else if (a.text == 'Setting') {
                                 Navigator.pushNamed(context,
                                     StringRouterUtil.settingScreenRoute);

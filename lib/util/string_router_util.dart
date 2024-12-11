@@ -30,4 +30,5 @@ class StringRouterUtil {
   static const String settingScreenRoute = 'setting-route';
   static const String profileScreenRoute = 'profile-route';
   static const String ubahPasswordScreenRoute = 'ubah-password-route';
+  static const String tunjanganDetailScreenRoute = 'tunjangan-detail-route';
 }

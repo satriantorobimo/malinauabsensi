@@ -13,15 +13,15 @@ class TunjanganKinerjaApi {
 
   UrlUtil urlUtil = UrlUtil();
 
-  Future<TunjanganKinerjaListResponseModel> attemptListTunjangan(
-      String startDate, String endDate) async {
+  Future<TunjanganKinerjaListResponseModel> attemptListTunjangan() async {
     final String? token = await SharedPrefUtil.getSharedString('token');
+    final String? userid = await SharedPrefUtil.getSharedString('userid');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserIdNoJson(token!);
 
     try {
       final res = await http.get(
-        Uri.parse(urlUtil.getUrlListKinerja(startDate, endDate)),
+        Uri.parse(urlUtil.getUrlListKinerja(userid!)),
         headers: header,
       );
       if (res.statusCode == 200) {

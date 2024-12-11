@@ -6,7 +6,7 @@ class TunjanganKinerjaDetailResponseModel {
   String? periode;
   String? aktifitas;
   String? predikat;
-  List<ListPotongan>? listPotongan;
+  List<TipePotongan>? tipePotongan;
   int? tunjanganPokok;
   int? totalPotongan;
   int? totalTunjangan;
@@ -21,7 +21,7 @@ class TunjanganKinerjaDetailResponseModel {
       this.periode,
       this.aktifitas,
       this.predikat,
-      this.listPotongan,
+      this.tipePotongan,
       this.tunjanganPokok,
       this.totalPotongan,
       this.totalTunjangan,
@@ -36,10 +36,10 @@ class TunjanganKinerjaDetailResponseModel {
     periode = json['periode'];
     aktifitas = json['aktifitas'];
     predikat = json['predikat'];
-    if (json['list_potongan'] != null) {
-      listPotongan = <ListPotongan>[];
-      json['list_potongan'].forEach((v) {
-        listPotongan!.add(ListPotongan.fromJson(v));
+    if (json['tipe_potongan'] != null) {
+      tipePotongan = <TipePotongan>[];
+      json['tipe_potongan'].forEach((v) {
+        tipePotongan!.add(new TipePotongan.fromJson(v));
       });
     }
     tunjanganPokok = json['tunjangan_pokok'];
@@ -58,8 +58,8 @@ class TunjanganKinerjaDetailResponseModel {
     data['periode'] = periode;
     data['aktifitas'] = aktifitas;
     data['predikat'] = predikat;
-    if (listPotongan != null) {
-      data['list_potongan'] = listPotongan!.map((v) => v.toJson()).toList();
+    if (tipePotongan != null) {
+      data['tipe_potongan'] = tipePotongan!.map((v) => v.toJson()).toList();
     }
     data['tunjangan_pokok'] = tunjanganPokok;
     data['total_potongan'] = totalPotongan;
@@ -70,11 +70,51 @@ class TunjanganKinerjaDetailResponseModel {
   }
 }
 
+class TipePotongan {
+  String? tipePotongan;
+  int? tipePotonganPersen;
+  int? totalPotonganRp;
+  var totalPotonganPersen;
+  List<ListPotongan>? listPotongan;
+
+  TipePotongan(
+      {this.tipePotongan,
+      this.tipePotonganPersen,
+      this.totalPotonganRp,
+      this.totalPotonganPersen,
+      this.listPotongan});
+
+  TipePotongan.fromJson(Map<String, dynamic> json) {
+    tipePotongan = json['tipe_potongan'];
+    tipePotonganPersen = json['tipe_potongan_persen'];
+    totalPotonganRp = json['total_potongan_rp'];
+    totalPotonganPersen = json['total_potongan_persen'];
+    if (json['list_potongan'] != null) {
+      listPotongan = <ListPotongan>[];
+      json['list_potongan'].forEach((v) {
+        listPotongan!.add(new ListPotongan.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['tipe_potongan'] = tipePotongan;
+    data['tipe_potongan_persen'] = tipePotonganPersen;
+    data['total_potongan_rp'] = totalPotonganRp;
+    data['total_potongan_persen'] = totalPotonganPersen;
+    if (listPotongan != null) {
+      data['list_potongan'] = listPotongan!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
 class ListPotongan {
   String? tipePotongan;
   int? tipePotonganPersen;
   int? potonganRp;
-  int? potonganPersen;
+  var potonganPersen;
   String? reason;
 
   ListPotongan(

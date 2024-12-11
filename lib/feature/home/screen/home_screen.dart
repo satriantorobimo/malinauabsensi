@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:camera/camera.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/util/general_util.dart';
 import 'package:malinau_absensi/util/shared_pref_util.dart';
 import 'package:malinau_absensi/util/string_router_util.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../absensi/bloc/update_bloc/bloc.dart';
@@ -521,30 +523,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 )
                               : InkWell(
-                                  onTap: () {
-                                    if (dataUser.isAvailableToCheckIn!) {
-                                      if (GeneralUtil().isWithinCheckInTime(
-                                          dataUser
-                                              .checkInRangeTime!.startTime!)) {
-                                        Navigator.pushNamed(context,
-                                            StringRouterUtil.absenScreenRoute,
-                                            arguments: dataUser);
-                                      } else {
-                                        GeneralUtil().showSnackBarError(context,
-                                            'Absen masuk start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                  onTap: () async {
+                                    if (dataUser.userStatus! == 'INACTIVE') {
+                                      bool isCameraGranted = await Permission
+                                          .camera
+                                          .request()
+                                          .isGranted;
+
+                                      if (!isCameraGranted) {
+                                        isCameraGranted =
+                                            await Permission.camera.request() ==
+                                                PermissionStatus.granted;
                                       }
-                                    } else {
-                                      if (GeneralUtil().isWithinCheckInTime(
-                                          dataUser
-                                              .checkOutRangeTime!.startTime!)) {
+                                      WidgetsFlutterBinding.ensureInitialized();
+                                      final cameras = await availableCameras();
+                                      final firstCamera = cameras.first;
+                                      if (context.mounted) {
                                         Navigator.pushNamed(
                                             context,
                                             StringRouterUtil
-                                                .absenKeluarScreenRoute,
-                                            arguments: true);
+                                                .faceRegisterScanScreenRoute,
+                                            arguments: firstCamera);
+                                      }
+                                    } else {
+                                      if (dataUser.isAvailableToCheckIn!) {
+                                        if (GeneralUtil().isWithinCheckInTime(
+                                            dataUser.checkInRangeTime!
+                                                .startTime!)) {
+                                          Navigator.pushNamed(context,
+                                              StringRouterUtil.absenScreenRoute,
+                                              arguments: dataUser);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context,
+                                              'Absen masuk start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                        }
                                       } else {
-                                        GeneralUtil().showSnackBarError(context,
-                                            'Absen keluar start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                        if (GeneralUtil().isWithinCheckInTime(
+                                            dataUser.checkOutRangeTime!
+                                                .startTime!)) {
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .absenKeluarScreenRoute,
+                                              arguments: true);
+                                        } else {
+                                          GeneralUtil().showSnackBarError(
+                                              context,
+                                              'Absen keluar start dari pukul ${dataUser.checkOutRangeTime!.startTime!}');
+                                        }
                                       }
                                     }
                                   },
@@ -556,9 +583,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     padding: const EdgeInsets.all(12),
                                     child: Center(
                                         child: Text(
-                                            dataUser.isAvailableToCheckIn!
-                                                ? 'Absen Masuk'
-                                                : 'Absen Keluar',
+                                            dataUser.userStatus! == 'INACTIVE'
+                                                ? 'Registrasi Wajah'
+                                                : dataUser.isAvailableToCheckIn!
+                                                    ? 'Absen Masuk'
+                                                    : 'Absen Keluar',
                                             style: TextStyle(
                                                 fontSize: GeneralUtil.fontSize(
                                                         context) *

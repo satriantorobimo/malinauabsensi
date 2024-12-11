@@ -93,18 +93,21 @@ class ListPotongan {
   String? tipePotongan;
   int? tipePotonganPersen;
   int? potonganRp;
+  var potonganPersen;
   String? reason;
 
   ListPotongan(
       {this.tipePotongan,
       this.tipePotonganPersen,
       this.potonganRp,
+      this.potonganPersen,
       this.reason});
 
   ListPotongan.fromJson(Map<String, dynamic> json) {
     tipePotongan = json['tipe_potongan'];
     tipePotonganPersen = json['tipe_potongan_persen'];
     potonganRp = json['potongan_rp'];
+    potonganPersen = json['potongan_persen'];
     reason = json['reason'];
   }
 
@@ -113,6 +116,7 @@ class ListPotongan {
     data['tipe_potongan'] = tipePotongan;
     data['tipe_potongan_persen'] = tipePotonganPersen;
     data['potongan_rp'] = potonganRp;
+    data['potongan_persen'] = potonganPersen;
     data['reason'] = reason;
     return data;
   }

@@ -62,14 +62,14 @@ class UrlUtil {
     return headerType();
   }
 
-  static String urlLogin() => 'v1/login/email';
+  static String urlLogin() => 'v2/login/email';
 
   String getUrlLogin() {
     final String getUrlLogin2 = urlLogin();
     return baseUrl + getUrlLogin2;
   }
 
-  static String urlLoginNip() => 'v1/login/nip';
+  static String urlLoginNip() => 'v2/login/nip';
 
   String getUrlLoginNip() {
     final String getUrlLoginNip2 = urlLoginNip();
@@ -128,11 +128,11 @@ class UrlUtil {
     return baseUrl + urlIzin2;
   }
 
-  static String urlListKinerja(String start, String end) =>
-      'v2/tunjangan-kinerja-pegawai/list??page=1&limit=500&start_date=$start&to_date=$end';
+  static String urlListKinerja(String id) =>
+      'v2/tunjangan-kinerja-pegawai/list??page=1&limit=500&pegawai_id=$id';
 
-  String getUrlListKinerja(String start, String end) {
-    final String urlListKinerja2 = urlListKinerja(start, end);
+  String getUrlListKinerja(String id) {
+    final String urlListKinerja2 = urlListKinerja(id);
     return baseUrl + urlListKinerja2;
   }
 

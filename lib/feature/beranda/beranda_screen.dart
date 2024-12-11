@@ -9,6 +9,7 @@ import 'package:malinau_absensi/feature/absensi/bloc/summary_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
+import 'package:malinau_absensi/feature/beranda/widget_tunjangan_kerja.dart';
 import 'package:malinau_absensi/feature/laporan/bloc/tunjangan_kerja_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/laporan/bloc/tunjangan_kerja_detail_bloc/bloc.dart';
 import 'package:malinau_absensi/feature/laporan/data/tunjangan_kinerja_detail_response_model.dart.dart';
@@ -44,7 +45,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
     'Logout',
   ];
   bool isLoading = true;
-  bool isLoadingTunj = true;
+
   bool isLoadingData = true;
   bool isTunjanganExist = false;
   late String name;
@@ -57,11 +58,9 @@ class _BerandaScreenState extends State<BerandaScreen> {
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
   AcaraListBloc acaraListBloc = AcaraListBloc(aktifitasARepo: AktifitasARepo());
   SummaryBloc summaryBloc = SummaryBloc(absenRepo: AbsenRepo());
-  TunjanganKerjaBloc tunjanganKerjaBloc =
-      TunjanganKerjaBloc(tunjanganKinerjaRepo: TunjanganKinerjaRepo());
+
   int selectedFilter = 0;
-  TunjanganKinerjaDetailResponseModel tunjanganKinerjaDetailResponseModel =
-      TunjanganKinerjaDetailResponseModel();
+
   TunjanganKerjaDetailBloc tunjanganKerjaDetailBloc =
       TunjanganKerjaDetailBloc(tunjanganKinerjaRepo: TunjanganKinerjaRepo());
 
@@ -156,8 +155,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
     Map<String, String> dateRange =
         GeneralUtil().getFormattedFirstAndLastDateOfLast3Days();
 
-    Map<String, String> dateRangeCurrent =
-        GeneralUtil().getFormattedFirstAndLastDateOfCurrentMonth();
     summaryBloc.add(SummaryAttempt());
     listBloc.add(ListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
@@ -165,9 +162,6 @@ class _BerandaScreenState extends State<BerandaScreen> {
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
     dinasLuarListBloc.add(DinasLuarListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
-    tunjanganKerjaBloc.add(TunjanganKerjaListAttempt(
-        end: dateRangeCurrent['firstDate']!,
-        start: dateRangeCurrent['lastDate']!));
 
     super.initState();
   }
@@ -1284,236 +1278,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             return GeneralUtil().loading3Data(3);
                           })),
                   const SizedBox(height: 24),
-                  Text('Tunjangan yang sudah dicapai',
-                      style: TextStyle(
-                          backgroundColor: Colors.white,
-                          fontSize: GeneralUtil.fontSize(context) * 0.4,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  MultiBlocListener(
-                    listeners: [
-                      BlocListener(
-                          bloc: tunjanganKerjaBloc,
-                          listener: (_, TunjanganKerjaState state) async {
-                            if (state is TunjanganKerjaLoading) {}
-                            if (state is TunjanganKerjaListLoaded) {
-                              if (state.tunjanganKinerjaListResponseModel
-                                  .isNotEmpty) {
-                                tunjanganKerjaDetailBloc.add(
-                                    TunjanganKerjaDetailAttempt(
-                                        id: state
-                                            .tunjanganKinerjaListResponseModel[
-                                                0]
-                                            .id
-                                            .toString()));
-                              } else {
-                                setState(() {
-                                  isLoadingTunj = false;
-                                });
-                              }
-                            }
-
-                            if (state is TunjanganKerjaError) {
-                              setState(() {
-                                isLoadingTunj = false;
-                              });
-                              if (state.error! == 'Token is expired') {
-                                _expDialog(context);
-                              } else {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
-                              }
-                            }
-                            if (state is TunjanganKerjaException) {
-                              setState(() {
-                                isLoadingTunj = false;
-                              });
-                              if (state.error == 'Token is expired') {
-                                _expDialog(context);
-                              } else {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
-                              }
-                            }
-                          }),
-                      BlocListener(
-                          bloc: tunjanganKerjaDetailBloc,
-                          listener: (_, TunjanganKerjaDetailState state) async {
-                            if (state is TunjanganKerjaDetailLoading) {}
-                            if (state is TunjanganKerjaDetailLoaded) {
-                              setState(() {
-                                tunjanganKinerjaDetailResponseModel =
-                                    state.tunjanganKinerjaDetailResponseModel;
-                                isLoadingTunj = false;
-                                isTunjanganExist = true;
-                              });
-                            }
-                            if (state is TunjanganKerjaDetailError) {
-                              setState(() {
-                                isLoadingTunj = false;
-                              });
-                              if (state.error! == 'Token is expired') {
-                                _expDialog(context);
-                              } else {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error!);
-                              }
-                            }
-                            if (state is TunjanganKerjaDetailException) {
-                              setState(() {
-                                isLoadingTunj = false;
-                              });
-                              if (state.error == 'Token is expired') {
-                                _expDialog(context);
-                              } else {
-                                GeneralUtil()
-                                    .showSnackBarError(context, state.error);
-                              }
-                            }
-                          }),
-                    ],
-                    child: isLoadingTunj
-                        ? GeneralUtil().loadingRow(context)
-                        : isTunjanganExist
-                            ? Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.withOpacity(0.1),
-                                        blurRadius: 3,
-                                        offset: const Offset(
-                                            -6, 4), // Shadow position
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                        color: const Color(0xFFC2C2C2)
-                                            .withOpacity(0.1))),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Periode',
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.25,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500)),
-                                        Text(
-                                            tunjanganKinerjaDetailResponseModel
-                                                    .periode ??
-                                                '-',
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.3,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Tunjangan Kinerja',
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.25,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500)),
-                                        Text(
-                                            GeneralUtil.convertToIdr(
-                                                tunjanganKinerjaDetailResponseModel
-                                                    .totalTunjanganKinerja!,
-                                                0),
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.3,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Tunjangan Absensi',
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.25,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500)),
-                                        Text(
-                                            GeneralUtil.convertToIdr(
-                                                tunjanganKinerjaDetailResponseModel
-                                                    .totalTunjanganAbsensi!,
-                                                0),
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.3,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Total Tunjangan',
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.25,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w500)),
-                                        Text(
-                                            GeneralUtil.convertToIdr(
-                                                tunjanganKinerjaDetailResponseModel
-                                                    .totalTunjangan!,
-                                                0),
-                                            style: TextStyle(
-                                                backgroundColor: Colors.white,
-                                                fontSize: GeneralUtil.fontSize(
-                                                        context) *
-                                                    0.3,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w700)),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              )
-                            : Center(
-                                child: Text('Data tunjangan belum tersedia',
-                                    style: TextStyle(
-                                        backgroundColor: Colors.white,
-                                        fontSize:
-                                            GeneralUtil.fontSize(context) *
-                                                0.35,
-                                        color: Colors.grey,
-                                        fontWeight: FontWeight.w500)),
-                              ),
-                  ),
+                  WidgetTunjanganKerja()
                 ],
               ),
             ),

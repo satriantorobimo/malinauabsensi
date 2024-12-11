@@ -312,7 +312,7 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     StringRouterUtil.loginScreenRoute,
-                                        (route) => false);
+                                    (route) => false);
                               } else if (a.text == 'Setting') {
                                 Navigator.pushNamed(context,
                                     StringRouterUtil.settingScreenRoute);
@@ -388,21 +388,11 @@ class _AbsesnsiScreenState extends State<AbsesnsiScreen> {
                             final cameras = await availableCameras();
                             final firstCamera = cameras.first;
 
-                            if (widget.dataUser.userStatus! == 'INACTIVE') {
-                              if (context.mounted) {
-                                Navigator.pushNamed(
-                                    context,
-                                    StringRouterUtil
-                                        .faceRegisterScanScreenRoute,
-                                    arguments: firstCamera);
-                              }
-                            } else {
-                              if (context.mounted) {
-                                Navigator.pushNamed(context,
-                                    StringRouterUtil.faceScanScreenRoute,
-                                    arguments: ArgumentAbsenModel(
-                                        camera: firstCamera, isIn: true));
-                              }
+                            if (context.mounted) {
+                              Navigator.pushNamed(
+                                  context, StringRouterUtil.faceScanScreenRoute,
+                                  arguments: ArgumentAbsenModel(
+                                      camera: firstCamera, isIn: true));
                             }
                           },
                           child: Container(

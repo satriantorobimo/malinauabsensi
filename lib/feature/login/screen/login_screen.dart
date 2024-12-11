@@ -223,7 +223,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            GeneralUtil().showSnackBarWarning(context, 'Harap menghubungi admin untuk melakukan reset password');
+                            GeneralUtil().showSnackBarWarning(context,
+                                'Harap menghubungi admin untuk melakukan reset password');
                           },
                           child: const Align(
                             alignment: Alignment.centerRight,
@@ -354,8 +355,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                               password: _passwordCtrl.text)));
                                     }
                                   } else {
-                                    GeneralUtil().showSnackBarError(
-                                        context, 'Login NIP belum tersedia');
+                                    if (_nipCtrl.text.isEmpty ||
+                                        _nipCtrl.text == '' ||
+                                        _passwordCtrl.text.isEmpty ||
+                                        _passwordCtrl.text == '') {
+                                      GeneralUtil().showSnackBarError(context,
+                                          'NIP dan Password tidak boleh kosong');
+                                    } else {
+                                      loginBloc.add(LoginAttempt(
+                                          loginRequestModel: LoginRequestModel(
+                                              email: _emailCtrl.text,
+                                              nip: _nipCtrl.text,
+                                              password: _passwordCtrl.text)));
+                                    }
                                   }
                                 },
                                 child: Container(

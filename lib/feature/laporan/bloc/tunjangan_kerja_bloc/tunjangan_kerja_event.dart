@@ -5,10 +5,6 @@ abstract class TunjanganKerjaEvent extends Equatable {
 }
 
 class TunjanganKerjaListAttempt extends TunjanganKerjaEvent {
-  const TunjanganKerjaListAttempt({required this.start, required this.end});
-  final String start;
-  final String end;
-
   @override
-  List<Object> get props => [start, end];
+  List<Object> get props => [];
 }
