@@ -151,6 +151,13 @@ class UrlUtil {
     return baseUrl + urlTambahIzin2;
   }
 
+  static String urlBuatKendalaAbsen() => 'v2/attendance-report';
+
+  String getUrlBuatKendalaAbsen() {
+    final String urlBuatKendalaAbsen2 = urlBuatKendalaAbsen();
+    return baseUrl + urlBuatKendalaAbsen2;
+  }
+
   static String urlUbahPassword(String id) => 'v2/user/$id/change-password';
 
   String getUrlUbahPassowrd(String id) {
@@ -180,11 +187,27 @@ class UrlUtil {
     return baseUrl + urlAbsensiList2;
   }
 
-  static String urlAbsensiDetail(String id) => 'v1/attendance/$id';
+  static String urlKendalaAbsensiList(String start, String end) =>
+      'v2/attendance-report?page=1&limit=500';
+
+  String getUrlKendalaAbsensiList(String start, String end) {
+    final String urlKendalaAbsensiList2 = urlKendalaAbsensiList(start, end);
+    return baseUrl + urlKendalaAbsensiList2;
+  }
+
+  static String urlAbsensiDetail(String id) => 'v2/attendance/$id';
 
   String getUrlAbsensiDetail(String id) {
     final String urlAbsensiDetail2 = urlAbsensiDetail(id);
     return baseUrl + urlAbsensiDetail2;
+  }
+
+  static String urlKendalaAbsensiDetail(String id) =>
+      'v2/attendance-report/$id';
+
+  String getUrlKendalaAbsensiDetail(String id) {
+    final String urlKendalaAbsensiDetail2 = urlKendalaAbsensiDetail(id);
+    return baseUrl + urlKendalaAbsensiDetail2;
   }
 
   static String urlAbsensiAvail(String id) => 'v2/user/$id/availability';
@@ -221,5 +244,12 @@ class UrlUtil {
   String getUrlUploadFileIzin(String id) {
     final String urlUploadFileIzin2 = urlUploadFileIzin(id);
     return baseUrl + urlUploadFileIzin2;
+  }
+
+  static String urlUploadFileKendala() => 'v2/attendance-report-upload';
+
+  String getUrlUploadFileKendala() {
+    final String urlUploadFileKendala2 = urlUploadFileKendala();
+    return baseUrl + urlUploadFileKendala2;
   }
 }

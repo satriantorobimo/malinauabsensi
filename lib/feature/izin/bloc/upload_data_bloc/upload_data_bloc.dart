@@ -23,6 +23,23 @@ class UploadDataBloc extends Bloc<UploadDataEvent, UploadDataState> {
           emit(UploadDataException(e.toString()));
         }
       }
+
+      if (event is UploadFileKendalaAttempt) {
+        try {
+          emit(UploadDataLoading());
+          final uploadFileKendalaResponseModel = await izinRepo
+              .attemptUploadFileKendala(event.uploadFileIzinRequestModel);
+          if (uploadFileKendalaResponseModel!.status == '201') {
+            emit(UploadDataKendalaLoaded(
+                uploadFileKendalaResponseModel:
+                    uploadFileKendalaResponseModel));
+          } else {
+            emit(UploadDataError(uploadFileKendalaResponseModel.message));
+          }
+        } catch (e) {
+          emit(UploadDataException(e.toString()));
+        }
+      }
     });
   }
 }

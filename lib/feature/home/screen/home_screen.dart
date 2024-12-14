@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               context,
                                               StringRouterUtil
                                                   .absenKeluarScreenRoute,
-                                              arguments: true);
+                                              arguments: dataUser);
                                         } else {
                                           GeneralUtil().showSnackBarError(
                                               context,

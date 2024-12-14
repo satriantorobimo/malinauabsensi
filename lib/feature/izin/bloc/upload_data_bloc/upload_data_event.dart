@@ -12,3 +12,11 @@ class UploadDataAttempt extends UploadDataEvent {
   @override
   List<Object> get props => [uploadFileIzinRequestModel];
 }
+
+class UploadFileKendalaAttempt extends UploadDataEvent {
+  const UploadFileKendalaAttempt({required this.uploadFileIzinRequestModel});
+  final UploadFileIzinRequestModel uploadFileIzinRequestModel;
+
+  @override
+  List<Object> get props => [uploadFileIzinRequestModel];
+}

@@ -26,6 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordCtrl = TextEditingController();
   LoginBloc loginBloc = LoginBloc(loginRepo: LoginRepo());
   UserDetailBloc userDetailBloc = UserDetailBloc(loginRepo: LoginRepo());
+  @override
+  void initState() {
+    GeneralUtil().storeDeviceId();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -350,6 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     } else {
                                       loginBloc.add(LoginAttempt(
                                           loginRequestModel: LoginRequestModel(
+                                              isNip: false,
                                               email: _emailCtrl.text,
                                               nip: _nipCtrl.text,
                                               password: _passwordCtrl.text)));
@@ -364,6 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     } else {
                                       loginBloc.add(LoginAttempt(
                                           loginRequestModel: LoginRequestModel(
+                                              isNip: true,
                                               email: _emailCtrl.text,
                                               nip: _nipCtrl.text,
                                               password: _passwordCtrl.text)));

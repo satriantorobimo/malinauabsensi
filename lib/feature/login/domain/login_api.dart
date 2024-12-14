@@ -17,7 +17,7 @@ class LoginApi {
       LoginRequestModel loginRequestModel) async {
     final Map<String, String> header = urlUtil.getHeaderType();
     final Map mapData = {};
-    if (loginRequestModel.email.isNotEmpty || loginRequestModel.email == '') {
+    if (!loginRequestModel.isNip) {
       mapData['email'] = loginRequestModel.email;
       mapData['password'] = loginRequestModel.password;
     } else {
@@ -29,8 +29,7 @@ class LoginApi {
 
     try {
       final res = await http.post(
-          Uri.parse(loginRequestModel.email.isNotEmpty ||
-                  loginRequestModel.email == ''
+          Uri.parse(!loginRequestModel.isNip
               ? urlUtil.getUrlLogin()
               : urlUtil.getUrlLoginNip()),
           body: json,

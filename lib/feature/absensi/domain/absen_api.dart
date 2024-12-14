@@ -31,6 +31,7 @@ class AbsenApi {
       AbsenRequestModel absenRequestModel) async {
     final String? token = await SharedPrefUtil.getSharedString('token');
     final String? userid = await SharedPrefUtil.getSharedString('userid');
+    final String? deviceid = await SharedPrefUtil.getSharedString('deviceid');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserId(token!);
 
@@ -38,6 +39,7 @@ class AbsenApi {
     mapData['qr_content'] = absenRequestModel.qrContent;
     mapData['request_type'] = absenRequestModel.requestType;
     mapData['location'] = absenRequestModel.location;
+    mapData['device_id'] = deviceid;
     final json = jsonEncode(mapData);
 
     try {
@@ -62,11 +64,14 @@ class AbsenApi {
       AbsenOutRequestModel absenOutRequestModel) async {
     final String? token = await SharedPrefUtil.getSharedString('token');
     final String? userid = await SharedPrefUtil.getSharedString('userid');
+    final String? deviceid = await SharedPrefUtil.getSharedString('deviceid');
     final Map<String, String> header =
         urlUtil.getHeaderTypeWithTokenNoUserId(token!);
     final Map mapData = {};
     mapData['qr_content'] = absenOutRequestModel.qrContent;
     mapData['request_type'] = absenOutRequestModel.requestType;
+    mapData['location'] = absenOutRequestModel.location;
+    mapData['device_id'] = deviceid;
     final json = jsonEncode(mapData);
 
     try {

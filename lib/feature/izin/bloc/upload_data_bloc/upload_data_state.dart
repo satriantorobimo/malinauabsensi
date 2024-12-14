@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:malinau_absensi/feature/kendala_absensi/data/upload_file_kendala_response_model.dart';
 
 abstract class UploadDataState extends Equatable {
   const UploadDataState();
@@ -16,6 +17,13 @@ class UploadDataLoaded extends UploadDataState {
   final String statusCode;
   @override
   List<Object> get props => [statusCode];
+}
+
+class UploadDataKendalaLoaded extends UploadDataState {
+  const UploadDataKendalaLoaded({required this.uploadFileKendalaResponseModel});
+  final UploadFileKendalaResponseModel uploadFileKendalaResponseModel;
+  @override
+  List<Object> get props => [uploadFileKendalaResponseModel];
 }
 
 class UploadDataError extends UploadDataState {

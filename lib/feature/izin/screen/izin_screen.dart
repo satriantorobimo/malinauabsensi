@@ -276,7 +276,7 @@ class _IzinScreenState extends State<IzinScreen> {
                                 Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     StringRouterUtil.loginScreenRoute,
-                                        (route) => false);
+                                    (route) => false);
                               } else if (a.text == 'Setting') {
                                 Navigator.pushNamed(context,
                                     StringRouterUtil.settingScreenRoute);
@@ -329,10 +329,8 @@ class _IzinScreenState extends State<IzinScreen> {
                                   StringRouterUtil.tambahIzinScreenRoute)
                               .then(
                             (value) {
-                              if (value.toString() == 'true') {
-                                izinListBloc.add(
-                                    const IzinListAttempt(start: '', end: ''));
-                              }
+                              izinListBloc.add(
+                                  const IzinListAttempt(start: '', end: ''));
                             },
                           );
                         },

@@ -7,6 +7,7 @@ import 'package:malinau_absensi/feature/absensi_detail/screen/absensi_detail_scr
 import 'package:malinau_absensi/feature/absensi_keluar/screen/absensi_keluar_screen.dart';
 import 'package:malinau_absensi/feature/aktifitas_detail/screen/aktifitas_detail_screen.dart';
 import 'package:malinau_absensi/feature/aktifitas_detail/screen/dinas_luar_detail_screen.dart';
+import 'package:malinau_absensi/feature/buat_kendala_absen/buat_kendala_absen_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/face_scan_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/face_scan_v2_screen.dart';
 import 'package:malinau_absensi/feature/face_scan/screen/register_face_left_scan.dart';
@@ -18,6 +19,8 @@ import 'package:malinau_absensi/feature/face_scan/screen/success_scan_screen.dar
 import 'package:malinau_absensi/feature/izin/data/izin_list_response_model.dart'
     as izin;
 import 'package:malinau_absensi/feature/izin_detail/screen/izin_detail_screen.dart';
+import 'package:malinau_absensi/feature/kendala_absensi/screen/kendala_absen_screen.dart';
+import 'package:malinau_absensi/feature/kendala_absensi_detail/screen/kendala_absensi_detail_screen.dart';
 import 'package:malinau_absensi/feature/laporan/screen/laporan_detail_screen.dart';
 import 'package:malinau_absensi/feature/laporan/screen/laporan_screen.dart';
 import 'package:malinau_absensi/feature/login/screen/login_screen.dart';
@@ -47,6 +50,13 @@ class Routers {
       case StringRouterUtil.loginScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const LoginScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.kendalaAbsenScreenRoute:
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => const KendalaAbsenScreen(),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
@@ -129,6 +139,14 @@ class Routers {
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));
 
+      case StringRouterUtil.kendalaAbsenDetailScreenRoute:
+        final String id = settings.arguments as String;
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => KendalaAbsenDetailScreen(id: id),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
       case StringRouterUtil.qrScanScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const QrScanScreen(),
@@ -165,6 +183,13 @@ class Routers {
       case StringRouterUtil.tambahIzinScreenRoute:
         return PageRouteBuilder<dynamic>(
             pageBuilder: (_, __, ___) => const TambahIzinScreen(),
+            settings: RouteSettings(name: settings.name),
+            transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
+                FadeTransition(opacity: a, child: c));
+
+      case StringRouterUtil.buatKendalaAbsenScreenRoute:
+        return PageRouteBuilder<dynamic>(
+            pageBuilder: (_, __, ___) => const BuatKendalaAbsenScreen(),
             settings: RouteSettings(name: settings.name),
             transitionsBuilder: (_, Animation<double> a, __, Widget c) =>
                 FadeTransition(opacity: a, child: c));

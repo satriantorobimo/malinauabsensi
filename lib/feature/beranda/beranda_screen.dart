@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,11 +8,8 @@ import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
 import 'package:malinau_absensi/feature/aktifitas/data/acara_list_response_model.dart';
 import 'package:malinau_absensi/feature/aktifitas/domain/aktifitas_repo.dart';
 import 'package:malinau_absensi/feature/beranda/widget_tunjangan_kerja.dart';
-import 'package:malinau_absensi/feature/laporan/bloc/tunjangan_kerja_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/kendala_absensi/domain/kendala_absen_repo.dart';
 import 'package:malinau_absensi/feature/laporan/bloc/tunjangan_kerja_detail_bloc/bloc.dart';
-import 'package:malinau_absensi/feature/laporan/data/tunjangan_kinerja_detail_response_model.dart.dart';
-import 'package:malinau_absensi/feature/laporan/data/tunjangan_kinerja_list_response_model.dart'
-    as tunj;
 import 'package:malinau_absensi/feature/laporan/domain/tunjangan_kinerja_repo.dart';
 import 'package:malinau_absensi/feature/tab/provider/tab_provider.dart';
 import 'package:malinau_absensi/util/general_util.dart';
@@ -27,6 +22,8 @@ import 'package:shimmer/shimmer.dart';
 import '../absensi/bloc/list_bloc/bloc.dart';
 import '../aktifitas/bloc/acara_list_bloc/bloc.dart';
 import '../aktifitas/bloc/dinas_luar_list_bloc/bloc.dart';
+import 'package:malinau_absensi/feature/kendala_absensi/bloc/list_bloc/bloc.dart'
+    as kendala;
 
 class BerandaScreen extends StatefulWidget {
   const BerandaScreen({super.key});
@@ -58,6 +55,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
       DinasLuarListBloc(aktifitasARepo: AktifitasARepo());
   AcaraListBloc acaraListBloc = AcaraListBloc(aktifitasARepo: AktifitasARepo());
   SummaryBloc summaryBloc = SummaryBloc(absenRepo: AbsenRepo());
+  kendala.ListBloc listKendalaBloc =
+      kendala.ListBloc(kendalaAbsenRepo: KendalaAbsenRepo());
 
   int selectedFilter = 0;
 
@@ -161,6 +160,8 @@ class _BerandaScreenState extends State<BerandaScreen> {
     acaraListBloc.add(AcaraListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
     dinasLuarListBloc.add(DinasLuarListAttempt(
+        end: dateRange['firstDate']!, start: dateRange['lastDate']!));
+    listKendalaBloc.add(kendala.KendalaListAttempt(
         end: dateRange['firstDate']!, start: dateRange['lastDate']!));
 
     super.initState();
@@ -792,6 +793,322 @@ class _BerandaScreenState extends State<BerandaScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      Text('Kendala Absensi',
+                          style: TextStyle(
+                              backgroundColor: Colors.white,
+                              fontSize: GeneralUtil.fontSize(context) * 0.4,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600)),
+                      InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context,
+                              StringRouterUtil.kendalaAbsenScreenRoute);
+                        },
+                        child: Text('Selengkapnya',
+                            style: TextStyle(
+                                backgroundColor: Colors.white,
+                                fontSize: GeneralUtil.fontSize(context) * 0.35,
+                                color: primaryColor,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  BlocListener(
+                      bloc: listKendalaBloc,
+                      listener: (_, kendala.ListState state) async {
+                        if (state is kendala.ListLoading) {}
+                        if (state is kendala.ListLoaded) {}
+                        if (state is kendala.ListError) {}
+                        if (state is kendala.ListException) {
+                          GeneralUtil().showSnackBarError(context, state.error);
+                        }
+                      },
+                      child: BlocBuilder(
+                          bloc: listKendalaBloc,
+                          builder: (_, kendala.ListState state) {
+                            if (state is kendala.ListLoaded) {
+                              return state.kendalaAbsenListResponseModel.data!
+                                      .isEmpty
+                                  ? Center(
+                                      child: Text(
+                                          'Data absen 3 hari terakhir belum tersedia',
+                                          style: TextStyle(
+                                              backgroundColor: Colors.white,
+                                              fontSize: GeneralUtil.fontSize(
+                                                      context) *
+                                                  0.35,
+                                              color: Colors.grey,
+                                              fontWeight: FontWeight.w500)),
+                                    )
+                                  : ListView.separated(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                        return InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context,
+                                                StringRouterUtil
+                                                    .kendalaAbsenDetailScreenRoute,
+                                                arguments: state
+                                                    .kendalaAbsenListResponseModel
+                                                    .data![index]
+                                                    .id);
+                                          },
+                                          child: Container(
+                                            height: 50,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 3,
+                                                    offset: const Offset(-6,
+                                                        4), // Shadow position
+                                                  ),
+                                                ],
+                                                border: Border.all(
+                                                    color:
+                                                        const Color(0xFFC2C2C2)
+                                                            .withOpacity(0.1))),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      width: 16,
+                                                      decoration: BoxDecoration(
+                                                        color: state
+                                                                    .kendalaAbsenListResponseModel
+                                                                    .data![
+                                                                        index]
+                                                                    .status! ==
+                                                                'Disetujui'
+                                                            ? greenColor
+                                                            : state
+                                                                        .kendalaAbsenListResponseModel
+                                                                        .data![
+                                                                            index]
+                                                                        .status! ==
+                                                                    'Ditolak'
+                                                                ? redColor
+                                                                : yellowColor,
+                                                        borderRadius:
+                                                            const BorderRadius
+                                                                .only(
+                                                          topLeft:
+                                                              Radius.circular(
+                                                                  6),
+                                                          bottomLeft:
+                                                              Radius.circular(
+                                                                  6),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    SizedBox(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          FittedBox(
+                                                            fit:
+                                                                BoxFit.fitWidth,
+                                                            child: Text(
+                                                                GeneralUtil.monthCheck2(state
+                                                                    .kendalaAbsenListResponseModel
+                                                                    .data![
+                                                                        index]
+                                                                    .createdAt!),
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        GeneralUtil.fontSize(context) *
+                                                                            0.35,
+                                                                    color: const Color(
+                                                                        0xFF797979),
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400)),
+                                                          ),
+                                                          Text(
+                                                              GeneralUtil.dateDayCheck(state
+                                                                  .kendalaAbsenListResponseModel
+                                                                  .data![index]
+                                                                  .createdAt!),
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.35,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 18),
+                                                    SizedBox(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width *
+                                                              0.45,
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                              GeneralUtil.dayCheck(state
+                                                                  .kendalaAbsenListResponseModel
+                                                                  .data![index]
+                                                                  .createdAt!),
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.35,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500)),
+                                                          Text(
+                                                              state
+                                                                  .kendalaAbsenListResponseModel
+                                                                  .data![index]
+                                                                  .description!,
+                                                              style: TextStyle(
+                                                                  fontSize:
+                                                                      GeneralUtil.fontSize(
+                                                                              context) *
+                                                                          0.3,
+                                                                  color: Colors
+                                                                      .black,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w400)),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          right: 16.0),
+                                                  child: SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.23,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text('Status',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        GeneralUtil.fontSize(context) *
+                                                                            0.35,
+                                                                    color: Colors
+                                                                        .black,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500)),
+                                                            Text(
+                                                                state
+                                                                    .kendalaAbsenListResponseModel
+                                                                    .data![
+                                                                        index]
+                                                                    .status!,
+                                                                style: TextStyle(
+                                                                    fontSize: GeneralUtil.fontSize(context) * 0.3,
+                                                                    color: state.kendalaAbsenListResponseModel.data![index].status! == 'Disetujui'
+                                                                        ? greenColor
+                                                                        : state.kendalaAbsenListResponseModel.data![index].status! == 'Ditolak'
+                                                                            ? redColor
+                                                                            : yellowColor,
+                                                                    fontWeight: FontWeight.w400)),
+                                                          ],
+                                                        ),
+                                                        InkWell(
+                                                          onTap: () {},
+                                                          child: Container(
+                                                            width: 24,
+                                                            height: 24,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color:
+                                                                  primaryColor,
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          4),
+                                                            ),
+                                                            child: const Center(
+                                                                child: Icon(
+                                                              Icons
+                                                                  .remove_red_eye_outlined,
+                                                              color:
+                                                                  Colors.white,
+                                                              size: 16,
+                                                            )),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      separatorBuilder: (context, index) {
+                                        return const SizedBox(height: 10);
+                                      },
+                                      itemCount: state
+                                                  .kendalaAbsenListResponseModel
+                                                  .data!
+                                                  .length <
+                                              3
+                                          ? state.kendalaAbsenListResponseModel
+                                              .data!.length
+                                          : 3);
+                            }
+                            return GeneralUtil().loading3Data(3);
+                          })),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                       Text('Acara Terdekat',
                           style: TextStyle(
                               backgroundColor: Colors.white,
@@ -1278,7 +1595,7 @@ class _BerandaScreenState extends State<BerandaScreen> {
                             return GeneralUtil().loading3Data(3);
                           })),
                   const SizedBox(height: 24),
-                  WidgetTunjanganKerja()
+                  const WidgetTunjanganKerja()
                 ],
               ),
             ),

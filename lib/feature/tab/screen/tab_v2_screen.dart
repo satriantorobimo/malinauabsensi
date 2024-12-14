@@ -47,6 +47,20 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
             {'label': 'Acara', 'icon': 'assets/icons/izin.svg'},
           ];
         });
+      } else {
+        setState(() {
+          _tabs = [
+            {'label': 'Home', 'icon': 'assets/icons/home.svg'},
+            {'label': 'Izin', 'icon': 'assets/icons/izin.svg'},
+            {
+              'label': 'Absensi',
+              'icon': 'assets/icons/absen.svg',
+              'isHighlighted': true
+            },
+            {'label': 'Dinas Luar', 'icon': 'assets/icons/activity.svg'},
+            {'label': 'Acara', 'icon': 'assets/icons/izin.svg'},
+          ];
+        });
       }
       log('RoleID: ${action.roleID}, MenuID: ${action.menuID}, ActionID: ${action.actionID}');
     }

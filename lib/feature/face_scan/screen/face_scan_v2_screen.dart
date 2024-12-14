@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:malinau_absensi/components/color_comp.dart';
 import 'package:malinau_absensi/components/menu_item.dart';
-import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart';
+import 'package:malinau_absensi/feature/absensi/data/absen_out_request_model.dart'
+    as out;
 import 'package:malinau_absensi/feature/absensi/data/absen_request_model.dart';
 import 'package:malinau_absensi/feature/absensi/data/arguments_absen_model.dart';
 import 'package:malinau_absensi/feature/absensi/domain/absen_repo.dart';
@@ -202,8 +203,10 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                   location: Location(lat: lat, long: long))));
         } else {
           outBloc.add(OutAttempt(
-              absenOutRequestModel:
-                  AbsenOutRequestModel(qrContent: cvrt, requestType: 'out')));
+              absenOutRequestModel: out.AbsenOutRequestModel(
+                  qrContent: cvrt,
+                  requestType: 'out',
+                  location: out.Location(lat: lat, long: long))));
         }
       });
     } else {
@@ -632,16 +635,22 @@ class _FaceScanV2ScreenState extends State<FaceScanV2Screen> {
                                           Navigator.pushNamedAndRemoveUntil(
                                               context,
                                               StringRouterUtil.loginScreenRoute,
-                                                  (route) => false);
+                                              (route) => false);
                                         } else if (a.text == 'Setting') {
-                                          Navigator.pushNamed(context,
-                                              StringRouterUtil.settingScreenRoute);
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .settingScreenRoute);
                                         } else if (a.text == 'Profile') {
-                                          Navigator.pushNamed(context,
-                                              StringRouterUtil.profileScreenRoute);
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .profileScreenRoute);
                                         } else if (a.text == 'Ubah Password') {
-                                          Navigator.pushNamed(context,
-                                              StringRouterUtil.ubahPasswordScreenRoute);
+                                          Navigator.pushNamed(
+                                              context,
+                                              StringRouterUtil
+                                                  .ubahPasswordScreenRoute);
                                         }
                                       },
                                     ),

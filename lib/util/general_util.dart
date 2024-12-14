@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer';
 
+import 'package:android_id/android_id.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:malinau_absensi/feature/login/data/login_response_model.dart';
@@ -264,6 +266,15 @@ class GeneralUtil {
 
     // Store the JSON string
     await prefs.setString('menu_actions', jsonString);
+  }
+
+  Future<void> storeDeviceId() async {
+    const androidIdPlugin = AndroidId();
+
+    final String? androidId = await androidIdPlugin.getId();
+
+    SharedPrefUtil.saveSharedString('deviceid', androidId!);
+    log(androidId);
   }
 
   Future<List<MenuActions>> getMenuActionsFromSharedPreferences() async {
